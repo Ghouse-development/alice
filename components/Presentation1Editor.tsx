@@ -33,6 +33,21 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     }
   }, [currentProject]);
 
+  // uploadedFilesの変更を監視して保存
+  useEffect(() => {
+    const presentation1: Partial<Presentation1> = {
+      id: currentProject?.presentation1?.id || `pres1-${Date.now()}`,
+      projectId,
+      uploadedFiles: uploadedFiles,
+      exteriorImages: [],
+      interiorImages: [],
+      floorPlans: [],
+      specifications: [],
+      notes: '',
+    };
+    updatePresentation1(projectId, presentation1);
+  }, [uploadedFiles, currentProject?.presentation1?.id, projectId, updatePresentation1]);
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -43,32 +58,22 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     setIsDragging(false);
   }, []);
 
-  const savePresentation = useCallback((files: UploadedFile[]) => {
-    const presentation1: Partial<Presentation1> = {
-      id: currentProject?.presentation1?.id || `pres1-${Date.now()}`,
-      projectId,
-      uploadedFiles: files,
-      exteriorImages: [],
-      interiorImages: [],
-      floorPlans: [],
-      specifications: [],
-      notes: '',
-    };
-    updatePresentation1(projectId, presentation1);
-  }, [currentProject?.presentation1?.id, projectId, updatePresentation1]);
-
   const handleFiles = useCallback((files: File[]) => {
     const validFiles = files.filter(file => {
       const validTypes = [
         'application/pdf',
         'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp'
       ];
-      return validTypes.includes(file.type);
+      return validTypes.includes(file.type) || file.type.startsWith('image/');
     });
 
     if (validFiles.length === 0) {
-      alert('PDFまたはPowerPointファイルのみアップロード可能です');
+      alert('PDF、PowerPoint、または画像ファイルのみアップロード可能です');
       return;
     }
 
@@ -84,15 +89,11 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
           uploadedAt: new Date(),
         };
 
-        setUploadedFiles(prev => {
-          const updated = [...prev, newFile];
-          savePresentation(updated);
-          return updated;
-        });
+        setUploadedFiles(prev => [...prev, newFile]);
       };
       reader.readAsDataURL(file);
     });
-  }, [savePresentation]);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -102,19 +103,15 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     handleFiles(files);
   }, [handleFiles]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       handleFiles(files);
     }
-  };
+  }, [handleFiles]);
 
   const removeFile = (id: string) => {
-    setUploadedFiles(prev => {
-      const updated = prev.filter(file => file.id !== id);
-      savePresentation(updated);
-      return updated;
-    });
+    setUploadedFiles(prev => prev.filter(file => file.id !== id));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -129,6 +126,9 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     if (type === 'application/pdf') {
       return <FileText className="h-8 w-8 text-red-500" />;
     }
+    if (type.startsWith('image/')) {
+      return <File className="h-8 w-8 text-green-500" />;
+    }
     return <File className="h-8 w-8 text-blue-500" />;
   };
 
@@ -138,7 +138,7 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
         <CardHeader>
           <CardTitle>プレゼンテーション資料アップロード</CardTitle>
           <CardDescription>
-            PDFまたはPowerPointファイルをドラッグ&ドロップ、またはクリックして選択してください
+            PDF、PowerPoint、または画像ファイルをドラッグ&ドロップ、またはクリックして選択してください
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -154,82 +154,77 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
           >
             <input
               type="file"
-              id="file-upload"
-              className="hidden"
-              accept=".pdf,.ppt,.pptx"
               multiple
+              accept=".pdf,.ppt,.pptx,image/*"
               onChange={handleFileSelect}
+              className="hidden"
+              id="file-upload"
             />
-            <label
-              htmlFor="file-upload"
-              className="cursor-pointer flex flex-col items-center justify-center"
-            >
-              <Upload className="h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-lg font-medium text-gray-700 mb-2">
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-lg font-medium mb-2">
                 ファイルをドラッグ&ドロップ
               </p>
-              <p className="text-sm text-gray-500 mb-4">
-                または
+              <p className="text-sm text-gray-500">
+                または<span className="text-primary">クリックして選択</span>
               </p>
-              <Button variant="outline" type="button" onClick={() => document.getElementById('file-upload')?.click()}>
-                ファイルを選択
-              </Button>
-              <p className="text-xs text-gray-500 mt-4">
-                対応形式: PDF, PowerPoint (.ppt, .pptx)
+              <p className="text-xs text-gray-400 mt-2">
+                対応形式: PDF, PPT, PPTX, 画像ファイル
               </p>
             </label>
           </div>
 
           {uploadedFiles.length > 0 && (
-            <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-medium text-gray-700">アップロード済みファイル</h3>
-              {uploadedFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                >
-                  <div className="flex items-center gap-3">
-                    {getFileIcon(file.type)}
-                    <div>
-                      <p className="font-medium text-gray-900">{file.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleString('ja-JP')}
-                      </p>
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3">アップロード済みファイル</h3>
+              <div className="space-y-2">
+                {uploadedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getFileIcon(file.type)}
+                      <div>
+                        <p className="font-medium">{file.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatFileSize(file.size)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {file.type.startsWith('image/') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(file.url, '_blank')}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = file.url;
+                          a.download = file.name;
+                          a.click();
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(file.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {file.type === 'application/pdf' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(file.url, '_blank')}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        表示
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const a = document.createElement('a');
-                        a.href = file.url;
-                        a.download = file.name;
-                        a.click();
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeFile(file.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
@@ -237,40 +232,28 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>使用方法</CardTitle>
+          <CardTitle>プレゼンテーション設定</CardTitle>
+          <CardDescription>
+            プレゼンテーションで使用する画像やテキストの設定
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-              1
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">タイトル</label>
+              <input
+                type="text"
+                className="w-full mt-1 px-3 py-2 border rounded-lg"
+                placeholder="プレゼンテーションのタイトル"
+              />
             </div>
             <div>
-              <p className="font-medium">プレゼン資料を準備</p>
-              <p className="text-sm text-gray-600">
-                仕様確認用のPDFまたはPowerPointファイルを準備してください
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-              2
-            </div>
-            <div>
-              <p className="font-medium">ファイルをアップロード</p>
-              <p className="text-sm text-gray-600">
-                ドラッグ&ドロップまたはファイル選択ボタンでアップロード
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-              3
-            </div>
-            <div>
-              <p className="font-medium">プレゼンモードで表示</p>
-              <p className="text-sm text-gray-600">
-                プレゼンモードではアップロードしたファイルを顧客に表示できます
-              </p>
+              <label className="text-sm font-medium">説明</label>
+              <textarea
+                className="w-full mt-1 px-3 py-2 border rounded-lg"
+                rows={3}
+                placeholder="プレゼンテーションの説明"
+              />
             </div>
           </div>
         </CardContent>

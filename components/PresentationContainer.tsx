@@ -12,26 +12,25 @@ export function PresentationContainer({ children, fullscreen = false }: Presenta
 
   useEffect(() => {
     const calculateScale = () => {
+      const contentWidth = 1190; // A3横の基準幅(px)
+      const contentHeight = 842; // A3横の基準高さ(px)
+
       if (fullscreen) {
         // For fullscreen, use viewport dimensions directly
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        const contentWidth = 1190; // A3横の基準幅(px)
-        const contentHeight = 842; // A3横の基準高さ(px)
 
-        // A3横 (1.414:1) - scale to fill screen while maintaining aspect ratio
-        const aspectRatio = contentWidth / contentHeight; // 1.414:1 for A3 horizontal
+        // Calculate scale to fill height 100% while maintaining aspect ratio
+        const scaleByHeight = viewportHeight / contentHeight;
+        const scaledWidth = contentWidth * scaleByHeight;
 
-        // No padding in fullscreen - fill the entire screen
-        const availableWidth = viewportWidth;
-        const availableHeight = viewportHeight;
-
-        // Calculate scale to fill either width or height completely while maintaining A3 aspect ratio
-        const scaleX = availableWidth / contentWidth;
-        const scaleY = availableHeight / contentHeight;
-        const newScale = Math.min(scaleX, scaleY); // Fill screen completely while maintaining aspect ratio
-
-        setScale(newScale);
+        // If scaled width exceeds viewport width, scale by width instead
+        if (scaledWidth > viewportWidth) {
+          const scaleByWidth = viewportWidth / contentWidth;
+          setScale(scaleByWidth);
+        } else {
+          setScale(scaleByHeight);
+        }
         return;
       }
 
@@ -40,20 +39,18 @@ export function PresentationContainer({ children, fullscreen = false }: Presenta
 
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
-      const contentWidth = 1190; // A3横の基準幅(px)
-      const contentHeight = 842; // A3横の基準高さ(px)
 
-      // Add padding to ensure content doesn't touch viewport edges
-      const paddingX = 16;
-      const paddingY = 16;
-      const availableWidth = containerWidth - paddingX;
-      const availableHeight = containerHeight - paddingY;
+      // Calculate scale to fill height 100% while maintaining aspect ratio
+      const scaleByHeight = containerHeight / contentHeight;
+      const scaledWidth = contentWidth * scaleByHeight;
 
-      const scaleX = availableWidth / contentWidth;
-      const scaleY = availableHeight / contentHeight;
-      const newScale = Math.min(scaleX, scaleY, 0.95);
-
-      setScale(newScale);
+      // If scaled width exceeds container width, scale by width instead
+      if (scaledWidth > containerWidth) {
+        const scaleByWidth = containerWidth / contentWidth;
+        setScale(scaleByWidth);
+      } else {
+        setScale(scaleByHeight);
+      }
     };
 
     // Delay initial calculation to ensure DOM is ready

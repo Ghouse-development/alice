@@ -159,8 +159,13 @@ const Presentation3Interactive: React.FC = () => {
     <div
       className="relative bg-black text-white overflow-hidden"
       style={{
-        width: '100%',
-        height: '100%'
+        width: '1190px',
+        height: '842px',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        margin: '0 auto',
+        aspectRatio: '1.414 / 1',
+        transformOrigin: 'center center'
       }}
     >
       {/* 背景パターン */}
@@ -194,261 +199,220 @@ const Presentation3Interactive: React.FC = () => {
         </div>
       </div>
 
-      {/* メインコンテンツ - A3横レイアウト */}
-      <div className="relative flex h-[calc(100%-108px)]">
-        {/* 左側パネル - オプション選択 */}
-        <div className="w-3/5 p-6 border-r border-red-900/20 overflow-hidden">
-          <div className="space-y-6">
-            {/* パターン選択 */}
-            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
-                <Package className="h-5 w-5 text-red-500" />
-                <span className={CROWN_DESIGN.typography.accent}>推奨パッケージ</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => applyPattern(1)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    activePattern === 1
-                      ? 'border-red-600 bg-red-600/10'
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
-                >
-                  <div className="text-left">
-                    <p className="font-bold mb-1">パターン①</p>
-                    <p className="text-sm text-gray-400">STANDARD</p>
-                    <p className="text-xl font-bold text-red-500 mt-2">¥2,100,000</p>
+      {/* メインコンテンツ - A3横レイアウト - PDFレイアウトに従って3行構造 */}
+      <div className="relative h-[calc(100%-60px)] p-6">
+        <div className="h-full grid grid-rows-2 gap-6">
+          {/* 上段：外装 (Exterior) セクション */}
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-8">
+              <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-4 border border-gray-800/50 h-full">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-3 tracking-wider">
+                  <Home className="h-6 w-6 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
+                  <span className={CROWN_DESIGN.typography.accent}>外装</span>
+                </h3>
+
+                {/* 外観①と外観②のボックス */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {exteriorOptions.map(option => (
+                    <label
+                      key={option.id}
+                      className={`relative block cursor-pointer transition-all ${
+                        selectedExterior === option.id
+                          ? 'ring-2 ring-red-600'
+                          : 'hover:ring-1 hover:ring-gray-600'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="exterior"
+                        value={option.id}
+                        checked={selectedExterior === option.id}
+                        onChange={(e) => setSelectedExterior(e.target.value)}
+                        className="sr-only"
+                      />
+                      <div className="bg-gray-800 rounded-lg p-4 border-2 border-gray-700">
+                        {/* 画像プレースホルダー */}
+                        <div className="aspect-video bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg mb-3 flex items-center justify-center">
+                          <Home className="h-12 w-12 text-gray-500" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-bold text-white">{option.name}</p>
+                            <p className="text-xs text-gray-400">{option.description}</p>
+                            <p className="text-sm text-red-400 font-medium">¥{option.price.toLocaleString()}</p>
+                          </div>
+                          {selectedExterior === option.id && (
+                            <Check className="h-5 w-5 text-red-500" />
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {/* 外装チェックボックスオプション */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-400 tracking-wider">外装オプション</h4>
+                  {['外壁塗装グレードアップ', '屋根材変更', '外構工事', '玄関ドアアップグレード'].map((item, index) => (
+                    <label key={index} className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-500" />
+                      <span className="text-sm text-gray-300">{item}</span>
+                      <span className="text-sm text-red-400 ml-auto">¥{(50000 + index * 20000).toLocaleString()}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* オプション金額セクション - 右側 */}
+            <div className="col-span-4">
+              <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-lg p-4 border border-red-900/30 h-full">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-3 tracking-wider">
+                  <Calculator className="h-6 w-6 text-red-500" />
+                  <span className={CROWN_DESIGN.typography.accent}>オプション金額</span>
+                </h3>
+
+                {/* パターン選択 */}
+                <div className="mb-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    <button
+                      onClick={() => applyPattern(1)}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        activePattern === 1
+                          ? 'border-red-600 bg-red-600/10'
+                          : 'border-gray-700 hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <p className="font-bold mb-1 text-sm">パターン①</p>
+                        <p className="text-xs text-gray-400">STANDARD</p>
+                        <p className="text-lg font-bold text-red-500 mt-1">¥210万</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => applyPattern(2)}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        activePattern === 2
+                          ? 'border-red-600 bg-red-600/10'
+                          : 'border-gray-700 hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <p className="font-bold mb-1 text-sm">パターン②</p>
+                        <p className="text-xs text-gray-400">PREMIUM</p>
+                        <p className="text-lg font-bold text-red-500 mt-1">¥340万</p>
+                      </div>
+                    </button>
                   </div>
-                </button>
-                <button
-                  onClick={() => applyPattern(2)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    activePattern === 2
-                      ? 'border-red-600 bg-red-600/10'
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
-                >
-                  <div className="text-left">
-                    <p className="font-bold mb-1">パターン②</p>
-                    <p className="text-sm text-gray-400">PREMIUM</p>
-                    <p className="text-xl font-bold text-red-500 mt-2">¥3,400,000</p>
+                </div>
+
+                {/* 合計金額表示 */}
+                <div className="bg-gradient-to-r from-red-900/30 to-red-800/20 rounded-lg p-4 border border-red-700/50">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-400 mb-2 tracking-wider">総額</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+                      ¥{totalPrice.toLocaleString()}
+                    </p>
                   </div>
-                </button>
-              </div>
-            </div>
-
-            {/* 外装オプション */}
-            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
-                <Home className="h-5 w-5 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
-                <span className={CROWN_DESIGN.typography.accent}>外装</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {exteriorOptions.map(option => (
-                  <label
-                    key={option.id}
-                    className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedExterior === option.id
-                        ? 'border-red-600 bg-red-600/10'
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="exterior"
-                      value={option.id}
-                      checked={selectedExterior === option.id}
-                      onChange={(e) => setSelectedExterior(e.target.value)}
-                      className="sr-only"
-                    />
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold">{option.name}</p>
-                        <p className="text-xs text-gray-400 mt-1">{option.description}</p>
-                      </div>
-                      {selectedExterior === option.id && (
-                        <Check className="h-5 w-5 text-red-500 flex-shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-lg font-bold text-gray-300 mt-2">
-                      ¥{option.price.toLocaleString()}
-                    </p>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* 内装オプション */}
-            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
-                <Home className="h-5 w-5 text-platinum" style={{ color: CROWN_DESIGN.colors.platinum }} />
-                <span className={CROWN_DESIGN.typography.accent}>内装</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {interiorOptions.map(option => (
-                  <label
-                    key={option.id}
-                    className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedInteriors.includes(option.id)
-                        ? 'border-red-600 bg-red-600/10'
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      value={option.id}
-                      checked={selectedInteriors.includes(option.id)}
-                      onChange={() => toggleInterior(option.id)}
-                      className="sr-only"
-                    />
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold">{option.name}</p>
-                        <p className="text-xs text-gray-400 mt-1">{option.description}</p>
-                      </div>
-                      {selectedInteriors.includes(option.id) && (
-                        <Check className="h-5 w-5 text-red-500 flex-shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-lg font-bold text-gray-300 mt-2">
-                      ¥{option.price.toLocaleString()}
-                    </p>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* 追加オプション */}
-            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
-                <Plus className="h-5 w-5 text-red-500" />
-                <span className={CROWN_DESIGN.typography.accent}>追加オプション</span>
-              </h3>
-              <div className="grid grid-cols-4 gap-3">
-                {additionalOptions.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => toggleAdditional(option.id)}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      selectedAdditional.includes(option.id)
-                        ? 'border-red-600 bg-red-600/10'
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-8 h-8 mx-auto mb-2 rounded-full border-2 flex items-center justify-center ${
-                        selectedAdditional.includes(option.id)
-                          ? 'border-red-500 bg-red-500'
-                          : 'border-gray-600'
-                      }`}>
-                        {selectedAdditional.includes(option.id) && (
-                          <Check className="h-4 w-4 text-white" />
-                        )}
-                      </div>
-                      <p className="text-xs font-medium">{option.name}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        ¥{(option.price / 10000).toFixed(0)}万
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 右側パネル - 合計 */}
-        <div className="w-2/5 p-8 bg-gradient-to-br from-gray-900 via-black to-gray-900">
-          <div className="sticky top-0 space-y-6">
-            {/* タイトル */}
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent tracking-wider">
-                OPTION TOTAL
-              </h2>
-            </div>
+          {/* 下段：内装 (Interior) セクション */}
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-8">
+              <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-4 border border-gray-800/50 h-full">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-3 tracking-wider">
+                  <Home className="h-6 w-6 text-platinum" style={{ color: CROWN_DESIGN.colors.platinum }} />
+                  <span className={CROWN_DESIGN.typography.accent}>内装</span>
+                </h3>
 
-            {/* 選択済みアイテム */}
-            <div className="bg-black/50 rounded-lg p-6 border border-red-900/30">
-              <h3 className="text-sm font-medium text-gray-400 mb-4 tracking-wider">選択中のオプション</h3>
+                {/* LDK①, LDK②, LDK③, LDK④のボックス */}
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  {interiorOptions.map(option => (
+                    <label
+                      key={option.id}
+                      className={`relative block cursor-pointer transition-all ${
+                        selectedInteriors.includes(option.id)
+                          ? 'ring-2 ring-red-600'
+                          : 'hover:ring-1 hover:ring-gray-600'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        value={option.id}
+                        checked={selectedInteriors.includes(option.id)}
+                        onChange={() => toggleInterior(option.id)}
+                        className="sr-only"
+                      />
+                      <div className="bg-gray-800 rounded-lg p-3 border-2 border-gray-700">
+                        {/* 小さな画像プレースホルダー */}
+                        <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded mb-2 flex items-center justify-center">
+                          <Home className="h-8 w-8 text-gray-500" />
+                        </div>
+                        <div className="text-center">
+                          <p className="font-bold text-xs text-white">{option.name}</p>
+                          <p className="text-xs text-gray-400 mt-1">{option.description}</p>
+                          <p className="text-xs text-red-400 font-medium mt-1">¥{option.price.toLocaleString()}</p>
+                          {selectedInteriors.includes(option.id) && (
+                            <Check className="h-4 w-4 text-red-500 mx-auto mt-2" />
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
 
-              <div className="space-y-2 max-h-48 overflow-hidden">
-                {/* 外装 */}
-                {exteriorOptions.filter(e => e.id === selectedExterior).map(option => (
-                  <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-gold rounded-full" style={{ backgroundColor: CROWN_DESIGN.colors.gold }}></div>
-                      <span className="text-sm">{option.name}</span>
-                    </div>
-                    <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
-                  </div>
-                ))}
-
-                {/* 内装 */}
-                {interiorOptions.filter(i => selectedInteriors.includes(i.id)).map(option => (
-                  <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-platinum rounded-full" style={{ backgroundColor: CROWN_DESIGN.colors.platinum }}></div>
-                      <span className="text-sm">{option.name}</span>
-                    </div>
-                    <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
-                  </div>
-                ))}
-
-                {/* 追加 */}
-                {additionalOptions.filter(a => selectedAdditional.includes(a.id)).map(option => (
-                  <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span className="text-sm">{option.name}</span>
-                    </div>
-                    <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
-                  </div>
-                ))}
+                {/* 内装チェックボックスオプション */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-400 tracking-wider">内装オプション</h4>
+                  {['キッチンアップグレード', '浴室グレードアップ', '床暖房', 'クロス変更'].map((item, index) => (
+                    <label key={index} className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-500" />
+                      <span className="text-sm text-gray-300">{item}</span>
+                      <span className="text-sm text-red-400 ml-auto">¥{(30000 + index * 15000).toLocaleString()}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* 合計金額 */}
-            <div className="bg-gradient-to-r from-red-900/30 to-red-800/20 rounded-lg p-6 border border-red-700/50">
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 tracking-wider">TOTAL AMOUNT</p>
-                <p className="text-5xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
-                  ¥{totalPrice.toLocaleString()}
-                </p>
-              </div>
-            </div>
+            {/* ローンシミュレーション - 右下 */}
+            <div className="col-span-4">
+              <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 rounded-lg p-4 border border-gray-800/50 h-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <CreditCard className="h-5 w-5 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
+                  <h4 className="font-bold text-lg tracking-wider">月額ローン</h4>
+                </div>
 
-            {/* ローン計算 */}
-            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 rounded-lg p-6 border border-gray-800/50">
-              <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
-                <h3 className="font-bold tracking-wider">ローン返済シミュレーション</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-black/50 rounded-lg">
-                  <span className="text-gray-400">月々のお支払い</span>
-                  <span className="text-2xl font-bold text-gold" style={{ color: CROWN_DESIGN.colors.gold }}>
+                <div className="text-center mb-4">
+                  <p className="text-3xl font-bold text-gold" style={{ color: CROWN_DESIGN.colors.gold }}>
                     ¥{monthlyPayment.toLocaleString()}
-                  </span>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">※35年ローン、金利1.0%</p>
                 </div>
 
-                <div className="text-xs text-gray-500 space-y-1">
-                  <p>※ 35年ローン、金利1.0%で計算</p>
-                  <p>※ ボーナス払いなし</p>
-                  <p>※ 実際の返済額は金融機関により異なります</p>
+                {/* 追加オプション */}
+                <div className="bg-black/50 rounded-lg p-4 border border-red-900/30">
+                  <h4 className="text-sm font-medium text-gray-400 mb-3 tracking-wider">追加オプション</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {additionalOptions.slice(0, 4).map(option => (
+                      <button
+                        key={option.id}
+                        onClick={() => toggleAdditional(option.id)}
+                        className={`p-2 rounded border text-xs transition-all ${
+                          selectedAdditional.includes(option.id)
+                            ? 'border-red-600 bg-red-600/10 text-white'
+                            : 'border-gray-700 hover:border-gray-600 text-gray-400'
+                        }`}
+                      >
+                        {option.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* アクションボタン */}
-            <div className="grid grid-cols-2 gap-4">
-              <button className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors font-medium tracking-wider">
-                リセット
-              </button>
-              <button className="py-3 px-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 tracking-wider">
-                保存
-                <ChevronRight className="h-4 w-4" />
-              </button>
             </div>
           </div>
         </div>
@@ -456,12 +420,12 @@ const Presentation3Interactive: React.FC = () => {
 
       {/* フッター */}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-4 py-2">
+        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-4 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <Check className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+                <span className="text-xs text-gray-400 tracking-wider"></span>
               </div>
             </div>
             <div className="flex items-center gap-3">

@@ -160,7 +160,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
         <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
           <div className="px-4 py-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-12">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
                 </div>
@@ -251,7 +251,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
               <div className="flex items-center gap-8">
                 <div className="flex items-center gap-3">
                   <Check className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+                  <span className="text-xs text-gray-400 tracking-wider"></span>
                 </div>
               </div>
               <div className="flex items-center gap-3">

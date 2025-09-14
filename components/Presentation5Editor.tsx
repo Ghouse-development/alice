@@ -103,13 +103,6 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
     updatePresentation5(projectId, presentation5);
   };
 
-  useEffect(() => {
-    savePresentation();
-  }, [
-    solarCapacity, hasBattery, batteryCapacity, monthlyElectricity,
-    electricityUnitPrice, sellElectricityPrice, inflationRate,
-    simulationYears, solarCostPerKw, batteryCost, monthlyGas, hasAllElectric
-  ]);
 
   return (
     <div className="space-y-6">
@@ -134,7 +127,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
               max={15}
               step={0.1}
               value={[solarCapacity]}
-              onValueChange={(value) => setSolarCapacity(value[0])}
+              onValueChange={(value) => {
+                setSolarCapacity(value[0]);
+                savePresentation();
+              }}
               className="w-full"
             />
             <div className="flex justify-between text-xs text-gray-500">
@@ -153,7 +149,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
             <Switch
               id="battery"
               checked={hasBattery}
-              onCheckedChange={setHasBattery}
+              onCheckedChange={(checked) => {
+                setHasBattery(checked);
+                savePresentation();
+              }}
             />
           </div>
 
@@ -168,7 +167,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                 max={15}
                 step={0.5}
                 value={[batteryCapacity]}
-                onValueChange={(value) => setBatteryCapacity(value[0])}
+                onValueChange={(value) => {
+                  setBatteryCapacity(value[0]);
+                  savePresentation();
+                }}
                 className="w-full"
               />
             </div>
@@ -181,7 +183,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                 id="solarCost"
                 type="number"
                 value={solarCostPerKw}
-                onChange={(e) => setSolarCostPerKw(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  setSolarCostPerKw(parseInt(e.target.value) || 0);
+                  savePresentation();
+                }}
               />
             </div>
             {hasBattery && (
@@ -191,7 +196,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                   id="batteryCostInput"
                   type="number"
                   value={batteryCost}
-                  onChange={(e) => setBatteryCost(parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    setBatteryCost(parseInt(e.target.value) || 0);
+                    savePresentation();
+                  }}
                 />
               </div>
             )}
@@ -217,7 +225,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                 id="monthlyElec"
                 type="number"
                 value={monthlyElectricity}
-                onChange={(e) => setMonthlyElectricity(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  setMonthlyElectricity(parseInt(e.target.value) || 0);
+                  savePresentation();
+                }}
               />
             </div>
             <div>
@@ -226,7 +237,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                 id="elecUnit"
                 type="number"
                 value={electricityUnitPrice}
-                onChange={(e) => setElectricityUnitPrice(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  setElectricityUnitPrice(parseInt(e.target.value) || 0);
+                  savePresentation();
+                }}
               />
             </div>
           </div>
@@ -241,7 +255,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
             <Switch
               id="allElectric"
               checked={hasAllElectric}
-              onCheckedChange={setHasAllElectric}
+              onCheckedChange={(checked) => {
+                setHasAllElectric(checked);
+                savePresentation();
+              }}
             />
           </div>
 
@@ -252,7 +269,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
                 id="monthlyGasInput"
                 type="number"
                 value={monthlyGas}
-                onChange={(e) => setMonthlyGas(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  setMonthlyGas(parseInt(e.target.value) || 0);
+                  savePresentation();
+                }}
               />
             </div>
           )}
@@ -263,7 +283,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
               id="sellPrice"
               type="number"
               value={sellElectricityPrice}
-              onChange={(e) => setSellElectricityPrice(parseInt(e.target.value) || 0)}
+              onChange={(e) => {
+                setSellElectricityPrice(parseInt(e.target.value) || 0);
+                savePresentation();
+              }}
             />
             <p className="text-xs text-muted-foreground mt-1">
               FIT制度による固定買取価格
@@ -293,7 +316,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
               max={5}
               step={0.5}
               value={[inflationRate]}
-              onValueChange={(value) => setInflationRate(value[0])}
+              onValueChange={(value) => {
+                setInflationRate(value[0]);
+                savePresentation();
+              }}
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
@@ -311,7 +337,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
               max={40}
               step={5}
               value={[simulationYears]}
-              onValueChange={(value) => setSimulationYears(value[0])}
+              onValueChange={(value) => {
+                setSimulationYears(value[0]);
+                savePresentation();
+              }}
               className="w-full"
             />
           </div>

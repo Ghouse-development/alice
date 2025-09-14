@@ -127,8 +127,8 @@ export function Presentation3Editor({ projectId }: Presentation3EditorProps) {
             </TableHeader>
             <TableBody>
               {Object.entries(groupedOptions).map(([category, options]) => (
-                <>
-                  <TableRow key={`category-${category}`}>
+                <React.Fragment key={`category-group-${category}`}>
+                  <TableRow>
                     <TableCell colSpan={6} className="bg-gray-50 font-semibold">
                       {category}
                     </TableCell>
@@ -163,7 +163,7 @@ export function Presentation3Editor({ projectId }: Presentation3EditorProps) {
                       </TableCell>
                     </TableRow>
                   ))}
-                </>
+                </React.Fragment>
               ))}
             </TableBody>
             <TableFooter>

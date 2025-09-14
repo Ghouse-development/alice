@@ -86,7 +86,7 @@ export function Presentation1View({ projectId, currentFileIndex }: Presentation1
 
         {/* ヘッダー */}
         <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
-          <div className="px-12 py-6">
+          <div className="px-4 py-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-12">
                 <div className="flex flex-col">
@@ -132,7 +132,7 @@ export function Presentation1View({ projectId, currentFileIndex }: Presentation1
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <Check className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+                <span className="text-xs text-gray-400 tracking-wider"></span>
               </div>
               <div className="h-4 w-px bg-gray-700" />
             </div>
@@ -278,7 +278,7 @@ export function Presentation1View({ projectId, currentFileIndex }: Presentation1
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
               <Check className="w-4 h-4 text-red-500" />
-              <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+              <span className="text-xs text-gray-400 tracking-wider"></span>
             </div>
             <div className="h-4 w-px bg-gray-700" />
           </div>

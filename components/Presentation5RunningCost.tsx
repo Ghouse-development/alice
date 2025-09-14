@@ -70,47 +70,72 @@ const Presentation5RunningCost: React.FC = () => {
     };
   }, [solarCapacity, hasBattery]);
 
-  // 30年間のシミュレーション
+  // 3パターンの30年間シミュレーション
   const lifetimeSimulation = useMemo(() => {
     const years = 30;
     const data = [];
-    const solarCost = solarCapacity * 250000;
-    const batteryCost = hasBattery ? 1500000 : 0;
-    const initialInvestment = solarCost + batteryCost;
 
-    let cumulativeSavings = -initialInvestment;
-    let cumulativeWithoutSolar = 0;
+    // パターン1: 太陽光なし（標準住宅）
+    // パターン2: 太陽光のみ
+    // パターン3: 太陽光 + 蓄電池
+
+    const solarOnlyCost = solarCapacity * 250000;
+    const solarBatteryCost = solarCapacity * 250000 + 1500000;
+
+    let cumulativePattern1 = 0; // 太陽光なし
+    let cumulativePattern2 = solarOnlyCost; // 太陽光のみ（初期投資）
+    let cumulativePattern3 = solarBatteryCost; // 太陽光 + 蓄電池（初期投資）
 
     for (let year = 1; year <= years; year++) {
       const inflationMultiplier = Math.pow(1 + inflationRate / 100, year - 1);
       const yearlyElectricity = monthlyElectricity * 12 * inflationMultiplier;
 
-      const yearlySolarBenefit = calculateMonthlyBalance.net * 12 * (year <= 20 ? 1 : 0.8);
+      // パターン1: 標準電気代のみ
+      cumulativePattern1 += yearlyElectricity;
 
-      cumulativeSavings += yearlySolarBenefit;
-      cumulativeWithoutSolar += yearlyElectricity;
+      // パターン2: 太陽光のみ（自家消費率30%）
+      const solarOnlySavings = calculateMonthlyBalance.net * 12 * 0.8 * (year <= 20 ? 1 : 0.8);
+      cumulativePattern2 += Math.max(0, yearlyElectricity - solarOnlySavings);
+
+      // パターン3: 太陽光 + 蓄電池（自家消費率70%）
+      const solarBatterySavings = calculateMonthlyBalance.net * 12 * 1.4 * (year <= 20 ? 1 : 0.8);
+      cumulativePattern3 += Math.max(0, yearlyElectricity - solarBatterySavings);
 
       data.push({
         year,
-        withoutSolar: Math.round(cumulativeWithoutSolar),
-        withSolar: Math.round(Math.max(0, cumulativeWithoutSolar - cumulativeSavings - initialInvestment)),
-        savings: Math.round(cumulativeSavings),
-        yearlyCost: Math.round(yearlyElectricity)
+        pattern1: Math.round(cumulativePattern1), // 標準住宅
+        pattern2: Math.round(cumulativePattern2), // 太陽光のみ
+        pattern3: Math.round(cumulativePattern3), // 太陽光 + 蓄電池
+        yearlyElectricity: Math.round(yearlyElectricity)
       });
     }
 
-    return { data, initialInvestment };
-  }, [solarCapacity, hasBattery, monthlyElectricity, inflationRate, calculateMonthlyBalance]);
+    return {
+      data,
+      initialInvestments: {
+        solarOnly: solarOnlyCost,
+        solarBattery: solarBatteryCost
+      }
+    };
+  }, [solarCapacity, monthlyElectricity, inflationRate, calculateMonthlyBalance]);
 
-  const totalSavings = lifetimeSimulation.data[lifetimeSimulation.data.length - 1].savings;
-  const paybackPeriod = lifetimeSimulation.data.findIndex(d => d.savings > 0) + 1;
+  const finalYear = lifetimeSimulation.data[lifetimeSimulation.data.length - 1];
+  const totalSavingsPattern2 = finalYear.pattern1 - finalYear.pattern2;
+  const totalSavingsPattern3 = finalYear.pattern1 - finalYear.pattern3;
+  const paybackPeriodPattern2 = lifetimeSimulation.data.findIndex(d => d.pattern1 > d.pattern2) + 1;
+  const paybackPeriodPattern3 = lifetimeSimulation.data.findIndex(d => d.pattern1 > d.pattern3) + 1;
 
   return (
     <div
       className="relative bg-black text-white overflow-hidden"
       style={{
-        width: '100%',
-        height: '100%'
+        width: '1190px',
+        height: '842px',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        margin: '0 auto',
+        aspectRatio: '1.414 / 1',
+        transformOrigin: 'center center'
       }}
     >
       {/* 背景パターン */}
@@ -152,15 +177,15 @@ const Presentation5RunningCost: React.FC = () => {
       </div>
 
       {/* メインコンテンツ - A3横レイアウト */}
-      <div className="relative px-12 py-8 h-[calc(100%-108px)]">
+      <div className="relative px-8 py-4 h-[calc(100%-100px)] overflow-hidden">
         <div className="grid grid-cols-12 gap-8 h-full">
           {/* 左側：コントロールパネル */}
-          <div className="col-span-4 space-y-6">
+          <div className="col-span-4 space-y-4">
             {/* タイトル */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-gold-600/10 blur-xl rounded-lg" />
-                <div className="relative bg-gradient-to-r from-red-900/20 to-gold-900/10 p-6 rounded-lg border border-red-600/30">
+                <div className="relative bg-gradient-to-r from-red-900/20 to-gold-900/10 p-4 rounded-lg border border-red-600/30">
                   <h1 className="text-2xl font-bold tracking-wider text-white mb-2">
                     30年間の光熱費シミュレーション
                   </h1>
@@ -170,7 +195,7 @@ const Presentation5RunningCost: React.FC = () => {
             </div>
 
             {/* システム設定表示 */}
-            <div className="bg-gradient-to-br from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-6 border border-gray-800/50">
+            <div className="bg-gradient-to-br from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-4 border border-gray-800/50">
               <div className="flex items-center gap-3 text-red-500 mb-4">
                 <Sun className="h-5 w-5" />
                 <span className="text-sm font-medium tracking-wide">太陽光発電システム設定</span>
@@ -192,7 +217,7 @@ const Presentation5RunningCost: React.FC = () => {
             </div>
 
             {/* 月間エネルギー収支 */}
-            <div className="bg-gradient-to-br from-red-900/20 to-gold-900/10 rounded-lg p-6 border border-red-600/30 shadow-2xl">
+            <div className="bg-gradient-to-br from-red-900/20 to-gold-900/10 rounded-lg p-4 border border-red-600/30 shadow-2xl">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-3 text-gold-400">
                 <Zap className="h-5 w-5 text-gold-500" />
                 <span className="tracking-wide">月間エネルギー収支</span>
@@ -220,27 +245,37 @@ const Presentation5RunningCost: React.FC = () => {
             </div>
 
             {/* ROI指標 */}
-            <div className="grid grid-cols-1 gap-4">
-              <div className="bg-gradient-to-r from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-5 border border-gray-800/50">
+            <div className="grid grid-cols-1 gap-3">
+              <div className="bg-gradient-to-r from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-4 border border-gray-800/50">
                 <div className="flex items-center gap-3 mb-3">
                   <TrendingUp className="h-5 w-5 text-gold-500" />
-                  <span className="text-xs text-gray-400 tracking-wide uppercase">Investment Recovery Period</span>
+                  <span className="text-xs text-gray-400 tracking-wide uppercase">投資回収期間</span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-gold-400">{paybackPeriod > 0 ? paybackPeriod : '---'}</p>
-                  <span className="text-sm text-gray-400">年</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">太陽光のみ</span>
+                    <span className="text-lg font-bold text-gold-400">{paybackPeriodPattern2 > 0 ? paybackPeriodPattern2 : '---'}年</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">太陽光+蓄電池</span>
+                    <span className="text-lg font-bold text-gold-400">{paybackPeriodPattern3 > 0 ? paybackPeriodPattern3 : '---'}年</span>
+                  </div>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-5 border border-gray-800/50">
+              <div className="bg-gradient-to-r from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-4 border border-gray-800/50">
                 <div className="flex items-center gap-3 mb-3">
                   <DollarSign className="h-5 w-5 text-red-500" />
-                  <span className="text-xs text-gray-400 tracking-wide uppercase">30-Year Total Profit</span>
+                  <span className="text-xs text-gray-400 tracking-wide uppercase">30年間総利益</span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-red-400">
-                    {(totalSavings / 10000).toFixed(0)}
-                  </p>
-                  <span className="text-sm text-gray-400">万円</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">太陽光のみ</span>
+                    <span className="text-lg font-bold text-red-400">{(totalSavingsPattern2 / 10000).toFixed(0)}万</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">太陽光+蓄電池</span>
+                    <span className="text-lg font-bold text-red-400">{(totalSavingsPattern3 / 10000).toFixed(0)}万</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -248,12 +283,12 @@ const Presentation5RunningCost: React.FC = () => {
 
           {/* 右側：チャート＆分析 */}
           <div className="col-span-8">
-            <div className="bg-gradient-to-br from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-8 border border-gray-800/50 h-full">
+            <div className="bg-gradient-to-br from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-4 border border-gray-800/50 h-full">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <BarChart3 className="h-7 w-7 text-red-500" />
                   <div>
-                    <h3 className="text-xl font-bold text-white tracking-wide">30-Year Cost Analysis</h3>
+                    <h3 className="text-xl font-bold text-white tracking-wide">30年間コスト分析</h3>
                     <p className="text-sm text-gray-400 tracking-wide">光熱費累積比較チャート</p>
                   </div>
                 </div>
@@ -263,14 +298,18 @@ const Presentation5RunningCost: React.FC = () => {
                     <span className="text-gray-400 tracking-wide">従来住宅</span>
                   </div>
                   <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full shadow-lg"></div>
+                    <span className="text-gray-400 tracking-wide">太陽光あり</span>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <div className="w-4 h-4 bg-gold-500 rounded-full shadow-lg"></div>
-                    <span className="text-gray-400 tracking-wide">G-HOUSE</span>
+                    <span className="text-gray-400 tracking-wide">太陽光＋蓄電池</span>
                   </div>
                 </div>
               </div>
 
               {/* チャートエリア */}
-              <div className="relative h-[400px] bg-black/30 rounded-lg p-6 border border-red-900/30">
+              <div className="relative h-[320px] bg-black/30 rounded-lg p-4 border border-red-900/30">
                 <svg className="w-full h-full" viewBox="0 0 800 350">
                   {/* グリッドライン */}
                   {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -312,10 +351,10 @@ const Presentation5RunningCost: React.FC = () => {
                     </text>
                   ))}
 
-                  {/* 従来住宅ライン */}
+                  {/* パターン1: 従来住宅ライン */}
                   <polyline
                     points={lifetimeSimulation.data
-                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.withoutSolar / 100000) * 250}`)
+                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.pattern1 / 100000) * 250}`)
                       .join(' ')}
                     fill="none"
                     stroke="#EF4444"
@@ -323,10 +362,21 @@ const Presentation5RunningCost: React.FC = () => {
                     className="drop-shadow-lg"
                   />
 
-                  {/* G-HOUSE仕様ライン */}
+                  {/* パターン2: 太陽光のみライン */}
                   <polyline
                     points={lifetimeSimulation.data
-                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.withSolar / 100000) * 250}`)
+                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.pattern2 / 100000) * 250}`)
+                      .join(' ')}
+                    fill="none"
+                    stroke="#3B82F6"
+                    strokeWidth="3"
+                    className="drop-shadow-lg"
+                  />
+
+                  {/* パターン3: 太陽光+蓄電池ライン */}
+                  <polyline
+                    points={lifetimeSimulation.data
+                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.pattern3 / 100000) * 250}`)
                       .join(' ')}
                     fill="none"
                     stroke="#B8860B"
@@ -334,13 +384,16 @@ const Presentation5RunningCost: React.FC = () => {
                     className="drop-shadow-lg"
                   />
 
-                  {/* 削減効果エリア */}
+                  {/* 削減効果エリア（パターン1とパターン3の間） */}
                   <polygon
-                    points={`60,300 ${lifetimeSimulation.data
-                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.withoutSolar / 100000) * 250}`)
-                      .join(' ')} ${60 + 680},300`}
+                    points={`${lifetimeSimulation.data
+                      .map((d, i) => `${60 + (i * 680) / 30},${300 - (d.pattern1 / 100000) * 250}`)
+                      .join(' ')} ${lifetimeSimulation.data
+                      .reverse()
+                      .map((d, i) => `${60 + ((29 - i) * 680) / 30},${300 - (d.pattern3 / 100000) * 250}`)
+                      .join(' ')}`}
                     fill="url(#crownSavingsGradient)"
-                    opacity="0.3"
+                    opacity="0.2"
                   />
 
                   <defs>
@@ -353,23 +406,29 @@ const Presentation5RunningCost: React.FC = () => {
               </div>
 
               {/* パフォーマンス指標 */}
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="bg-gradient-to-br from-red-900/20 to-black/40 backdrop-blur rounded-lg p-4 border border-red-600/30">
-                  <p className="text-gray-400 text-xs mb-2 tracking-wide uppercase">Initial Investment</p>
-                  <p className="text-lg font-bold text-white">
-                    ¥{(lifetimeSimulation.initialInvestment / 10000).toFixed(0)}<span className="text-sm text-gray-400 ml-1">万円</span>
+              <div className="grid grid-cols-4 gap-3 mt-6">
+                <div className="bg-gradient-to-br from-blue-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-blue-600/30">
+                  <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">太陽光投資額</p>
+                  <p className="text-sm font-bold text-blue-400">
+                    ¥{(lifetimeSimulation.initialInvestments.solarOnly / 10000).toFixed(0)}<span className="text-xs text-gray-400 ml-1">万円</span>
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-gold-900/20 to-black/40 backdrop-blur rounded-lg p-4 border border-gold-600/30">
-                  <p className="text-gray-400 text-xs mb-2 tracking-wide uppercase">30-Year Savings</p>
-                  <p className="text-lg font-bold text-gold-400">
-                    ¥{((lifetimeSimulation.data[29].withoutSolar - lifetimeSimulation.data[29].withSolar) / 10000).toFixed(0)}<span className="text-sm text-gray-400 ml-1">万円</span>
+                <div className="bg-gradient-to-br from-gold-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-gold-600/30">
+                  <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">太陽光+蓄電池投資額</p>
+                  <p className="text-sm font-bold text-gold-400">
+                    ¥{(lifetimeSimulation.initialInvestments.solarBattery / 10000).toFixed(0)}<span className="text-xs text-gray-400 ml-1">万円</span>
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-red-900/20 to-black/40 backdrop-blur rounded-lg p-4 border border-red-600/30">
-                  <p className="text-gray-400 text-xs mb-2 tracking-wide uppercase">ROI Rate</p>
-                  <p className="text-lg font-bold text-red-400">
-                    {((totalSavings / lifetimeSimulation.initialInvestment) * 100).toFixed(1)}<span className="text-sm text-gray-400 ml-1">%</span>
+                <div className="bg-gradient-to-br from-blue-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-blue-600/30">
+                  <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">太陽光ROI</p>
+                  <p className="text-sm font-bold text-blue-400">
+                    {((totalSavingsPattern2 / lifetimeSimulation.initialInvestments.solarOnly) * 100).toFixed(1)}<span className="text-xs text-gray-400 ml-1">%</span>
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-gold-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-gold-600/30">
+                  <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">蓄電池ROI</p>
+                  <p className="text-sm font-bold text-gold-400">
+                    {((totalSavingsPattern3 / lifetimeSimulation.initialInvestments.solarBattery) * 100).toFixed(1)}<span className="text-xs text-gray-400 ml-1">%</span>
                   </p>
                 </div>
               </div>
@@ -379,13 +438,13 @@ const Presentation5RunningCost: React.FC = () => {
 
         {/* 設定パネル */}
         {showSettings && (
-          <div className="absolute top-24 right-12 w-[400px] bg-gradient-to-br from-gray-900/95 to-black/90 backdrop-blur rounded-lg shadow-2xl border border-red-600/30 p-6 z-50">
+          <div className="absolute top-20 right-8 w-[350px] bg-gradient-to-br from-gray-900/95 to-black/90 backdrop-blur rounded-lg shadow-2xl border border-red-600/30 p-4 z-50">
             <h3 className="text-lg font-bold mb-6 flex items-center gap-3 text-white">
               <Settings className="h-5 w-5 text-red-500" />
-              <span className="tracking-wide">Simulation Settings</span>
+              <span className="tracking-wide">シミュレーション設定</span>
             </h3>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <label className="text-sm text-gray-400 mb-3 block tracking-wide">太陽光発電容量 (kW)</label>
                 <input
@@ -418,7 +477,7 @@ const Presentation5RunningCost: React.FC = () => {
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                   >
-                    STANDARD
+                    従来住宅
                   </button>
                   <button
                     onClick={() => setHasBattery(true)}
@@ -428,7 +487,7 @@ const Presentation5RunningCost: React.FC = () => {
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                   >
-                    PREMIUM
+                    太陽光＋蓄電池
                   </button>
                 </div>
               </div>
@@ -470,10 +529,10 @@ const Presentation5RunningCost: React.FC = () => {
 
         {/* フッター */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30">
-          <div className="px-4 py-2">
+          <div className="px-4 py-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-8">
-                <span className="text-xs font-bold tracking-[0.3em] text-red-600">G-HOUSE</span>
+                <span className="text-xs font-bold tracking-[0.3em] text-red-600"></span>
               </div>
             </div>
           </div>
