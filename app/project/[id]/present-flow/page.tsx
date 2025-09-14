@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Home, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
@@ -29,23 +29,122 @@ export default function PresentationFlowPage() {
   const [presentation2Items, setPresentation2Items] = useState<any[]>([]);
   const [autoPlay, setAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 全画面時にボディのスタイルを制御
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.margin = '0';
+      document.documentElement.style.padding = '0';
+    } else {
+      document.body.style.margin = '';
+      document.body.style.padding = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.margin = '';
+      document.documentElement.style.padding = '';
+    }
+  }, [isFullscreen]);
+
+  // プレゼン1のスライド数を動的に決定（ファイルがある場合はその数、ない場合は1枚）
+  const presentation1Files = currentProject?.presentation1?.uploadedFiles || [];
+  const presentation1SlideCount = presentation1Files.length > 0 ? presentation1Files.length : 1;
 
   // 全スライドの構成を定義
   const slides: SlideInfo[] = [
-    { presentation: 1, title: 'デザイン', totalSlides: 1 },
+    // プレゼン1（デザイン）: ファイル数に応じて可変（デフォルト7枚）
+    ...Array.from({ length: presentation1SlideCount }, (_, i) => ({
+      presentation: 1,
+      slideIndex: i,
+      title: `デザイン (${i + 1}/${presentation1SlideCount})`,
+      totalSlides: presentation1SlideCount
+    })),
+    // プレゼン2（標準仕様）: 10枚
     ...Array.from({ length: 10 }, (_, i) => ({
       presentation: 2,
       slideIndex: i,
-      title: `標準装備 (${i + 1}/10)`,
+      title: `標準仕様 (${i + 1}/10)`,
       totalSlides: 10
     })),
+    // プレゼン3（オプション）: 1枚
     { presentation: 3, title: 'オプション', totalSlides: 1 },
+    // プレゼン4（資金計画）: 1枚
     { presentation: 4, title: '資金計画', totalSlides: 1 },
+    // プレゼン5（光熱費）: 1枚
     { presentation: 5, title: '光熱費', totalSlides: 1 },
   ];
 
   const totalSlides = slides.length;
   const currentSlide = slides[currentSlideIndex];
+
+  const goToSlide = (index: number) => {
+    if (index >= 0 && index < totalSlides) {
+      setCurrentSlideIndex(index);
+    }
+  };
+
+  // ナビゲーション関数を定義（useEffectで使用するため先に定義）
+  const nextSlide = () => {
+    if (currentSlideIndex < totalSlides - 1) {
+      setCurrentSlideIndex(currentSlideIndex + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentSlideIndex > 0) {
+      setCurrentSlideIndex(currentSlideIndex - 1);
+    }
+  };
+
+  // キーボードナビゲーション対応
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (!isFullscreen) return;
+
+      // Ctrl+P で印刷
+      if (event.ctrlKey && event.key === 'p') {
+        event.preventDefault();
+        window.print();
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          event.preventDefault();
+          prevSlide();
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ': // スペースキー
+          event.preventDefault();
+          nextSlide();
+          break;
+        case 'Escape':
+          event.preventDefault();
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+          }
+          break;
+        case 'Home':
+          event.preventDefault();
+          setCurrentSlideIndex(0);
+          break;
+        case 'End':
+          event.preventDefault();
+          setCurrentSlideIndex(totalSlides - 1);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isFullscreen, nextSlide, prevSlide, totalSlides]);
+
+  // デバッグログは削除（本番環境では不要）
 
   useEffect(() => {
     setCurrentProject(projectId);
@@ -89,18 +188,17 @@ export default function PresentationFlowPage() {
       ];
     }
 
-    console.log('Loaded presentation2Items:', items.length, 'items');
     setPresentation2Items(items);
   }, []);
 
-  // オートプレイ機能
+  // オートプレイ機能 - 全画面時は間隔を調整
   useEffect(() => {
     if (autoPlay) {
       const interval = setInterval(() => {
         setCurrentSlideIndex(prev =>
           prev < totalSlides - 1 ? prev + 1 : 0
         );
-      }, 10000); // 10秒間隔
+      }, isFullscreen ? 15000 : 10000); // 全画面時は15秒、通常時は10秒
       setAutoPlayInterval(interval);
     } else if (autoPlayInterval) {
       clearInterval(autoPlayInterval);
@@ -110,23 +208,7 @@ export default function PresentationFlowPage() {
     return () => {
       if (autoPlayInterval) clearInterval(autoPlayInterval);
     };
-  }, [autoPlay, totalSlides, autoPlayInterval]);
-
-  const nextSlide = () => {
-    if (currentSlideIndex < totalSlides - 1) {
-      setCurrentSlideIndex(currentSlideIndex + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex(currentSlideIndex - 1);
-    }
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentSlideIndex(index);
-  };
+  }, [autoPlay, totalSlides, autoPlayInterval, isFullscreen]);
 
   // キーボードナビゲーション
   useEffect(() => {
@@ -151,7 +233,10 @@ export default function PresentationFlowPage() {
       case 1:
         return (
           <PresentationContainer fullscreen>
-            <Presentation1View projectId={projectId} />
+            <Presentation1View
+              projectId={projectId}
+              currentFileIndex={currentSlide.slideIndex}
+            />
           </PresentationContainer>
         );
       case 2:
@@ -199,19 +284,31 @@ export default function PresentationFlowPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white relative">
+    <div className={`${isFullscreen ? 'fixed inset-0 bg-black z-[9999]' : 'min-h-screen bg-gray-900'} text-white relative overflow-hidden`} style={isFullscreen ? {
+      width: '100vw',
+      height: '100vh',
+      margin: 0,
+      padding: 0,
+      border: 'none',
+      outline: 'none',
+      top: 0,
+      left: 0,
+      position: 'fixed'
+    } : {}}>
       {/* ヘッダー */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur border-b border-gray-700">
+      <div className={`${isFullscreen ? 'hidden' : 'fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur border-b border-gray-700'}`}>
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push(`/project/${projectId}/edit`)}
+                onClick={() => {
+                  router.push(`/project/${projectId}/edit`);
+                }}
                 className="text-white hover:bg-white/20"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Home className="h-4 w-4 mr-2" />
                 編集に戻る
               </Button>
               <div className="text-lg font-semibold">
@@ -229,69 +326,147 @@ export default function PresentationFlowPage() {
                 {autoPlay ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 {autoPlay ? 'ストップ' : 'オート'}
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    setIsFullscreen(true);
+                  } else {
+                    document.exitFullscreen();
+                    setIsFullscreen(false);
+                  }
+                }}
+                className="text-white hover:bg-white/20"
+              >
+                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                {isFullscreen ? '終了' : '全画面'}
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* メインコンテンツ */}
-      <div className="pt-20 pb-24">
-        <div className="container mx-auto px-4">
-          {/* スライドタイトル */}
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold mb-2">{currentSlide.title}</h1>
-            <div className="text-gray-400">
-              {currentSlide.presentation === 2 && presentation2Items[currentSlide.slideIndex!] &&
-                presentation2Items[currentSlide.slideIndex!].category
-              }
-            </div>
-          </div>
-
-          {/* ナビゲーションボタン - プレゼンの直上 */}
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={prevSlide}
-              disabled={currentSlideIndex === 0}
-              className="bg-white hover:bg-gray-100 text-black px-10 py-4 font-bold text-xl disabled:opacity-30"
-            >
-              <ChevronLeft className="h-6 w-6 mr-2" />
+      {/* ナビゲーションボタン - 画面上部に固定 */}
+      <div className={`${isFullscreen ? 'fixed top-1' : 'fixed top-16'} left-0 right-0 z-50 ${isFullscreen ? 'bg-transparent' : 'bg-black/90 backdrop-blur border-b border-gray-700'}`}>
+        <div className={`px-6 ${isFullscreen ? 'py-1' : 'py-3'}`}>
+          <div className="flex items-center justify-center gap-8">
+            <div className={`flex items-center ${isFullscreen ? 'gap-4' : 'gap-8'}`}>
+              <Button
+                variant="outline"
+                size={isFullscreen ? "sm" : "lg"}
+                onClick={prevSlide}
+                disabled={currentSlideIndex === 0}
+                className={`${isFullscreen ? 'bg-white/70 hover:bg-white/90 text-black px-3 py-1 font-bold text-xs' : 'bg-white/90 hover:bg-white text-black px-10 py-3 font-bold text-lg'} disabled:opacity-30 shadow-lg transition-all`}
+              >
+              <ChevronLeft className={`${isFullscreen ? 'h-3 w-3 mr-1' : 'h-5 w-5 mr-2'}`} />
               前へ
             </Button>
 
-            <div className="bg-black/50 rounded-full px-6 py-3">
-              <span className="text-white font-bold text-xl">
+            <div className={`bg-black/70 rounded-full ${isFullscreen ? 'px-3 py-0.5' : 'px-6 py-2'}`}>
+              <span className={`text-white font-bold ${isFullscreen ? 'text-xs' : 'text-xl'}`}>
                 {currentSlideIndex + 1} / {totalSlides}
               </span>
             </div>
 
             <Button
               variant="default"
-              size="lg"
+              size={isFullscreen ? "sm" : "lg"}
               onClick={nextSlide}
               disabled={currentSlideIndex === totalSlides - 1}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 font-bold text-xl disabled:opacity-30"
+              className={`${isFullscreen ? 'bg-blue-600/80 hover:bg-blue-700/90 text-white px-3 py-1 font-bold text-xs' : 'bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 font-bold text-lg'} disabled:opacity-30 shadow-lg transition-all`}
             >
               次へ
-              <ChevronRight className="h-6 w-6 ml-2" />
+              <ChevronRight className={`${isFullscreen ? 'h-3 w-3 ml-1' : 'h-5 w-5 ml-2'}`} />
             </Button>
+            </div>
+
+            {/* 全画面時の印刷ボタンと全画面終了ボタン */}
+            {isFullscreen && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="bg-green-600/80 hover:bg-green-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  印刷
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (document.fullscreenElement) {
+                      document.exitFullscreen();
+                    }
+                    setIsFullscreen(false);
+                    router.push(`/project/${projectId}/edit`);
+                  }}
+                  className="bg-gray-600/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all"
+                >
+                  <Minimize className="h-4 w-4 mr-2" />
+                  終了
+                </Button>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
+
+      {/* メインコンテンツ */}
+      <div className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'}`} style={isFullscreen ? {
+        width: '100vw',
+        height: '100vh',
+        margin: 0,
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      } : {}}>
+        <div className={`${isFullscreen ? '' : 'container mx-auto px-4'}`} style={isFullscreen ? {
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: 0,
+          padding: 0
+        } : {}}>
+          {/* スライドタイトル - プレゼン時は非表示 */}
 
           {/* スライドコンテンツ - A3横サイズ (420mm × 297mm = 1.414:1) */}
-          <div className="bg-white rounded-lg shadow-2xl overflow-hidden mx-auto" style={{
-            width: 'min(90vw, 1190px)',
-            height: 'min(90vw / 1.414, 842px)',
-            aspectRatio: '1.414 / 1'
+          <div className="relative w-full" style={isFullscreen ? {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%'
+          } : {
+            maxWidth: '1190px',
+            margin: '0 auto'
           }}>
-            {renderCurrentSlide()}
+            {/* プレゼンテーションコンテンツ */}
+            <div className={`${isFullscreen ? 'bg-transparent' : 'bg-white rounded-lg shadow-2xl'} relative`} style={isFullscreen ? {
+              width: 'auto',
+              height: 'auto'
+            } : {
+              width: '100%',
+              aspectRatio: '1.414 / 1',
+              margin: '0 auto'
+            }}>
+              {renderCurrentSlide()}
+            </div>
           </div>
         </div>
       </div>
 
 
       {/* フッター情報バー */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur px-6 py-3">
+      <div className={`${isFullscreen ? 'hidden' : 'fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur px-6 py-3'}`}>
         {/* スライドインジケーター */}
         <div className="flex items-center justify-center gap-2">
           {slides.map((slide, index) => (

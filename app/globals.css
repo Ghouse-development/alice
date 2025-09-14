@@ -120,3 +120,104 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 印刷用スタイル - A3横向き */
+@media print {
+  /* ページ設定 */
+  @page {
+    size: A3 landscape;
+    margin: 0;
+  }
+
+  /* 基本的な印刷設定 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* 背景色と背景画像を印刷 */
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 不要な要素を非表示 */
+  .no-print,
+  button,
+  .print-hide {
+    display: none !important;
+  }
+
+  /* プレゼンテーションコンテナの調整 */
+  .presentation-wrapper {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    page-break-inside: avoid !important;
+    page-break-after: always !important;
+  }
+
+  /* 各スライドの設定 - A3横（420mm × 297mm） */
+  .presentation-wrapper > div {
+    width: 420mm !important;
+    height: 297mm !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: none !important;
+    margin: 0 auto !important;
+    page-break-inside: avoid !important;
+    page-break-after: always !important;
+  }
+
+  /* 背景とグラデーションを保持 */
+  [class*="bg-gradient"],
+  [class*="bg-black"],
+  [class*="bg-gray"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* テキストカラーを保持 */
+  [class*="text-white"],
+  [class*="text-gray"],
+  [class*="text-red"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ボーダーを保持 */
+  [class*="border"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 改ページ制御 */
+  .page-break-before {
+    page-break-before: always !important;
+  }
+
+  .page-break-after {
+    page-break-after: always !important;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid !important;
+  }
+
+  /* スケール調整（必要に応じて） */
+  .presentation-content {
+    transform: scale(1) !important;
+    transform-origin: center center !important;
+  }
+}

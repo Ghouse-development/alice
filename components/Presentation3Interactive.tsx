@@ -3,6 +3,39 @@
 import React, { useState, useMemo } from 'react';
 import { Calculator, Home, Package, CreditCard, Check, Plus, Minus, ChevronRight } from 'lucide-react';
 
+// デザインシステム定数
+const CROWN_DESIGN = {
+  dimensions: {
+    width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
+    height: '842px',  // A3横の基準高さ(px) - PresentationContainerと統一
+    aspectRatio: '1.414',
+  },
+  colors: {
+    primary: '#1a1a1a',
+    secondary: '#2d2d2d',
+    accent: '#c41e3a',
+    gold: '#b8860b',
+    platinum: '#e5e4e2',
+    text: {
+      primary: '#ffffff',
+      secondary: '#a0a0a0',
+      accent: '#c41e3a'
+    },
+    gradients: {
+      black: 'bg-gradient-to-b from-gray-900 via-black to-gray-900',
+      premium: 'bg-gradient-to-r from-black via-gray-900 to-black',
+      accent: 'bg-gradient-to-br from-red-900/10 to-red-800/5'
+    }
+  },
+  typography: {
+    heading: 'font-bold tracking-[0.15em] uppercase',
+    subheading: 'font-light tracking-[0.1em]',
+    body: 'font-light tracking-wide',
+    accent: 'font-medium tracking-[0.2em] uppercase',
+    japanese: 'font-medium'
+  }
+};
+
 interface OptionItem {
   id: string;
   category: string;
@@ -123,68 +156,92 @@ const Presentation3Interactive: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-black text-white overflow-hidden">
-      {/* Header - CROWN Style */}
-      <div className="bg-gradient-to-r from-black to-gray-900 px-8 py-4 border-b border-gray-800">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <span className="text-xs font-medium tracking-widest text-gray-400">TOP</span>
-            <span className="text-xs font-medium tracking-widest text-gray-400">FEATURES</span>
-            <span className="text-xs font-medium tracking-widest text-gray-400">OPTIONS</span>
-            <span className="text-xs font-bold tracking-widest text-white border-b-2 border-blue-500 pb-1">OPTIONS</span>
-          </div>
-          <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">03</span>
+    <div
+      className="relative bg-black text-white overflow-hidden"
+      style={{
+        width: '100%',
+        height: '100%'
+      }}
+    >
+      {/* 背景パターン */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
+              repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
+            `,
+          }} />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex h-[calc(100%-4rem)]">
-        {/* Left Panel - Options Selection */}
-        <div className="w-3/5 p-8 border-r border-gray-800 overflow-y-auto">
-          <div className="space-y-8">
-            {/* Pattern Selection */}
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Package className="h-5 w-5 text-blue-400" />
-                おすすめパターン
+      {/* ヘッダー */}
+      <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
+        <div className="px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-12">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+              </div>
+              <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+              <span className="text-[11px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
+                オプション選択
+              </span>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+
+      {/* メインコンテンツ - A3横レイアウト */}
+      <div className="relative flex h-[calc(100%-108px)]">
+        {/* 左側パネル - オプション選択 */}
+        <div className="w-3/5 p-6 border-r border-red-900/20 overflow-hidden">
+          <div className="space-y-6">
+            {/* パターン選択 */}
+            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
+                <Package className="h-5 w-5 text-red-500" />
+                <span className={CROWN_DESIGN.typography.accent}>推奨パッケージ</span>
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => applyPattern(1)}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     activePattern === 1
-                      ? 'border-blue-500 bg-blue-500/10'
+                      ? 'border-red-600 bg-red-600/10'
                       : 'border-gray-700 hover:border-gray-600'
                   }`}
                 >
                   <div className="text-left">
                     <p className="font-bold mb-1">パターン①</p>
-                    <p className="text-sm text-gray-400">スタンダード</p>
-                    <p className="text-xl font-bold text-blue-400 mt-2">¥2,100,000</p>
+                    <p className="text-sm text-gray-400">STANDARD</p>
+                    <p className="text-xl font-bold text-red-500 mt-2">¥2,100,000</p>
                   </div>
                 </button>
                 <button
                   onClick={() => applyPattern(2)}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     activePattern === 2
-                      ? 'border-blue-500 bg-blue-500/10'
+                      ? 'border-red-600 bg-red-600/10'
                       : 'border-gray-700 hover:border-gray-600'
                   }`}
                 >
                   <div className="text-left">
                     <p className="font-bold mb-1">パターン②</p>
-                    <p className="text-sm text-gray-400">ハイグレード</p>
-                    <p className="text-xl font-bold text-blue-400 mt-2">¥3,400,000</p>
+                    <p className="text-sm text-gray-400">PREMIUM</p>
+                    <p className="text-xl font-bold text-red-500 mt-2">¥3,400,000</p>
                   </div>
                 </button>
               </div>
             </div>
 
-            {/* Exterior Options */}
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Home className="h-5 w-5 text-green-400" />
-                外装
+            {/* 外装オプション */}
+            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
+                <Home className="h-5 w-5 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
+                <span className={CROWN_DESIGN.typography.accent}>外装</span>
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {exteriorOptions.map(option => (
@@ -192,7 +249,7 @@ const Presentation3Interactive: React.FC = () => {
                     key={option.id}
                     className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       selectedExterior === option.id
-                        ? 'border-green-500 bg-green-500/10'
+                        ? 'border-red-600 bg-red-600/10'
                         : 'border-gray-700 hover:border-gray-600'
                     }`}
                   >
@@ -210,7 +267,7 @@ const Presentation3Interactive: React.FC = () => {
                         <p className="text-xs text-gray-400 mt-1">{option.description}</p>
                       </div>
                       {selectedExterior === option.id && (
-                        <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
+                        <Check className="h-5 w-5 text-red-500 flex-shrink-0" />
                       )}
                     </div>
                     <p className="text-lg font-bold text-gray-300 mt-2">
@@ -221,11 +278,11 @@ const Presentation3Interactive: React.FC = () => {
               </div>
             </div>
 
-            {/* Interior Options */}
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Home className="h-5 w-5 text-purple-400" />
-                内装
+            {/* 内装オプション */}
+            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
+                <Home className="h-5 w-5 text-platinum" style={{ color: CROWN_DESIGN.colors.platinum }} />
+                <span className={CROWN_DESIGN.typography.accent}>内装</span>
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {interiorOptions.map(option => (
@@ -233,7 +290,7 @@ const Presentation3Interactive: React.FC = () => {
                     key={option.id}
                     className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       selectedInteriors.includes(option.id)
-                        ? 'border-purple-500 bg-purple-500/10'
+                        ? 'border-red-600 bg-red-600/10'
                         : 'border-gray-700 hover:border-gray-600'
                     }`}
                   >
@@ -250,7 +307,7 @@ const Presentation3Interactive: React.FC = () => {
                         <p className="text-xs text-gray-400 mt-1">{option.description}</p>
                       </div>
                       {selectedInteriors.includes(option.id) && (
-                        <Check className="h-5 w-5 text-purple-400 flex-shrink-0" />
+                        <Check className="h-5 w-5 text-red-500 flex-shrink-0" />
                       )}
                     </div>
                     <p className="text-lg font-bold text-gray-300 mt-2">
@@ -261,11 +318,11 @@ const Presentation3Interactive: React.FC = () => {
               </div>
             </div>
 
-            {/* Additional Options Grid */}
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Plus className="h-5 w-5 text-orange-400" />
-                追加オプション
+            {/* 追加オプション */}
+            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 tracking-wider">
+                <Plus className="h-5 w-5 text-red-500" />
+                <span className={CROWN_DESIGN.typography.accent}>追加オプション</span>
               </h3>
               <div className="grid grid-cols-4 gap-3">
                 {additionalOptions.map(option => (
@@ -274,18 +331,18 @@ const Presentation3Interactive: React.FC = () => {
                     onClick={() => toggleAdditional(option.id)}
                     className={`p-3 rounded-lg border-2 transition-all ${
                       selectedAdditional.includes(option.id)
-                        ? 'border-orange-500 bg-orange-500/10'
+                        ? 'border-red-600 bg-red-600/10'
                         : 'border-gray-700 hover:border-gray-600'
                     }`}
                   >
                     <div className="text-center">
                       <div className={`w-8 h-8 mx-auto mb-2 rounded-full border-2 flex items-center justify-center ${
                         selectedAdditional.includes(option.id)
-                          ? 'border-orange-400 bg-orange-400'
+                          ? 'border-red-500 bg-red-500'
                           : 'border-gray-600'
                       }`}>
                         {selectedAdditional.includes(option.id) && (
-                          <Check className="h-4 w-4 text-black" />
+                          <Check className="h-4 w-4 text-white" />
                         )}
                       </div>
                       <p className="text-xs font-medium">{option.name}</p>
@@ -300,26 +357,26 @@ const Presentation3Interactive: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel - Summary */}
-        <div className="w-2/5 p-8 bg-gradient-to-br from-gray-900 to-black">
+        {/* 右側パネル - 合計 */}
+        <div className="w-2/5 p-8 bg-gradient-to-br from-gray-900 via-black to-gray-900">
           <div className="sticky top-0 space-y-6">
-            {/* Title */}
+            {/* タイトル */}
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                オプション金額
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent tracking-wider">
+                OPTION TOTAL
               </h2>
             </div>
 
-            {/* Selected Items Summary */}
-            <div className="bg-black/50 rounded-lg p-6 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-4">選択中のオプション</h3>
+            {/* 選択済みアイテム */}
+            <div className="bg-black/50 rounded-lg p-6 border border-red-900/30">
+              <h3 className="text-sm font-medium text-gray-400 mb-4 tracking-wider">選択中のオプション</h3>
 
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-hidden">
                 {/* 外装 */}
                 {exteriorOptions.filter(e => e.id === selectedExterior).map(option => (
                   <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-gold rounded-full" style={{ backgroundColor: CROWN_DESIGN.colors.gold }}></div>
                       <span className="text-sm">{option.name}</span>
                     </div>
                     <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
@@ -330,7 +387,7 @@ const Presentation3Interactive: React.FC = () => {
                 {interiorOptions.filter(i => selectedInteriors.includes(i.id)).map(option => (
                   <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-platinum rounded-full" style={{ backgroundColor: CROWN_DESIGN.colors.platinum }}></div>
                       <span className="text-sm">{option.name}</span>
                     </div>
                     <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
@@ -341,7 +398,7 @@ const Presentation3Interactive: React.FC = () => {
                 {additionalOptions.filter(a => selectedAdditional.includes(a.id)).map(option => (
                   <div key={option.id} className="flex justify-between items-center py-2 border-b border-gray-800">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                       <span className="text-sm">{option.name}</span>
                     </div>
                     <span className="text-sm font-bold">¥{option.price.toLocaleString()}</span>
@@ -350,27 +407,27 @@ const Presentation3Interactive: React.FC = () => {
               </div>
             </div>
 
-            {/* Total Price */}
-            <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/30 rounded-lg p-6 border border-blue-700/50">
+            {/* 合計金額 */}
+            <div className="bg-gradient-to-r from-red-900/30 to-red-800/20 rounded-lg p-6 border border-red-700/50">
               <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2">合計</p>
-                <p className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                <p className="text-sm text-gray-400 mb-2 tracking-wider">TOTAL AMOUNT</p>
+                <p className="text-5xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                   ¥{totalPrice.toLocaleString()}
                 </p>
               </div>
             </div>
 
-            {/* Loan Calculation */}
-            <div className="bg-gray-900 rounded-lg p-6">
+            {/* ローン計算 */}
+            <div className="bg-gradient-to-b from-gray-900/80 to-gray-900/40 rounded-lg p-6 border border-gray-800/50">
               <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-yellow-400" />
-                <h3 className="font-bold">ローン返済</h3>
+                <CreditCard className="h-5 w-5 text-gold" style={{ color: CROWN_DESIGN.colors.gold }} />
+                <h3 className="font-bold tracking-wider">ローン返済シミュレーション</h3>
               </div>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-3 bg-black/50 rounded-lg">
-                  <span className="text-gray-400">月々</span>
-                  <span className="text-2xl font-bold text-yellow-400">
+                  <span className="text-gray-400">月々のお支払い</span>
+                  <span className="text-2xl font-bold text-gold" style={{ color: CROWN_DESIGN.colors.gold }}>
                     ¥{monthlyPayment.toLocaleString()}
                   </span>
                 </div>
@@ -383,15 +440,33 @@ const Presentation3Interactive: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* アクションボタン */}
             <div className="grid grid-cols-2 gap-4">
-              <button className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors font-medium">
+              <button className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors font-medium tracking-wider">
                 リセット
               </button>
-              <button className="py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+              <button className="py-3 px-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 tracking-wider">
                 保存
                 <ChevronRight className="h-4 w-4" />
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* フッター */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <Check className="w-4 h-4 text-red-500" />
+                <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-red-400 tracking-wider">詳細仕様</span>
+              <ChevronRight className="w-3 h-3 text-red-400" />
             </div>
           </div>
         </div>

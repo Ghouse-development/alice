@@ -164,7 +164,18 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
   const Icon = categoryIcons[currentItem.category] || Home;
 
   return (
-    <div className="min-h-[600px] flex flex-col">
+    <div
+      className="relative bg-black text-white overflow-hidden"
+      style={{
+        width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
+        height: '842px', // A3横の基準高さ(px) - PresentationContainerと統一
+        maxWidth: '100%',
+        maxHeight: '100%',
+        margin: '0 auto',
+        aspectRatio: '1.414 / 1', // A3横比率を明示
+        transformOrigin: 'center center'
+      }}
+    >
       {/* スライドナビゲーション - フロー表示の場合は非表示 */}
       {fixedSlide === undefined && (
         <div className="mb-6">

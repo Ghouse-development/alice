@@ -43,22 +43,21 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
+  const savePresentation = useCallback((files: UploadedFile[]) => {
+    const presentation1: Partial<Presentation1> = {
+      id: currentProject?.presentation1?.id || `pres1-${Date.now()}`,
+      projectId,
+      uploadedFiles: files,
+      exteriorImages: [],
+      interiorImages: [],
+      floorPlans: [],
+      specifications: [],
+      notes: '',
+    };
+    updatePresentation1(projectId, presentation1);
+  }, [currentProject?.presentation1?.id, projectId, updatePresentation1]);
 
-    const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
-  }, []);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      handleFiles(files);
-    }
-  };
-
-  const handleFiles = (files: File[]) => {
+  const handleFiles = useCallback((files: File[]) => {
     const validFiles = files.filter(file => {
       const validTypes = [
         'application/pdf',
@@ -93,6 +92,21 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
       };
       reader.readAsDataURL(file);
     });
+  }, [savePresentation]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  }, [handleFiles]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
+    }
   };
 
   const removeFile = (id: string) => {
@@ -101,20 +115,6 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
       savePresentation(updated);
       return updated;
     });
-  };
-
-  const savePresentation = (files: UploadedFile[]) => {
-    const presentation1: Partial<Presentation1> = {
-      id: currentProject?.presentation1?.id || `pres1-${Date.now()}`,
-      projectId,
-      uploadedFiles: files,
-      exteriorImages: [],
-      interiorImages: [],
-      floorPlans: [],
-      specifications: [],
-      notes: '',
-    };
-    updatePresentation1(projectId, presentation1);
   };
 
   const formatFileSize = (bytes: number) => {

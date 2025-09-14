@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Package, FileText, Users, Settings } from 'lucide-react';
+import { ArrowLeft, FileText, Package, Calculator, TrendingUp, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -22,21 +22,7 @@ export default function MasterIndexPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card
-          className="hover:shadow-lg transition-shadow cursor-pointer"
-          onClick={() => router.push('/master')}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              オプションマスタ
-            </CardTitle>
-            <CardDescription>
-              オプション項目と価格の管理
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
+        {/* ①標準仕様 */}
         <Card
           className="hover:shadow-lg transition-shadow cursor-pointer"
           onClick={() => router.push('/admin/presentation2')}
@@ -44,7 +30,7 @@ export default function MasterIndexPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              プレゼン2 コンテンツ管理
+              標準仕様
             </CardTitle>
             <CardDescription>
               住宅性能説明スライドの内容管理
@@ -52,27 +38,62 @@ export default function MasterIndexPage() {
           </CardHeader>
         </Card>
 
+        {/* ②オプション */}
         <Card
-          className="hover:shadow-lg transition-shadow cursor-pointer opacity-50 pointer-events-none"
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => router.push('/master')}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              顧客マスタ
+              <Package className="h-5 w-5" />
+              オプション
             </CardTitle>
             <CardDescription>
-              顧客情報の管理（準備中）
+              オプション項目と価格の管理
             </CardDescription>
           </CardHeader>
         </Card>
 
+        {/* ③資金計画 */}
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => router.push('/admin/funding')}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5" />
+              資金計画
+            </CardTitle>
+            <CardDescription>
+              資金計画・ローンシミュレーションの管理
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {/* ④光熱費 */}
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => router.push('/admin/running-cost')}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              光熱費
+            </CardTitle>
+            <CardDescription>
+              光熱費・ランニングコストシミュレーションの管理
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {/* ⑤システム管理 */}
         <Card
           className="hover:shadow-lg transition-shadow cursor-pointer opacity-50 pointer-events-none"
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              システム設定
+              システム管理
             </CardTitle>
             <CardDescription>
               システム全体の設定（準備中）

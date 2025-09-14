@@ -12,10 +12,11 @@ import {
   Building,
   Wrench,
   DollarSign,
-  Shield,
+  TrendingUp,
   EyeOff,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Play
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,27 +32,28 @@ import { Presentation3Editor } from '@/components/Presentation3Editor';
 import { Presentation4Editor } from '@/components/Presentation4Editor';
 import { Presentation5Editor } from '@/components/Presentation5Editor';
 import { Presentation1View } from '@/components/Presentation1View';
-import { Presentation2View } from '@/components/Presentation2View';
-import { Presentation3View } from '@/components/Presentation3View';
+import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
+import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation4View } from '@/components/Presentation4View';
-import { Presentation5View } from '@/components/Presentation5View';
+import Presentation5RunningCost from '@/components/Presentation5RunningCost';
+import { PresentationContainer } from '@/components/PresentationContainer';
 
 const tabs = [
   { id: 'basic', label: '基本情報', icon: FileText },
   { id: 'hearing', label: 'ヒアリング', icon: FileText },
-  { id: 'pres1', label: 'プレゼン1', icon: Home },
-  { id: 'pres2', label: 'プレゼン2', icon: Building },
-  { id: 'pres3', label: 'プレゼン3', icon: Wrench },
-  { id: 'pres4', label: 'プレゼン4', icon: DollarSign },
-  { id: 'pres5', label: 'プレゼン5', icon: Shield },
+  { id: 'pres1', label: 'デザイン', icon: Home },
+  { id: 'pres2', label: '標準仕様', icon: Building },
+  { id: 'pres3', label: 'オプション', icon: Wrench },
+  { id: 'pres4', label: '資金計画', icon: DollarSign },
+  { id: 'pres5', label: '光熱費', icon: TrendingUp },
 ];
 
 const presentationComponents = {
   pres1: Presentation1View,
-  pres2: Presentation2View,
-  pres3: Presentation3View,
+  pres2: Presentation2CrownUnified,
+  pres3: Presentation3Interactive,
   pres4: Presentation4View,
-  pres5: Presentation5View,
+  pres5: Presentation5RunningCost,
 };
 
 export default function ProjectEditPage() {
@@ -59,13 +61,18 @@ export default function ProjectEditPage() {
   const router = useRouter();
   const { projects, currentProject, setCurrentProject, updateProject } = useStore();
   const [activeTab, setActiveTab] = useState('basic');
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    projectName: string;
+    customerName: string;
+    salesPerson: string;
+    status: 'draft' | 'presented' | 'contracted' | 'archived';
+  }>({
     projectName: '',
     customerName: '',
     salesPerson: '',
-    status: 'draft' as const,
+    status: 'draft',
   });
 
   useEffect(() => {
@@ -86,6 +93,7 @@ export default function ProjectEditPage() {
   const handleSave = () => {
     if (currentProject) {
       updateProject(currentProject.id, formData);
+      alert('保存しました');
     }
   };
 
@@ -119,10 +127,10 @@ export default function ProjectEditPage() {
     : null;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <div className={`${previewFullscreen ? 'hidden' : ''}`}>
-        <div className="container mx-auto py-8 px-4">
-          <div className="mb-6 flex justify-between items-center">
+        <div className="container-fluid mx-auto py-4 px-4">
+          <div className="mb-4 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Link href="/dashboard">
                 <Button variant="outline" size="sm">
@@ -130,15 +138,16 @@ export default function ProjectEditPage() {
                   戻る
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">案件編集: {currentProject.projectName}</h1>
+              <h1 className="text-xl font-bold">{currentProject.projectName}</h1>
+              <span className="text-sm text-gray-500">顧客: {currentProject.customerName}</span>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleSave} variant="default">
+              <Button onClick={handleSave} variant="default" size="sm">
                 <Save className="mr-2 h-4 w-4" />
                 保存
               </Button>
               {activeTab.startsWith('pres') && (
-                <Button onClick={togglePreview} variant="outline">
+                <Button onClick={togglePreview} variant="outline" size="sm">
                   {showPreview ? (
                     <>
                       <EyeOff className="mr-2 h-4 w-4" />
@@ -152,25 +161,25 @@ export default function ProjectEditPage() {
                   )}
                 </Button>
               )}
-              <Link href={`/project/${currentProject.id}/present`}>
-                <Button variant="outline">
-                  <Maximize2 className="mr-2 h-4 w-4" />
+              <Link href={`/project/${currentProject.id}/present-flow`}>
+                <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Play className="mr-2 h-4 w-4" />
                   プレゼンモード
                 </Button>
               </Link>
             </div>
           </div>
 
-          <div className={showPreview ? 'grid grid-cols-2 gap-6' : ''}>
+          <div className={showPreview && activeTab.startsWith('pres') ? 'grid grid-cols-2 gap-4' : ''}>
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-7 w-full mb-6">
+                <TabsList className="grid grid-cols-7 w-full mb-4">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
-                      <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1">
-                        <Icon className="h-4 w-4" />
-                        <span className="hidden lg:inline">{tab.label}</span>
+                      <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1 text-xs">
+                        <Icon className="h-3 w-3" />
+                        <span>{tab.label}</span>
                       </TabsTrigger>
                     );
                   })}
@@ -259,24 +268,34 @@ export default function ProjectEditPage() {
               </Tabs>
             </div>
 
-            {showPreview && CurrentPreviewComponent && (
-              <div className="sticky top-8">
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-gray-50 flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>プレビュー</CardTitle>
-                      <CardDescription>お客様に表示される画面</CardDescription>
+            {showPreview && activeTab.startsWith('pres') && CurrentPreviewComponent && (
+              <div className="sticky top-4">
+                <Card className="overflow-hidden shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-lg">プレゼンテーションプレビュー</CardTitle>
+                        <CardDescription className="text-gray-300">実際の表示を確認</CardDescription>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={toggleFullscreenPreview}
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={toggleFullscreenPreview}
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                    </Button>
                   </CardHeader>
-                  <CardContent className="p-6 max-h-[calc(100vh-200px)] overflow-auto">
-                    <CurrentPreviewComponent projectId={currentProject.id} />
+                  <CardContent className="p-0 bg-black">
+                    <div style={{ aspectRatio: '1.414 / 1' }}>
+                      <PresentationContainer>
+                        {activeTab === 'pres2' ? (
+                          <Presentation2CrownUnified projectId={currentProject.id} />
+                        ) : (
+                          <CurrentPreviewComponent projectId={currentProject.id} />
+                        )}
+                      </PresentationContainer>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -287,15 +306,15 @@ export default function ProjectEditPage() {
 
       {/* フルスクリーンプレビュー */}
       {previewFullscreen && CurrentPreviewComponent && (
-        <div className="fixed inset-0 bg-white z-50">
+        <div className="fixed inset-0 bg-black z-50">
           <div className="h-full flex flex-col">
-            <div className="bg-gray-50 border-b px-6 py-3 flex justify-between items-center">
-              <div>
+            <div className="bg-gray-900 border-b border-gray-700 px-6 py-3 flex justify-between items-center">
+              <div className="text-white">
                 <h2 className="text-lg font-semibold">プレビューモード</h2>
-                <p className="text-sm text-gray-600">お客様向けの表示を確認</p>
+                <p className="text-sm text-gray-400">プレゼンテーション表示を確認</p>
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={toggleFullscreenPreview}
               >
@@ -303,10 +322,10 @@ export default function ProjectEditPage() {
                 閉じる
               </Button>
             </div>
-            <div className="flex-1 overflow-auto p-8">
-              <div className="max-w-6xl mx-auto">
+            <div className="flex-1 flex items-center justify-center">
+              <PresentationContainer fullscreen>
                 <CurrentPreviewComponent projectId={currentProject.id} />
-              </div>
+              </PresentationContainer>
             </div>
           </div>
         </div>

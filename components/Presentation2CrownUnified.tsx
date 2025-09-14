@@ -11,29 +11,47 @@ interface Presentation2CrownUnifiedProps {
   performanceItems?: any[];
 }
 
-// CROWNデザインシステム定数
+// デザインシステム定数 - A3横(420mm x 297mm)対応
 const CROWN_DESIGN = {
+  // A3横サイズ設定 - PresentationContainerと統一
+  dimensions: {
+    width: '1190px', // A3横の基準幅(px)
+    height: '842px',  // A3横の基準高さ(px)
+    aspectRatio: '1.414',
+    scale: 'scale(1)',
+    printScale: '@media print { transform: scale(1); }'
+  },
+  // CROWN カラーパレット
   colors: {
-    primary: '#000000',
-    secondary: '#1a1a1a',
-    accent: '#0066cc',
-    gold: '#d4af37',
+    primary: '#1a1a1a',
+    secondary: '#2d2d2d',
+    accent: '#c41e3a',  // CROWN レッド
+    gold: '#b8860b',    // CROWN ゴールド
+    platinum: '#e5e4e2', // プラチナシルバー
     text: {
       primary: '#ffffff',
-      secondary: '#999999',
-      accent: '#0099ff'
+      secondary: '#a0a0a0',
+      accent: '#c41e3a'
     },
     gradients: {
-      black: 'bg-gradient-to-b from-black to-gray-900',
-      blue: 'bg-gradient-to-br from-blue-900/20 to-blue-800/10',
-      dark: 'bg-gradient-to-r from-gray-900 to-black'
+      black: 'bg-gradient-to-b from-gray-900 via-black to-gray-900',
+      premium: 'bg-gradient-to-r from-black via-gray-900 to-black',
+      accent: 'bg-gradient-to-br from-red-900/10 to-red-800/5'
     }
   },
+  // CROWN タイポグラフィ
   typography: {
-    heading: 'font-bold tracking-wider',
-    subheading: 'font-light tracking-wide',
-    body: 'font-light',
-    accent: 'font-medium tracking-widest'
+    heading: 'font-bold tracking-[0.15em] uppercase',
+    subheading: 'font-light tracking-[0.1em]',
+    body: 'font-light tracking-wide',
+    accent: 'font-medium tracking-[0.2em] uppercase',
+    japanese: 'font-medium'
+  },
+  // レイアウト設定
+  layout: {
+    padding: 'px-12 py-8',
+    grid: 'grid-cols-12',
+    spacing: 'gap-6'
   }
 };
 
@@ -111,97 +129,115 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
     const item = performanceItems[currentSlide];
     const Icon = categoryIcons[item.category] || Shield;
 
-    // CROWNカタログ統一デザインテンプレート
+    // A3横カタログテンプレート
     return (
-      <div className="h-full bg-black text-white relative overflow-hidden">
+      <div
+        className="relative bg-black text-white overflow-hidden"
+        style={{
+          width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
+          height: '842px', // A3横の基準高さ(px) - PresentationContainerと統一
+          maxWidth: '100%',
+          maxHeight: '100%',
+          margin: '0 auto',
+          aspectRatio: '1.414 / 1', // A3横比率を明示
+          transformOrigin: 'center center'
+        }}
+      >
         {/* 背景パターン */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(255,255,255,0.03) 100px, rgba(255,255,255,0.03) 101px)`,
-          }} />
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
+              `,
+            }} />
+          </div>
         </div>
 
-        {/* ヘッダー - CROWN共通スタイル */}
-        <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800">
-          <div className="px-8 py-4">
+        {/* ヘッダー */}
+        <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
+          <div className="px-4 py-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-8">
-                <span className="text-xs font-medium tracking-[0.3em] text-gray-500 uppercase">Excellence</span>
-                <span className="text-xs font-bold tracking-[0.3em] text-white uppercase border-b-2 border-blue-500 pb-1">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                </div>
+                <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+                <span className="text-[11px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
                   {item.category}
-                </span>
-              </div>
-              <div className="flex items-center gap-6">
-                <span className="text-6xl font-thin text-gray-700">/</span>
-                <span className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                  {String(item.priority).padStart(2, '0')}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* メインコンテンツ - CROWN共通レイアウト */}
-        <div className="relative px-8 py-6 h-[calc(100%-80px)]">
-          <div className="grid grid-cols-5 gap-8 h-full">
+        {/* メインコンテンツ - A3横レイアウト */}
+        <div className="relative px-4 py-2 overflow-hidden" style={{ height: 'calc(100% - 50px)' }}>
+          <div className="grid grid-cols-12 gap-6 h-full">
             {/* 左側：メインビジュアル＆タイトル */}
-            <div className="col-span-2 flex flex-col justify-center">
-              <div className="space-y-8">
+            <div className="col-span-4 flex flex-col justify-center">
+              <div className="space-y-4">
                 {/* アイコン */}
                 <div className="relative">
-                  <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
-                  <div className="relative w-32 h-32 bg-gradient-to-br from-blue-500/30 to-blue-600/20 rounded-full flex items-center justify-center border border-blue-500/30">
-                    <Icon className="w-16 h-16 text-blue-400" />
+                  <div className="absolute inset-0 bg-red-600/20 blur-2xl rounded-full" />
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-red-900/30 to-red-600/10 rounded-full flex items-center justify-center border border-red-600/30 shadow-2xl">
+                    <Icon className="w-10 h-10 text-red-500" />
                   </div>
                 </div>
 
                 {/* タイトル */}
-                <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-wide leading-tight">
+                <div className="space-y-2">
+                  <h1 className="text-xl font-bold tracking-[0.1em] leading-tight">
                     {item.category}
                   </h1>
-                  <p className="text-lg text-gray-400 font-light">
+                  <div className="h-px bg-gradient-to-r from-red-600 via-red-600/50 to-transparent w-20" />
+                  <p className="text-sm text-gray-300 font-light leading-relaxed">
                     {item.title}
                   </p>
                 </div>
 
                 {/* サブテキスト */}
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {item.description}
-                </p>
+                <div className="bg-gradient-to-r from-gray-900/50 to-transparent p-3 rounded-lg border-l-2 border-red-600/50">
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* 右側：詳細情報 - CROWN POINTカード風 */}
-            <div className="col-span-3 grid grid-cols-2 gap-6 content-center">
+            {/* 右側：詳細情報 */}
+            <div className="col-span-8 grid grid-cols-3 gap-2 content-center">
               {getDetailCards(item.category).map((card, index) => (
                 <div key={index} className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-                  <div className="relative bg-gray-900/50 backdrop-blur border border-gray-800 rounded-lg p-6 hover:border-blue-500/50 transition-all">
-                    <div className="flex items-start gap-4">
-                      <div className="text-blue-500 text-3xl font-bold">
-                        {String(index + 1).padStart(2, '0')}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 rounded" />
+                  <div className="relative bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm border border-gray-800/50 rounded p-3 hover:border-red-600/30 transition-all duration-300 h-full">
+                    <div className="flex flex-col h-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="text-red-600 text-sm font-bold">
+                          {String(index + 1).padStart(2, '0')}
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-r from-red-600/30 to-transparent" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium mb-2 text-white">
-                          {card.title}
-                        </h3>
-                        <p className="text-sm text-gray-400 leading-relaxed">
-                          {card.description}
-                        </p>
-                        {card.value && (
-                          <div className="mt-3 pt-3 border-t border-gray-800">
-                            <span className="text-2xl font-bold text-blue-400">
-                              {card.value}
+                      <h3 className="text-sm font-medium mb-2 text-white tracking-wide">
+                        {card.title}
+                      </h3>
+                      <p className="text-xs text-gray-300 leading-relaxed mb-2 flex-1">
+                        {card.description}
+                      </p>
+                      {card.value && (
+                        <div className="pt-2 border-t border-gray-800/50">
+                          <span className="text-base font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+                            {card.value}
+                          </span>
+                          {card.unit && (
+                            <span className="text-xs text-gray-400 ml-1">
+                              {card.unit}
                             </span>
-                            {card.unit && (
-                              <span className="text-sm text-gray-500 ml-1">
-                                {card.unit}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -209,16 +245,18 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
             </div>
           </div>
 
-          {/* フッター情報 */}
-          <div className="absolute bottom-8 left-12 right-12">
-            <div className="flex items-center justify-between pt-6 border-t border-gray-800">
-              <div className="flex items-center gap-6">
-                <Check className="w-5 h-5 text-green-400" />
-                <span className="text-sm text-gray-400">G-HOUSE PREMIUM STANDARD</span>
+          {/* フッター */}
+          <div className="absolute bottom-6 left-12 right-12">
+            <div className="flex items-center justify-between pt-4 border-t border-red-900/30">
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-3">
+                  <Check className="w-4 h-4 text-red-500" />
+                  <span className="text-xs text-gray-400 tracking-wider">G-HOUSE</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-blue-400">
-                <span className="text-sm">詳細を見る</span>
-                <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-red-400 tracking-wider">詳細仕様</span>
+                <ChevronRight className="w-3 h-3 text-red-400" />
               </div>
             </div>
           </div>

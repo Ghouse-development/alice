@@ -37,10 +37,34 @@ export function Presentation5View({ projectId }: Presentation5ViewProps) {
   };
 
   return (
-    <div className="w-full h-full p-8 space-y-8 overflow-auto bg-white">
-      <div>
-        <h2 className="text-2xl font-bold mb-6">光熱費・ランニングコスト</h2>
-        <p className="text-gray-600 mb-4">
+    <div
+      className="relative bg-black text-white overflow-hidden"
+      style={{
+        width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
+        height: '842px', // A3横の基準高さ(px) - PresentationContainerと統一
+        maxWidth: '100%',
+        maxHeight: '100%',
+        margin: '0 auto',
+        aspectRatio: '1.414 / 1', // A3横比率を明示
+        transformOrigin: 'center center'
+      }}
+    >
+      {/* 背景パターン */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
+              repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
+            `,
+          }} />
+        </div>
+      </div>
+
+      <div className="relative p-8 space-y-8 overflow-auto">
+        <h2 className="text-2xl font-bold mb-6 text-white">光熱費・ランニングコスト</h2>
+        <p className="text-gray-300 mb-4">
           お引き渡し後も安心してお住まいいただけるよう、充実したサポート体制をご用意しています
         </p>
       </div>
