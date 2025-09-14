@@ -78,11 +78,11 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
         landCost: 15000000,
         totalCost: 47000000,
         costBreakdown: [
-          { id: '1', item: '建物本体工事', amount: 25000000 },
-          { id: '2', item: '外構工事', amount: 3000000 },
-          { id: '3', item: '設備工事', amount: 2000000 },
-          { id: '4', item: '登記費用', amount: 500000 },
-          { id: '5', item: '税金・保険', amount: 1500000 },
+          { id: '1', item: '建物本体工事', amount: 25000000, category: '建物本体工事費' },
+          { id: '2', item: '外構工事', amount: 3000000, category: '付帯工事費' },
+          { id: '3', item: '設備工事', amount: 2000000, category: '付帯工事費' },
+          { id: '4', item: '登記費用', amount: 500000, category: '諸費用' },
+          { id: '5', item: '税金・保険', amount: 1500000, category: '諸費用' },
         ],
         loanAmount: 40000000,
         downPayment: 7000000,
@@ -137,14 +137,14 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
       {/* ヘッダー */}
       <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
-        <div className="px-4 py-2">
+        <div className="px-3 py-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-12">
+            <div className="flex items-center gap-8">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                <span className="text-[9px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
               </div>
-              <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-              <span className="text-[11px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+              <span className="text-[10px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
                 資金計画
               </span>
             </div>
@@ -154,32 +154,32 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
       </div>
 
       {/* メインコンテンツ - A3横レイアウト */}
-      <div className="relative px-6 py-4 h-[calc(100%-100px)]">
+      <div className="relative px-4 py-3 h-[calc(100%-80px)]">
         {/* 費用カテゴリー */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-4 gap-2 mb-4">
           {categories.map((category, index) => {
             const Icon = categoryIcons[category.label as keyof typeof categoryIcons] || FileText;
             return (
               <div
                 key={category.key}
-                className="bg-gradient-to-br from-gray-900/60 to-gray-800/40 border border-gray-700/50 rounded-lg p-4 backdrop-blur-sm"
+                className="bg-gradient-to-br from-gray-900/60 to-gray-800/40 border border-gray-700/50 rounded-lg p-3 backdrop-blur-sm"
                 style={{
                   background: `linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(60,60,60,0.3) 100%)`,
                   borderColor: index === 0 ? CROWN_DESIGN.colors.accent : 'rgba(115,115,115,0.3)'
                 }}
               >
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-2 mb-2">
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: `${CROWN_DESIGN.colors.accent}20`, color: CROWN_DESIGN.colors.accent }}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                   </div>
                 </div>
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-white text-sm mb-2 font-medium`}>
+                <h3 className={`${CROWN_DESIGN.typography.japanese} text-white text-xs mb-1 font-medium`}>
                   {category.label}
                 </h3>
-                <p className="text-xl font-bold text-white">
+                <p className="text-lg font-bold text-white">
                   ¥{category.value.toLocaleString()}
                 </p>
               </div>
@@ -189,36 +189,36 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
         {/* 総費用セクション */}
         <div
-          className="p-5 rounded-lg text-white mb-6 border"
+          className="p-3 rounded-lg text-white mb-4 border"
           style={{
             background: `linear-gradient(135deg, ${CROWN_DESIGN.colors.accent}20 0%, rgba(196,30,58,0.1) 100%)`,
             borderColor: CROWN_DESIGN.colors.accent
           }}
         >
-          <h3 className={`${CROWN_DESIGN.typography.heading} text-lg mb-2`} style={{color: CROWN_DESIGN.colors.accent}}>
+          <h3 className={`${CROWN_DESIGN.typography.heading} text-base mb-1`} style={{color: CROWN_DESIGN.colors.accent}}>
             TOTAL COST
           </h3>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-2xl font-bold text-white">
             ¥{presentation.totalCost.toLocaleString()}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4">
           {/* 費用内訳詳細 */}
           {presentation.costBreakdown && presentation.costBreakdown.length > 0 && (
             <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border border-gray-700/50 rounded-lg overflow-hidden h-fit">
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-3 border-b border-gray-700">
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-sm font-semibold text-white`}>
+              <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-3 py-2 border-b border-gray-700">
+                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs font-semibold text-white`}>
                   費用内訳詳細
                 </h3>
               </div>
-              <div className="p-4">
+              <div className="p-3">
                 <table className="w-full">
                   <tbody>
                     {presentation.costBreakdown.slice(0, 5).map((item) => (
                       <tr key={item.id} className="border-b border-gray-800 last:border-0">
-                        <td className="py-3 text-sm text-white">{item.item}</td>
-                        <td className="py-3 text-sm text-right font-bold text-white">
+                        <td className="py-2 text-xs text-white">{item.item}</td>
+                        <td className="py-2 text-xs text-right font-bold text-white">
                           ¥{item.amount.toLocaleString()}
                         </td>
                       </tr>
@@ -230,43 +230,43 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
           )}
 
           {/* ローンシミュレーション */}
-          <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border border-gray-700/50 rounded-lg p-4 h-fit">
-            <h3 className={`${CROWN_DESIGN.typography.japanese} text-lg font-bold mb-4 flex items-center text-white`}>
-              <Calculator className="mr-3 h-6 w-6" style={{ color: CROWN_DESIGN.colors.gold }} />
+          <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border border-gray-700/50 rounded-lg p-3 h-fit">
+            <h3 className={`${CROWN_DESIGN.typography.japanese} text-base font-bold mb-3 flex items-center text-white`}>
+              <Calculator className="mr-2 h-5 w-5" style={{ color: CROWN_DESIGN.colors.gold }} />
               ローンシミュレーション
             </h3>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-gray-800/50 p-3 rounded border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">借入金額</p>
-                <p className="text-sm font-bold text-white">¥{presentation.loanAmount.toLocaleString()}</p>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
+                <p className="text-[10px] text-gray-400 mb-1">借入金額</p>
+                <p className="text-xs font-bold text-white">¥{presentation.loanAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-800/50 p-3 rounded border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">頭金</p>
-                <p className="text-sm font-bold text-white">¥{presentation.downPayment.toLocaleString()}</p>
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
+                <p className="text-[10px] text-gray-400 mb-1">頭金</p>
+                <p className="text-xs font-bold text-white">¥{presentation.downPayment.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-800/50 p-3 rounded border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">金利</p>
-                <p className="text-sm font-bold text-white">{presentation.interestRate.toFixed(1)}%</p>
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
+                <p className="text-[10px] text-gray-400 mb-1">金利</p>
+                <p className="text-xs font-bold text-white">{presentation.interestRate.toFixed(1)}%</p>
               </div>
-              <div className="bg-gray-800/50 p-3 rounded border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">返済期間</p>
-                <p className="text-sm font-bold text-white">{presentation.loanPeriod}年</p>
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
+                <p className="text-[10px] text-gray-400 mb-1">返済期間</p>
+                <p className="text-xs font-bold text-white">{presentation.loanPeriod}年</p>
               </div>
             </div>
 
             <div
-              className="p-4 rounded-lg text-center text-white border"
+              className="p-3 rounded-lg text-center text-white border"
               style={{
                 background: `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`,
                 borderColor: CROWN_DESIGN.colors.gold
               }}
             >
-              <p className={`${CROWN_DESIGN.typography.japanese} text-sm mb-2`}>月々のお支払い</p>
-              <p className="text-2xl font-bold text-white">
+              <p className={`${CROWN_DESIGN.typography.japanese} text-xs mb-1`}>月々のお支払い</p>
+              <p className="text-xl font-bold text-white">
                 ¥{presentation.monthlyPayment.toLocaleString()}
               </p>
-              <p className="text-xs mt-2 text-gray-300">
+              <p className="text-[10px] mt-1 text-gray-300">
                 ※ボーナス払いなし、元利均等返済の場合
               </p>
             </div>
@@ -276,18 +276,12 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
       {/* CROWN フッター */}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-4 py-2">
+        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-3 py-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <Check className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-gray-400 tracking-wider"></span>
-              </div>
-              <div className="h-4 w-px bg-gray-700" />
+            <div className="flex items-center gap-6">
+              <div className="h-3 w-px bg-gray-700" />
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-red-400 tracking-wider">資金計画</span>
-              <ChevronRight className="w-3 h-3 text-red-400" />
+            <div className="flex items-center gap-2">
             </div>
           </div>
         </div>

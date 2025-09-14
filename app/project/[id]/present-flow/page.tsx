@@ -348,74 +348,63 @@ export default function PresentationFlowPage() {
         </div>
       </div>
 
-      {/* ナビゲーションボタン - 画面上部に固定 */}
-      <div className={`${isFullscreen ? 'fixed top-1' : 'fixed top-16'} left-0 right-0 z-50 ${isFullscreen ? 'bg-transparent' : 'bg-black/90 backdrop-blur border-b border-gray-700'}`}>
-        <div className={`px-6 ${isFullscreen ? 'py-1' : 'py-3'}`}>
-          <div className="flex items-center justify-center gap-8">
-            <div className={`flex items-center ${isFullscreen ? 'gap-4' : 'gap-8'}`}>
-              <Button
-                variant="outline"
-                size={isFullscreen ? "sm" : "lg"}
-                onClick={prevSlide}
-                disabled={currentSlideIndex === 0}
-                className={`${isFullscreen ? 'bg-white/70 hover:bg-white/90 text-black px-3 py-1 font-bold text-xs' : 'bg-white/90 hover:bg-white text-black px-10 py-3 font-bold text-lg'} disabled:opacity-30 shadow-lg transition-all`}
-              >
-              <ChevronLeft className={`${isFullscreen ? 'h-3 w-3 mr-1' : 'h-5 w-5 mr-2'}`} />
-              前へ
-            </Button>
-
-            <div className={`bg-black/70 rounded-full ${isFullscreen ? 'px-3 py-0.5' : 'px-6 py-2'}`}>
-              <span className={`text-white font-bold ${isFullscreen ? 'text-xs' : 'text-xl'}`}>
-                {currentSlideIndex + 1} / {totalSlides}
-              </span>
-            </div>
-
-            <Button
-              variant="default"
-              size={isFullscreen ? "sm" : "lg"}
-              onClick={nextSlide}
-              disabled={currentSlideIndex === totalSlides - 1}
-              className={`${isFullscreen ? 'bg-blue-600/80 hover:bg-blue-700/90 text-white px-3 py-1 font-bold text-xs' : 'bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 font-bold text-lg'} disabled:opacity-30 shadow-lg transition-all`}
-            >
-              次へ
-              <ChevronRight className={`${isFullscreen ? 'h-3 w-3 ml-1' : 'h-5 w-5 ml-2'}`} />
-            </Button>
-            </div>
-
-            {/* 全画面時の印刷ボタンと全画面終了ボタン */}
-            {isFullscreen && (
-              <div className="flex gap-2">
+      {/* ナビゲーションボタン - 非全画面時のみ表示 */}
+      {!isFullscreen && (
+        <div className="fixed top-16 left-0 right-0 z-50 bg-black/90 backdrop-blur border-b border-gray-700">
+          <div className="px-6 py-3">
+            <div className="flex items-center justify-center gap-8">
+              <div className="flex items-center gap-8">
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    window.print();
-                  }}
-                  className="bg-green-600/80 hover:bg-green-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all"
+                  size="lg"
+                  onClick={prevSlide}
+                  disabled={currentSlideIndex === 0}
+                  className="bg-white/90 hover:bg-white text-black px-10 py-3 font-bold text-lg disabled:opacity-30 shadow-lg transition-all"
                 >
-                  <Printer className="h-4 w-4 mr-2" />
-                  印刷
+                  <ChevronLeft className="h-5 w-5 mr-2" />
+                  前へ
                 </Button>
+
+                <div className="bg-black/70 rounded-full px-6 py-2">
+                  <span className="text-white font-bold text-xl">
+                    {currentSlideIndex + 1} / {totalSlides}
+                  </span>
+                </div>
+
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (document.fullscreenElement) {
-                      document.exitFullscreen();
-                    }
-                    setIsFullscreen(false);
-                    router.push(`/project/${projectId}/edit`);
-                  }}
-                  className="bg-gray-600/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all"
+                  variant="default"
+                  size="lg"
+                  onClick={nextSlide}
+                  disabled={currentSlideIndex === totalSlides - 1}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 font-bold text-lg disabled:opacity-30 shadow-lg transition-all"
                 >
-                  <Minimize className="h-4 w-4 mr-2" />
-                  終了
+                  次へ
+                  <ChevronRight className="h-5 w-5 ml-2" />
                 </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 全画面時の終了ボタン - 右上に配置 */}
+      {isFullscreen && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            }
+            setIsFullscreen(false);
+            router.push(`/project/${projectId}/edit`);
+          }}
+          className="fixed top-4 right-4 z-50 bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
+        >
+          <Minimize className="h-4 w-4 mr-2" />
+          終了
+        </Button>
+      )}
 
       {/* メインコンテンツ */}
       <div className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'}`} style={isFullscreen ? {
@@ -449,6 +438,28 @@ export default function PresentationFlowPage() {
             maxWidth: '1190px',
             margin: '0 auto'
           }}>
+            {/* 全画面時のナビゲーション矢印 - 左 */}
+            {isFullscreen && (
+              <button
+                onClick={prevSlide}
+                disabled={currentSlideIndex === 0}
+                className="absolute left-8 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-black/30 text-white p-4 rounded-full transition-all duration-300 opacity-30 hover:opacity-100 disabled:opacity-0 disabled:pointer-events-none"
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </button>
+            )}
+
+            {/* 全画面時のナビゲーション矢印 - 右 */}
+            {isFullscreen && (
+              <button
+                onClick={nextSlide}
+                disabled={currentSlideIndex === totalSlides - 1}
+                className="absolute right-8 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-black/30 text-white p-4 rounded-full transition-all duration-300 opacity-30 hover:opacity-100 disabled:opacity-0 disabled:pointer-events-none"
+              >
+                <ChevronRight className="h-8 w-8" />
+              </button>
+            )}
+
             {/* プレゼンテーションコンテンツ */}
             <div className={`${isFullscreen ? 'bg-transparent' : 'bg-white rounded-lg shadow-2xl'} relative`} style={isFullscreen ? {
               width: 'auto',

@@ -130,15 +130,9 @@ export function Presentation1View({ projectId, currentFileIndex }: Presentation1
         <div className="absolute bottom-6 left-12 right-12">
           <div className="flex items-center justify-between pt-4 border-t border-red-900/30">
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <Check className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-gray-400 tracking-wider"></span>
-              </div>
               <div className="h-4 w-px bg-gray-700" />
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-red-400 tracking-wider">詳細仕様</span>
-              <ChevronRight className="w-3 h-3 text-red-400" />
             </div>
           </div>
         </div>
@@ -276,16 +270,9 @@ export function Presentation1View({ projectId, currentFileIndex }: Presentation1
       <div className="absolute bottom-6 left-12 right-12">
         <div className="flex items-center justify-between pt-4 border-t border-red-900/30">
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-3">
-              <Check className="w-4 h-4 text-red-500" />
-              <span className="text-xs text-gray-400 tracking-wider"></span>
-            </div>
             <div className="h-4 w-px bg-gray-700" />
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">資料数: {presentation.uploadedFiles.length}点</span>
-            <span className="text-xs text-red-400 tracking-wider ml-4">詳細仕様</span>
-            <ChevronRight className="w-3 h-3 text-red-400" />
           </div>
         </div>
       </div>

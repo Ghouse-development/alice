@@ -217,9 +217,9 @@ const Presentation5RunningCost: React.FC = () => {
             </div>
 
             {/* 月間エネルギー収支 */}
-            <div className="bg-gradient-to-br from-red-900/20 to-gold-900/10 rounded-lg p-4 border border-red-600/30 shadow-2xl">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-3 text-gold-400">
-                <Zap className="h-5 w-5 text-gold-500" />
+            <div className="bg-gradient-to-br from-red-900/20 to-yellow-900/10 rounded-lg p-4 border border-red-600/30 shadow-2xl">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-3" style={{ color: '#B8860B' }}>
+                <Zap className="h-5 w-5" style={{ color: '#B8860B' }} />
                 <span className="tracking-wide">月間エネルギー収支</span>
               </h3>
               <div className="space-y-4">
@@ -229,14 +229,12 @@ const Presentation5RunningCost: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400 text-sm tracking-wide">売電収入</span>
-                  <span className="text-gold-400 font-bold">+¥{calculateMonthlyBalance.sell.toLocaleString()}</span>
+                  <span className="font-bold" style={{ color: '#B8860B' }}>+¥{calculateMonthlyBalance.sell.toLocaleString()}</span>
                 </div>
                 <div className="border-t border-red-600/30 pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium tracking-wide text-white">月間収支</span>
-                    <span className={`text-2xl font-bold ${
-                      calculateMonthlyBalance.net > 0 ? 'text-gold-400' : 'text-red-400'
-                    }`}>
+                    <span className="text-2xl font-bold" style={{ color: calculateMonthlyBalance.net > 0 ? '#B8860B' : '#EF4444' }}>
                       {calculateMonthlyBalance.net > 0 ? '+' : ''}¥{calculateMonthlyBalance.net.toLocaleString()}
                     </span>
                   </div>
@@ -248,17 +246,17 @@ const Presentation5RunningCost: React.FC = () => {
             <div className="grid grid-cols-1 gap-3">
               <div className="bg-gradient-to-r from-gray-900/60 to-black/40 backdrop-blur rounded-lg p-4 border border-gray-800/50">
                 <div className="flex items-center gap-3 mb-3">
-                  <TrendingUp className="h-5 w-5 text-gold-500" />
+                  <TrendingUp className="h-5 w-5" style={{ color: '#B8860B' }} />
                   <span className="text-xs text-gray-400 tracking-wide uppercase">投資回収期間</span>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400">太陽光のみ</span>
-                    <span className="text-lg font-bold text-gold-400">{paybackPeriodPattern2 > 0 ? paybackPeriodPattern2 : '---'}年</span>
+                    <span className="text-lg font-bold" style={{ color: '#B8860B' }}>{paybackPeriodPattern2 > 0 ? paybackPeriodPattern2 : '---'}年</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400">太陽光+蓄電池</span>
-                    <span className="text-lg font-bold text-gold-400">{paybackPeriodPattern3 > 0 ? paybackPeriodPattern3 : '---'}年</span>
+                    <span className="text-lg font-bold" style={{ color: '#B8860B' }}>{paybackPeriodPattern3 > 0 ? paybackPeriodPattern3 : '---'}年</span>
                   </div>
                 </div>
               </div>
@@ -302,7 +300,7 @@ const Presentation5RunningCost: React.FC = () => {
                     <span className="text-gray-400 tracking-wide">太陽光あり</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-gold-500 rounded-full shadow-lg"></div>
+                    <div className="w-4 h-4 rounded-full shadow-lg" style={{ backgroundColor: '#B8860B' }}></div>
                     <span className="text-gray-400 tracking-wide">太陽光＋蓄電池</span>
                   </div>
                 </div>
@@ -413,9 +411,9 @@ const Presentation5RunningCost: React.FC = () => {
                     ¥{(lifetimeSimulation.initialInvestments.solarOnly / 10000).toFixed(0)}<span className="text-xs text-gray-400 ml-1">万円</span>
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-gold-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-gold-600/30">
+                <div className="bg-gradient-to-br from-yellow-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-yellow-600/30">
                   <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">太陽光+蓄電池投資額</p>
-                  <p className="text-sm font-bold text-gold-400">
+                  <p className="text-sm font-bold" style={{ color: '#B8860B' }}>
                     ¥{(lifetimeSimulation.initialInvestments.solarBattery / 10000).toFixed(0)}<span className="text-xs text-gray-400 ml-1">万円</span>
                   </p>
                 </div>
@@ -425,9 +423,9 @@ const Presentation5RunningCost: React.FC = () => {
                     {((totalSavingsPattern2 / lifetimeSimulation.initialInvestments.solarOnly) * 100).toFixed(1)}<span className="text-xs text-gray-400 ml-1">%</span>
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-gold-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-gold-600/30">
+                <div className="bg-gradient-to-br from-yellow-900/20 to-black/40 backdrop-blur rounded-lg p-3 border border-yellow-600/30">
                   <p className="text-gray-400 text-xs mb-1 tracking-wide uppercase">蓄電池ROI</p>
-                  <p className="text-sm font-bold text-gold-400">
+                  <p className="text-sm font-bold" style={{ color: '#B8860B' }}>
                     {((totalSavingsPattern3 / lifetimeSimulation.initialInvestments.solarBattery) * 100).toFixed(1)}<span className="text-xs text-gray-400 ml-1">%</span>
                   </p>
                 </div>

@@ -174,7 +174,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
         </div>
 
         {/* メインコンテンツ - A3横レイアウト */}
-        <div className="relative px-4 py-2 overflow-hidden" style={{ height: 'calc(100% - 50px)' }}>
+        <div className="relative px-4 py-2 overflow-hidden" style={{ height: 'calc(100% - 80px)' }}>
           <div className="grid grid-cols-12 gap-6 h-full">
             {/* 左側：メインビジュアル＆タイトル */}
             <div className="col-span-4 flex flex-col justify-center">
@@ -249,14 +249,8 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
           <div className="absolute bottom-6 left-12 right-12">
             <div className="flex items-center justify-between pt-4 border-t border-red-900/30">
               <div className="flex items-center gap-8">
-                <div className="flex items-center gap-3">
-                  <Check className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-gray-400 tracking-wider"></span>
-                </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-red-400 tracking-wider">詳細仕様</span>
-                <ChevronRight className="w-3 h-3 text-red-400" />
               </div>
             </div>
           </div>
