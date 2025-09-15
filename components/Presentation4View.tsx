@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calculator, Home, Hammer, FileText, Landmark, Check, ChevronRight } from 'lucide-react';
+import { Calculator, Home, Hammer, FileText, Landmark } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Presentation4 } from '@/types';
 
@@ -61,8 +61,9 @@ const categoryIcons = {
 };
 
 export function Presentation4View({ projectId }: Presentation4ViewProps) {
-  const { currentProject } = useStore();
+  const { currentProject, theme } = useStore();
   const [presentation, setPresentation] = useState<Presentation4 | null>(null);
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     if (currentProject?.presentation4) {
@@ -111,7 +112,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
   return (
     <div
-      className="relative bg-black text-white overflow-hidden"
+      className={`relative overflow-hidden ${
+        isDark ? 'bg-black text-white' : 'bg-white text-gray-900'
+      }`}
       style={{
         width: '1190px',
         height: '842px',
@@ -124,27 +127,45 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
     >
       {/* 背景パターン */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
-              repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
-            `,
-          }} />
-        </div>
+        <div className={`absolute inset-0 ${
+          isDark
+            ? 'bg-gradient-to-br from-black via-gray-950 to-black'
+            : 'bg-gradient-to-br from-gray-50 via-white to-gray-50'
+        }`} />
+        {isDark && (
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
+              `,
+            }} />
+          </div>
+        )}
       </div>
 
       {/* ヘッダー */}
-      <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
+      <div className={`relative border-b ${
+        isDark
+          ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30'
+          : 'bg-gradient-to-r from-gray-100 via-white to-gray-100 border-gray-300'
+      }`}>
         <div className="px-3 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                <span className={`text-[9px] font-bold tracking-[0.4em] uppercase ${
+                  isDark ? 'text-red-600' : 'text-red-700'
+                }`}>G-HOUSE</span>
               </div>
-              <div className="h-8 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-              <span className="text-[10px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
+              <div className={`h-8 w-px bg-gradient-to-b from-transparent ${
+                isDark ? 'via-red-600/50' : 'via-red-700/50'
+              } to-transparent`} />
+              <span className={`text-[10px] font-bold tracking-[0.2em] uppercase border-b-2 pb-1 ${
+                isDark
+                  ? 'text-white border-red-600'
+                  : 'text-gray-900 border-red-700'
+              }`}>
                 資金計画
               </span>
             </div>
@@ -162,24 +183,39 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
             return (
               <div
                 key={category.key}
-                className="bg-gradient-to-br from-gray-900/60 to-gray-800/40 border border-gray-700/50 rounded-lg p-3 backdrop-blur-sm"
+                className={`rounded-lg p-3 backdrop-blur-sm border ${
+                  isDark
+                    ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/40 border-gray-700/50'
+                    : 'bg-gradient-to-br from-gray-100 to-white border-gray-300'
+                }`}
                 style={{
-                  background: `linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(60,60,60,0.3) 100%)`,
-                  borderColor: index === 0 ? CROWN_DESIGN.colors.accent : 'rgba(115,115,115,0.3)'
+                  background: isDark
+                    ? `linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(60,60,60,0.3) 100%)`
+                    : `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.8) 100%)`,
+                  borderColor: index === 0
+                    ? (isDark ? CROWN_DESIGN.colors.accent : '#dc2626')
+                    : (isDark ? 'rgba(115,115,115,0.3)' : '#d1d5db')
                 }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${CROWN_DESIGN.colors.accent}20`, color: CROWN_DESIGN.colors.accent }}
+                    style={{
+                      backgroundColor: isDark ? `${CROWN_DESIGN.colors.accent}20` : 'rgba(220,38,38,0.1)',
+                      color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
+                    }}
                   >
                     <Icon className="h-4 w-4" />
                   </div>
                 </div>
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-white text-xs mb-1 font-medium`}>
+                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs mb-1 font-medium ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   {category.label}
                 </h3>
-                <p className="text-lg font-bold text-white">
+                <p className={`text-lg font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   ¥{category.value.toLocaleString()}
                 </p>
               </div>
@@ -189,16 +225,23 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
         {/* 総費用セクション */}
         <div
-          className="p-3 rounded-lg text-white mb-4 border"
+          className={`p-3 rounded-lg mb-4 border ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}
           style={{
-            background: `linear-gradient(135deg, ${CROWN_DESIGN.colors.accent}20 0%, rgba(196,30,58,0.1) 100%)`,
-            borderColor: CROWN_DESIGN.colors.accent
+            background: isDark
+              ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.accent}20 0%, rgba(196,30,58,0.1) 100%)`
+              : `linear-gradient(135deg, rgba(220,38,38,0.1) 0%, rgba(220,38,38,0.05) 100%)`,
+            borderColor: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
           }}
         >
-          <h3 className={`${CROWN_DESIGN.typography.heading} text-base mb-1`} style={{color: CROWN_DESIGN.colors.accent}}>
+          <h3 className={`${CROWN_DESIGN.typography.heading} text-base mb-1`}
+            style={{color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'}}>
             TOTAL COST
           </h3>
-          <p className="text-2xl font-bold text-white">
+          <p className={`text-2xl font-bold ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
             ¥{presentation.totalCost.toLocaleString()}
           </p>
         </div>
@@ -206,9 +249,19 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
         <div className="grid grid-cols-2 gap-4">
           {/* 費用内訳詳細 */}
           {presentation.costBreakdown && presentation.costBreakdown.length > 0 && (
-            <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border border-gray-700/50 rounded-lg overflow-hidden h-fit">
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-3 py-2 border-b border-gray-700">
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs font-semibold text-white`}>
+            <div className={`rounded-lg overflow-hidden h-fit border ${
+              isDark
+                ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
+                : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
+            }`}>
+              <div className={`px-3 py-2 border-b ${
+                isDark
+                  ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
+                  : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
+              }`}>
+                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs font-semibold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   費用内訳詳細
                 </h3>
               </div>
@@ -216,9 +269,15 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                 <table className="w-full">
                   <tbody>
                     {presentation.costBreakdown.slice(0, 5).map((item) => (
-                      <tr key={item.id} className="border-b border-gray-800 last:border-0">
-                        <td className="py-2 text-xs text-white">{item.item}</td>
-                        <td className="py-2 text-xs text-right font-bold text-white">
+                      <tr key={item.id} className={`border-b last:border-0 ${
+                        isDark ? 'border-gray-800' : 'border-gray-200'
+                      }`}>
+                        <td className={`py-2 text-xs ${
+                          isDark ? 'text-white' : 'text-gray-900'
+                        }`}>{item.item}</td>
+                        <td className={`py-2 text-xs text-right font-bold ${
+                          isDark ? 'text-white' : 'text-gray-900'
+                        }`}>
                           ¥{item.amount.toLocaleString()}
                         </td>
                       </tr>
@@ -230,43 +289,83 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
           )}
 
           {/* ローンシミュレーション */}
-          <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border border-gray-700/50 rounded-lg p-3 h-fit">
-            <h3 className={`${CROWN_DESIGN.typography.japanese} text-base font-bold mb-3 flex items-center text-white`}>
-              <Calculator className="mr-2 h-5 w-5" style={{ color: CROWN_DESIGN.colors.gold }} />
+          <div className={`rounded-lg p-3 h-fit border ${
+            isDark
+              ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
+              : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
+          }`}>
+            <h3 className={`${CROWN_DESIGN.typography.japanese} text-base font-bold mb-3 flex items-center ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
+              <Calculator className="mr-2 h-5 w-5" style={{
+                color: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
+              }} />
               ローンシミュレーション
             </h3>
 
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
-                <p className="text-[10px] text-gray-400 mb-1">借入金額</p>
-                <p className="text-xs font-bold text-white">¥{presentation.loanAmount.toLocaleString()}</p>
+              <div className={`p-2 rounded border ${
+                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+              }`}>
+                <p className={`text-[10px] mb-1 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>借入金額</p>
+                <p className={`text-xs font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>¥{presentation.loanAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
-                <p className="text-[10px] text-gray-400 mb-1">頭金</p>
-                <p className="text-xs font-bold text-white">¥{presentation.downPayment.toLocaleString()}</p>
+              <div className={`p-2 rounded border ${
+                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+              }`}>
+                <p className={`text-[10px] mb-1 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>頭金</p>
+                <p className={`text-xs font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>¥{presentation.downPayment.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
-                <p className="text-[10px] text-gray-400 mb-1">金利</p>
-                <p className="text-xs font-bold text-white">{presentation.interestRate.toFixed(1)}%</p>
+              <div className={`p-2 rounded border ${
+                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+              }`}>
+                <p className={`text-[10px] mb-1 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>金利</p>
+                <p className={`text-xs font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>{presentation.interestRate.toFixed(1)}%</p>
               </div>
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-700">
-                <p className="text-[10px] text-gray-400 mb-1">返済期間</p>
-                <p className="text-xs font-bold text-white">{presentation.loanPeriod}年</p>
+              <div className={`p-2 rounded border ${
+                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+              }`}>
+                <p className={`text-[10px] mb-1 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>返済期間</p>
+                <p className={`text-xs font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>{presentation.loanPeriod}年</p>
               </div>
             </div>
 
             <div
-              className="p-3 rounded-lg text-center text-white border"
+              className={`p-3 rounded-lg text-center border ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}
               style={{
-                background: `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`,
-                borderColor: CROWN_DESIGN.colors.gold
+                background: isDark
+                  ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`
+                  : `linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.1) 100%)`,
+                borderColor: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
               }}
             >
               <p className={`${CROWN_DESIGN.typography.japanese} text-xs mb-1`}>月々のお支払い</p>
-              <p className="text-xl font-bold text-white">
+              <p className={`text-xl font-bold ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
                 ¥{presentation.monthlyPayment.toLocaleString()}
               </p>
-              <p className="text-[10px] mt-1 text-gray-300">
+              <p className={`text-[10px] mt-1 ${
+                isDark ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 ※ボーナス払いなし、元利均等返済の場合
               </p>
             </div>
@@ -276,10 +375,16 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
       {/* CROWN フッター */}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-t border-red-900/30 px-3 py-1">
+        <div className={`px-3 py-1 border-t ${
+          isDark
+            ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30'
+            : 'bg-gradient-to-r from-gray-100 via-white to-gray-100 border-gray-300'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
-              <div className="h-3 w-px bg-gray-700" />
+              <div className={`h-3 w-px ${
+                isDark ? 'bg-gray-700' : 'bg-gray-300'
+              }`} />
             </div>
             <div className="flex items-center gap-2">
             </div>

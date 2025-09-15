@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useStore } from '@/lib/store';
-import type { Presentation2, PerformanceItem } from '@/types';
+import type { Presentation2, PerformanceItem, HearingSheet } from '@/types';
 
 interface Presentation2EditorProps {
   projectId: string;
@@ -121,7 +121,7 @@ export function Presentation2Editor({ projectId }: Presentation2EditorProps) {
     }
   }, [currentProject]);
 
-  const sortItemsByPriority = (priorities: any, items: PerformanceItem[] = defaultPerformanceItems) => {
+  const sortItemsByPriority = (priorities: HearingSheet['priorities'], items: PerformanceItem[] = defaultPerformanceItems) => {
     const priorityMap: { [key: string]: string } = {
       earthquake: '耐震',
       insulation: '断熱・気密',

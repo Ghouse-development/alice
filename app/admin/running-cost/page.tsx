@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, TrendingUp, Sun, Battery } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 export default function RunningCostAdminPage() {
-  const router = useRouter();
   const [settings, setSettings] = useState({
     // 基本設定
     electricityBase: 15000,

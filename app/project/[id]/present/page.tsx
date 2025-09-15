@@ -9,6 +9,7 @@ import {
   Edit,
   Maximize2,
   Download,
+  FileDown,
   Home,
   Building,
   Wrench,
@@ -24,6 +25,7 @@ import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import { Presentation2Wrapper, Presentation3Wrapper, Presentation5Wrapper } from '@/components/PresentationWrappers';
 import { Presentation4View } from '@/components/Presentation4View';
+import PrintAllSlidesA3 from '@/components/PrintAllSlidesA3';
 
 const steps = [
   { id: 1, label: 'デザイン', icon: Home, component: Presentation1View },
@@ -80,8 +82,24 @@ export default function ProjectPresentPage() {
   };
 
   const handlePDFExport = async () => {
-    // PDF出力機能は後で実装
-    alert('PDF出力機能は準備中です');
+    // 現在のスライドのみ印刷
+    window.print();
+  };
+
+  const handleDownloadAllSlides = () => {
+    // 全スライドを印刷用に準備
+    // 一時的にbodyにクラスを追加して印刷モードにする
+    document.body.classList.add('print-all-slides');
+
+    // 印刷ダイアログを開く
+    setTimeout(() => {
+      window.print();
+
+      // 印刷後にクラスを削除
+      setTimeout(() => {
+        document.body.classList.remove('print-all-slides');
+      }, 100);
+    }, 100);
   };
 
   if (!currentProject) {
@@ -100,7 +118,11 @@ export default function ProjectPresentPage() {
   const CurrentStepComponent = steps.find((s) => s.id === currentStep)?.component;
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isFullscreen ? 'p-0' : 'py-4'}`}>
+    <>
+      {/* 印刷用の全スライド（画面では非表示） */}
+      <PrintAllSlidesA3 projectId={currentProject?.id || ''} />
+
+      <div className={`min-h-screen bg-gray-50 ${isFullscreen ? 'p-0' : 'py-4'} no-print`}>
       {!isFullscreen && (
         <div className="container mx-auto px-4 mb-4">
           <div className="flex justify-between items-center">
@@ -129,7 +151,11 @@ export default function ProjectPresentPage() {
               </Link>
               <Button variant="outline" size="sm" onClick={handlePDFExport}>
                 <Download className="mr-2 h-4 w-4" />
-                PDF出力
+                現在のスライド
+              </Button>
+              <Button variant="default" size="sm" onClick={handleDownloadAllSlides}>
+                <FileDown className="mr-2 h-4 w-4" />
+                全スライドをダウンロード
               </Button>
               <Button variant="outline" size="sm" onClick={toggleFullscreen}>
                 <Maximize2 className="mr-2 h-4 w-4" />
@@ -218,5 +244,6 @@ export default function ProjectPresentPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

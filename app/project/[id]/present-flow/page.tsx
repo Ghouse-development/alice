@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
+import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
@@ -11,6 +12,7 @@ import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation4View } from '@/components/Presentation4View';
 import Presentation5RunningCost from '@/components/Presentation5RunningCost';
 import { PresentationContainer } from '@/components/PresentationContainer';
+import PrintAllSlides from '@/components/PrintAllSlides';
 
 interface SlideInfo {
   presentation: number;
@@ -23,13 +25,14 @@ export default function PresentationFlowPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
-  const { currentProject, setCurrentProject } = useStore();
+  const { projects, currentProject, setCurrentProject } = useStore();
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [presentation2Items, setPresentation2Items] = useState<any[]>([]);
+  const [presentation2Items, setPresentation2Items] = useState<PerformanceItem[]>([]);
   const [autoPlay, setAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   // 全画面時にボディのスタイルを制御
   useEffect(() => {
@@ -86,16 +89,27 @@ export default function PresentationFlowPage() {
   };
 
   // ナビゲーション関数を定義（useEffectで使用するため先に定義）
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (currentSlideIndex < totalSlides - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1);
     }
-  };
+  }, [currentSlideIndex, totalSlides]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (currentSlideIndex > 0) {
       setCurrentSlideIndex(currentSlideIndex - 1);
     }
+  }, [currentSlideIndex]);
+
+  // 印刷機能
+  const handlePrintAll = () => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setIsPrinting(false);
+      }, 1000);
+    }, 100);
   };
 
   // キーボードナビゲーション対応
@@ -147,8 +161,11 @@ export default function PresentationFlowPage() {
   // デバッグログは削除（本番環境では不要）
 
   useEffect(() => {
-    setCurrentProject(projectId);
-  }, [projectId, setCurrentProject]);
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setCurrentProject(project);
+    }
+  }, [projectId, projects, setCurrentProject]);
 
   // プレゼンテーション2のアイテムを取得
   useEffect(() => {
@@ -158,14 +175,14 @@ export default function PresentationFlowPage() {
     if (savedContents) {
       try {
         const contents = JSON.parse(savedContents);
-        items = contents.map((content: any, index: number) => ({
+        items = contents.map((content: PerformanceItem, index: number) => ({
           id: content.id,
           category: content.category,
           title: content.title,
           description: content.description,
           priority: index + 1,
-          contentType: content.contentType,
-          customComponent: content.customComponent,
+          contentType: (content as any).contentType,
+          customComponent: (content as any).customComponent,
         }));
       } catch (e) {
         console.error('Failed to parse saved contents', e);
@@ -317,6 +334,15 @@ export default function PresentationFlowPage() {
             </div>
 
             <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrintAll}
+                className="text-white hover:bg-white/20"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                全て印刷
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -521,6 +547,9 @@ export default function PresentationFlowPage() {
           ← → キー: スライド移動 | スペースキー: 次へ | Escキー: 編集に戻る
         </div>
       </div>
+
+      {/* 印刷用コンポーネント（非表示、印刷時のみ表示） */}
+      {isPrinting && <PrintAllSlides projectId={projectId} />}
     </div>
   );
 }

@@ -56,7 +56,7 @@ export interface Presentation1 {
   floorPlans: string[];
   specifications: Specification[];
   notes?: string;
-  uploadedFiles?: any[];
+  uploadedFiles?: FileUpload[];
 }
 
 export interface Specification {
@@ -137,6 +137,22 @@ export interface Presentation5 {
   id: string;
   projectId: string;
   afterServiceItems: AfterServiceItem[];
+  // 光熱費シミュレーション関連
+  solarCapacity?: number;
+  hasBattery?: boolean;
+  batteryCapacity?: number;
+  monthlyElectricity?: number;
+  electricityUnitPrice?: number;
+  sellElectricityPrice?: number;
+  inflationRate?: number;
+  simulationYears?: number;
+  solarCostPerKw?: number;
+  batteryCost?: number;
+  monthlyGas?: number;
+  hasAllElectric?: boolean;
+  initialInvestment?: number;
+  monthlyGeneration?: number;
+  monthlySavings?: number;
 }
 
 export interface AfterServiceItem {

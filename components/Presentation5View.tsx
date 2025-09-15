@@ -9,7 +9,7 @@ interface Presentation5ViewProps {
   projectId: string;
 }
 
-export function Presentation5View({ projectId }: Presentation5ViewProps) {
+export function Presentation5View({ }: Presentation5ViewProps) {
   const { currentProject } = useStore();
   const [presentation, setPresentation] = useState<Presentation5 | null>(null);
 
@@ -70,7 +70,7 @@ export function Presentation5View({ projectId }: Presentation5ViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {presentation.afterServiceItems.map((item, index) => {
+        {presentation.afterServiceItems.map((item) => {
           const Icon = getIcon(item.title);
           return (
             <div key={item.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">

@@ -123,6 +123,19 @@
 
 /* 印刷用スタイル - A3横向き */
 @media print {
+  /* 全スライド印刷モード */
+  body.print-all-slides .no-print {
+    display: none !important;
+  }
+
+  body.print-all-slides .print-container {
+    display: block !important;
+  }
+
+  /* 通常印刷モード（現在のスライドのみ） */
+  body:not(.print-all-slides) .print-container {
+    display: none !important;
+  }
   /* ページ設定 */
   @page {
     size: A3 landscape;

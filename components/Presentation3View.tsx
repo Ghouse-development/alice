@@ -9,7 +9,7 @@ interface Presentation3ViewProps {
   projectId: string;
 }
 
-export function Presentation3View({ projectId }: Presentation3ViewProps) {
+export function Presentation3View({ }: Presentation3ViewProps) {
   const { currentProject } = useStore();
   const [presentation, setPresentation] = useState<Presentation3 | null>(null);
 

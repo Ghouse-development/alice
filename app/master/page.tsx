@@ -153,7 +153,7 @@ export default function MasterPage() {
               <Label htmlFor="newUnit">単位</Label>
               <Select
                 value={newOption.unit}
-                onValueChange={(value) => setNewOption({ ...newOption, unit: value as any })}
+                onValueChange={(value) => setNewOption({ ...newOption, unit: value as 'fixed' | 'area' | 'quantity' })}
               >
                 <SelectTrigger id="newUnit">
                   <SelectValue />
@@ -241,7 +241,7 @@ export default function MasterPage() {
                           <TableCell>
                             <Select
                               value={editingOption.unit}
-                              onValueChange={(value) => setEditingOption({ ...editingOption, unit: value as any })}
+                              onValueChange={(value) => setEditingOption({ ...editingOption, unit: value as 'fixed' | 'area' | 'quantity' })}
                             >
                               <SelectTrigger>
                                 <SelectValue />

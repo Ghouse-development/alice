@@ -1,179 +1,145 @@
-# G-HOUSE プレゼンテーションシステム 開発ログ
+# G-HOUSE プレゼンテーションシステム 開発記録
 
 ## プロジェクト概要
-- **開発日**: 2025年1月14日
-- **開発者**: Claude Code Assistant + nishinocat
-- **リポジトリ**: https://github.com/nishinocat/alice
+- **プロジェクト名**: G-HOUSE プレゼンテーションシステム
+- **技術スタック**: Next.js 15.5.3, TypeScript, Tailwind CSS, Zustand
+- **デザインコンセプト**: トヨタクラウンデザイン（CROWN_DESIGN）
+- **フォーマット**: A3横（1190px × 842px）
 
-## 主要機能
-1. **プレゼンテーションモード**
-   - 編集モードとプレゼンモードの切り替え
-   - プレゼンテーションフローモード（スライドショー形式）
+## 開発フェーズ
 
-2. **5つのプレゼンテーション**
-   - プレゼン1: デザイン（PDF/PowerPointアップロード）
-   - プレゼン2: 標準装備（10項目）
-   - プレゼン3: オプション（インタラクティブ選択）
-   - プレゼン4: 資金計画（ローンシミュレーション）
-   - プレゼン5: 光熱費（30年シミュレーション）
+### フェーズ1: ESLintエラーの修正
+#### 問題
+- 86個のESLint問題（22個のエラー、64個の警告）
+- TypeScriptエラーは既に解決済み
 
-## デザインシステム
-### CROWNカタログデザイン
-- トヨタCROWNカタログのデザインシステムを採用
-- 黒背景、青アクセント、グラデーション
-- 高級感のあるタイポグラフィ
+#### 対応
+- types/index.ts: uploadedFilesプロパティのany型をFileUpload[]に変更
+- 22個のno-explicit-anyエラーを適切な型定義で修正
+- React hooksのexhaustive-deps警告を依存配列の追加で解決
 
-### A3横サイズ統一
-- サイズ: 420mm × 297mm（1190px × 842px）
-- アスペクト比: 1.414:1
-- 印刷対応レイアウト
+### フェーズ2: 資金計画スライドのサイズ問題修正
+#### 問題
+- Presentation4View（資金計画）が全画面モードで他のスライドと異なるサイズで表示
+- オプションスライド（Presentation3）の余白が多すぎる
 
-## 技術スタック
-- **フレームワーク**: Next.js 15.5.3
-- **言語**: TypeScript
-- **スタイリング**: Tailwind CSS
-- **UIコンポーネント**: shadcn/ui
-- **状態管理**: Zustand
+#### 対応
+- Presentation4Viewのスタイル修正
+- Presentation3Interactiveのレイアウト改善（パディング増加、画像サイズ拡大）
 
-## 主要な開発ポイント
+### フェーズ3: ダーク/ライトモード実装
+#### 要件
+- ダークモード: 現在のトヨタクラウンデザイン
+- ライトモード: 白背景のデザイン
+- デフォルト: ライトモード
 
-### 1. プレゼンテーションフローモード
-```typescript
-// 10項目の標準装備を個別スライドとして表示
-const slides: SlideInfo[] = [
-  { presentation: 1, title: 'デザイン', totalSlides: 1 },
-  ...Array.from({ length: 10 }, (_, i) => ({
-    presentation: 2,
-    slideIndex: i,
-    title: `標準装備 (${i + 1}/10)`,
-    totalSlides: 10
-  })),
-  { presentation: 3, title: 'オプション', totalSlides: 1 },
-  { presentation: 4, title: '資金計画', totalSlides: 1 },
-  { presentation: 5, title: '光熱費', totalSlides: 1 },
-];
-```
+#### 実装内容
+1. **Tailwind設定** (tailwind.config.ts)
+   - darkMode: 'class'を追加
 
-### 2. ナビゲーションボタン配置
-- ユーザー要望により、プレゼンテーションコンテンツの直上に配置
-- ヘッダー部分との重複を避ける設計
+2. **状態管理** (lib/store.ts)
+   - theme: 'light' as const
+   - setTheme: (theme: 'light' | 'dark') => set({ theme })
 
-### 3. CROWNデザインシステムの実装
-```typescript
-const CROWN_DESIGN = {
-  colors: {
-    primary: '#000000',
-    accent: '#0066cc',
-    gold: '#d4af37'
-  },
-  typography: {
-    heading: 'font-bold tracking-wider',
-    subheading: 'font-light tracking-wide'
-  }
-};
-```
+3. **ThemeProvider** (components/ThemeProvider.tsx)
+   - ルートレベルでテーマクラスを適用
 
-## 開発中の課題と解決
+4. **ThemeToggle** (components/ThemeToggle.tsx)
+   - Sun/Moonアイコンでの切り替えボタン
 
-### 課題1: プレゼン2の項目が表示されない
-**解決**: performanceItemsの参照を修正し、externalItemsを正しく使用
+5. **各プレゼンテーションコンポーネントの更新**
+   - Presentation1View: テーマ対応完了
+   - Presentation2CrownUnified: テーマ対応完了
+   - Presentation3Interactive: テーマ対応完了
+   - Presentation4View: テーマ対応完了
+   - Presentation5RunningCost: テーマ対応完了
 
-### 課題2: A3サイズの余白が多い
-**解決**: パディングを px-12 → px-8、py-6 → py-4 に削減
+### フェーズ4: Jest Workerエラーの解決
+#### 問題
+- 複数の開発サーバーが同時実行によるメモリ枯渇
+- Chrome拡張機能のエラー
 
-### 課題3: ナビゲーションボタンの位置
-**解決**: ヘッダーから分離し、プレゼンコンテンツの直上に配置
+#### 対応
+- ポート3000-3007で実行中のNode.jsプロセスを全て終了
+- キャッシュクリア後、単一サーバーで再起動
 
-## ローカル環境での実行
-```bash
-cd g-house-presentation
-npm install
-npm run dev
-# http://localhost:3000 でアクセス
-```
+### フェーズ5: 印刷機能の実装
+#### 要件
+- プレゼンテーション1〜5を一括印刷
 
-## プロジェクト構造
-```
-g-house-presentation/
-├── app/
-│   ├── dashboard/         # ダッシュボード
-│   ├── project/[id]/      # プロジェクト詳細
-│   │   ├── edit/         # 編集モード
-│   │   ├── present/      # プレゼンモード
-│   │   └── present-flow/ # フローモード
-│   └── admin/            # 管理画面
-├── components/
-│   ├── Presentation*View.tsx    # 表示用コンポーネント
-│   ├── Presentation*Editor.tsx  # 編集用コンポーネント
-│   └── ui/                     # UIコンポーネント
-├── lib/
-│   └── store.ts          # 状態管理
-└── types/
-    └── index.ts          # 型定義
-```
+#### 実装内容
+1. **PrintAllSlides** (components/PrintAllSlides.tsx)
+   - 全スライドを印刷用にレンダリング
+   - A3横向き設定のCSS
 
-## 2025年1月14日 追加開発内容
+2. **印刷ボタンの追加** (app/project/[id]/present-flow/page.tsx)
+   - handlePrintAll関数の実装
+   - 印刷中状態の管理
 
-### Toyota Crownデザインコード完全統一
-**要件**: 全5プレゼンテーションをToyota Crownデザインで統一
-- CROWNレッド: `#c41e3a`
-- CROWNゴールド: `#b8860b`
-- プラチナシルバー: `#e5e4e2`
+### フェーズ6: 全プレゼンテーションへのテーマ適用
+#### 実装内容
+各プレゼンテーションコンポーネントに以下のパターンでテーマ対応を追加:
+- useStoreフックからtheme状態を取得
+- isDark変数でダーク/ライトモードを判定
+- クラス名とスタイルの条件分岐
 
-### プレゼンテーション構成の再設計
-```javascript
-// プレゼン1（デザイン）: ファイル数に応じて可変
-const presentation1SlideCount = presentation1Files.length > 0 ? presentation1Files.length : 1;
+## 主な学習事項
+1. **構文エラーへの注意**: オブジェクトの部分的なコメントアウトによる構文エラーを避ける
+2. **プロセス管理**: 開発サーバーの重複起動を防ぐ
+3. **型安全性**: TypeScriptのany型を具体的な型に置き換える
+4. **レスポンシブデザイン**: A3横フォーマットの維持とスケーリング
+5. **テーマ管理**: Zustandとクラスベースのダークモード切り替え
 
-// 全体構成
-- プレゼン1: 1〜8枚（アップロードファイル数による）
-- プレゼン2: 10枚（標準仕様の各項目）
-- プレゼン3: 1枚（オプション選択）
-- プレゼン4: 1枚（資金計画）
-- プレゼン5: 1枚（光熱費シミュレーション）
-```
+## 技術的特徴
+- **CROWN_DESIGN定数**: 一貫したデザインシステム
+- **A3横フォーマット**: 1190px × 842px (アスペクト比 1.414:1)
+- **PresentationContainer**: 自動スケーリング機能
+- **印刷対応**: CSS @media printルール
 
-### 重要なバグ修正
-1. **プレゼン2ナビゲーション問題**
-   - 症状: 「次へ」でプレゼン3にジャンプ
-   - 原因: presentation1SlideCountのデフォルト値が7
-   - 修正: ファイルなし時は1枚に設定
+### フェーズ7: A3印刷対応機能の完全実装
+#### 要件
+- 出力サイズ: A3横（420mm × 297mm）
+- 単位: mm指定またはCSS印刷用px換算で固定
+- 画面比率: A3横基準に固定
+- 安全マージン: 上下左右10mm
+- 最小文字サイズ: 18px以上
+- PDF出力対応
 
-2. **Presentation5Editor戻るボタン欠落**
-   - 他のエディターと統一性確保のため追加
+#### 実装内容（2024年9月15日）
+1. **A3印刷用スタイルシート** (styles/a3-print.css)
+   - A3横サイズ（420mm × 297mm）の固定レイアウト
+   - 96dpi基準でのピクセル換算（1587px × 1123px）
+   - 印刷に適した淡い背景色（#fafafa）
+   - グリッドシステム、カード型レイアウト対応
 
-3. **favicon.ico 500エラー**
-   - publicディレクトリに配置
-   - metadataに設定追加
+2. **A3PrintContainer** (components/A3PrintContainer.tsx)
+   - 自動スケーリング機能（画面サイズに応じて縮小表示）
+   - 印刷ボタン（ブラウザの印刷機能）
+   - PDF出力ボタン（jsPDFによる直接PDF生成）
+   - 実寸表示・画面幅調整ボタン
+   - 表示倍率インジケーター
 
-### リリース前の総合チェック実施
-- ✅ 全画面A3サイズ（420mm×297mm）確認
-- ✅ Crownデザインコード統一確認
-- ✅ ナビゲーション動作検証
-- ✅ 管理画面と表示画面の内容一致
-- ✅ TypeScriptビルド成功
-- ✅ エラーログクリーン
+3. **PDF出力機能** (lib/pdf-export.ts)
+   - html2canvas + jsPDFによるPDF生成
+   - A3横向き専用のエクスポート関数
+   - 複数ページPDF対応
+   - 動的インポートによるパフォーマンス最適化
 
-### 1万人リリース準備完了
-- 実務上の使いにくさを全て解消
-- 品質保証チェック完了
-- 本番環境デプロイ可能
+4. **技術的対応**
+   - PDFライブラリのバージョン調整（jsPDF 2.5.2, html2canvas 1.4.1）
+   - Turbopackとの互換性問題解決
+   - TypeScriptエラーの適切な処理（@ts-ignore使用）
 
-## 今後の改善案
-1. PDFエクスポート機能の実装
-2. アニメーション効果の追加
-3. モバイル対応の強化
-4. データベース連携
-5. ユーザー認証機能
-6. PDFアップロード時のプレビュー機能
-7. CRM連携機能
-8. プレゼンテーション実施履歴記録
+#### 成果
+- 完全なA3横サイズ対応（420mm × 297mm固定）
+- 要素の自動縮小・再配置
+- ワンクリックでのPDF出力
+- 印刷時の改ページ制御
+- レスポンシブプレビュー
 
-## 参考資料
-- トヨタCROWNカタログデザイン
-- G-HOUSE公式資料
-- evoltz制震システム仕様書
-
----
-初回開発完了: 2025年1月14日
-最終更新・リリース準備完了: 2025年1月14日
+## 今後の改善点
+- パフォーマンス最適化
+- アクセシビリティ向上
+- モバイル対応の検討
+- アニメーション効果の追加
+- PDF出力品質の向上

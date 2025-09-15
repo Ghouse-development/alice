@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -111,7 +111,7 @@ export function Presentation4Editor({ projectId }: Presentation4EditorProps) {
     setCostBreakdown(costBreakdown.filter((item) => item.id !== id));
   };
 
-  const updateCostItem = (id: string, field: keyof CostItem, value: any) => {
+  const updateCostItem = (id: string, field: keyof CostItem, value: string | number) => {
     const newItems = costBreakdown.map((item) =>
       item.id === id ? { ...item, [field]: value } : item
     );
@@ -229,8 +229,8 @@ export function Presentation4Editor({ projectId }: Presentation4EditorProps) {
               </TableHeader>
               <TableBody>
                 {categories.map((category) => (
-                  <>
-                    <TableRow key={`category-${category}`} className="bg-gray-50">
+                  <React.Fragment key={`category-group-${category}`}>
+                    <TableRow className="bg-gray-50">
                       <TableCell colSpan={2} className="font-semibold">
                         {category}
                       </TableCell>
@@ -287,7 +287,7 @@ export function Presentation4Editor({ projectId }: Presentation4EditorProps) {
                           </TableCell>
                         </TableRow>
                       ))}
-                  </>
+                  </React.Fragment>
                 ))}
               </TableBody>
               <TableFooter>

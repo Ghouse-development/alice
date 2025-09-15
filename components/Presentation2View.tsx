@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import { Shield, Home, Snowflake, Wind, Clock, Palette, Hammer, Award, Zap, Wifi } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { EarthquakeResistanceSlide } from './EarthquakeResistanceSlide';
-import type { Presentation2 } from '@/types';
+import type { Presentation2, PerformanceItem } from '@/types';
 
 interface Presentation2ViewProps {
   projectId: string;
   fixedSlide?: number;
-  performanceItems?: any[];
+  performanceItems?: PerformanceItem[];
 }
 
-const categoryIcons: { [key: string]: any } = {
+const categoryIcons: { [key: string]: React.ComponentType<{ className?: string }> } = {
   '耐震': Shield,
   '断熱・気密': Snowflake,
   '空気質': Wind,
@@ -44,14 +44,14 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
     if (savedContents) {
       try {
         const contents = JSON.parse(savedContents);
-        defaultItems = contents.map((content: any, index: number) => ({
+        defaultItems = contents.map((content: PerformanceItem, index: number) => ({
           id: content.id,
           category: content.category,
           title: content.title,
           description: content.description,
           priority: index + 1,
-          contentType: content.contentType,
-          customComponent: content.customComponent,
+          contentType: (content as any).contentType,
+          customComponent: (content as any).customComponent,
         }));
       } catch (e) {
         console.error('Failed to parse saved contents', e);
@@ -137,7 +137,7 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
             priority: 10,
           }
         ],
-        sortedOrder: defaultItems.length > 0 ? defaultItems.map(item => item.id) : undefined
+        sortedOrder: defaultItems.length > 0 ? defaultItems.map((item: PerformanceItem) => item.id) : undefined
       };
       setPresentation(defaultPresentation);
     }

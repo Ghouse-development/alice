@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useStore } from '@/lib/store';
-import { Sun, Battery, TrendingUp, DollarSign, Zap } from 'lucide-react';
+import type { Presentation5 } from '@/types';
+import { Sun, TrendingUp, DollarSign, Zap } from 'lucide-react';
 
 interface Presentation5EditorProps {
   projectId: string;
@@ -81,9 +82,10 @@ export function Presentation5Editor({ projectId }: Presentation5EditorProps) {
   };
 
   const savePresentation = () => {
-    const presentation5: any = {
+    const presentation5: Presentation5 = {
       id: currentProject?.presentation5?.id || `pres5-${Date.now()}`,
       projectId,
+      afterServiceItems: currentProject?.presentation5?.afterServiceItems || [],
       solarCapacity,
       hasBattery,
       batteryCapacity,

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Eye, FileText, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useStore } from '@/lib/store';
 import type { Project } from '@/types';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
@@ -90,11 +91,14 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">案件管理ダッシュボード</h1>
-        <p className="text-gray-600">
-          Gハウス営業プレゼンテーションシステム
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">案件管理ダッシュボード</h1>
+          <p className="text-gray-600">
+            Gハウス営業プレゼンテーションシステム
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="grid gap-6 mb-8 md:grid-cols-4">

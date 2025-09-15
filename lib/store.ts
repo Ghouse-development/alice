@@ -28,6 +28,9 @@ interface AppState {
   isPresentationMode: boolean;
   currentStep: PresentationStep;
 
+  // Theme Settings
+  theme: 'light' | 'dark';
+
   // Actions
   addProject: (project: Project) => void;
   updateProject: (id: string, project: Partial<Project>) => void;
@@ -52,6 +55,9 @@ interface AppState {
   setPresentationMode: (mode: boolean) => void;
   setCurrentStep: (step: PresentationStep) => void;
 
+  // Theme Actions
+  setTheme: (theme: 'light' | 'dark') => void;
+
   // Initialize with sample data
   initializeSampleData: () => void;
 }
@@ -65,6 +71,7 @@ export const useStore = create<AppState>()(
       optionMasters: [],
       isPresentationMode: false,
       currentStep: 1,
+      theme: 'light' as const,
 
       addProject: (project) =>
         set((state) => ({
@@ -244,6 +251,9 @@ export const useStore = create<AppState>()(
 
       setCurrentStep: (step) =>
         set({ currentStep: step }),
+
+      setTheme: (theme) =>
+        set({ theme }),
 
       initializeSampleData: () =>
         set({

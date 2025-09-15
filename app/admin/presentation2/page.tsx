@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Save, ArrowLeft, Eye, Image, FileText, ChevronUp, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Save, ArrowLeft, Eye, Image, ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
-import { EarthquakeResistanceSlide } from '@/components/EarthquakeResistanceSlide';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
 
 interface PerformanceContent {
@@ -103,7 +102,7 @@ export default function AdminPresentation2Page() {
 
   const selectedContent = contents.find(c => c.category === selectedCategory);
 
-  const updateContent = (category: string, field: keyof PerformanceContent, value: any) => {
+  const updateContent = (category: string, field: keyof PerformanceContent, value: string) => {
     setContents(contents.map(content =>
       content.category === category
         ? { ...content, [field]: value }

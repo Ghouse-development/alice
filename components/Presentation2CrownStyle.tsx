@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Shield, Home, Snowflake, Wind, Clock, Palette, Hammer, Award, Zap, Wifi, Check, ChevronRight } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import type { Presentation2 } from '@/types';
+import type { Presentation2, PerformanceItem } from '@/types';
 
 interface Presentation2CrownStyleProps {
   projectId: string;
   fixedSlide?: number;
-  performanceItems?: any[];
+  performanceItems?: PerformanceItem[];
 }
 
 const categoryIcons: { [key: string]: any } = {
@@ -136,7 +136,7 @@ export function Presentation2CrownStyle({ projectId, fixedSlide, performanceItem
             priority: 10,
           }
         ],
-        sortedOrder: defaultItems.length > 0 ? defaultItems.map(item => item.id) : undefined
+        sortedOrder: defaultItems.length > 0 ? defaultItems.map((item: PerformanceItem) => item.id) : undefined
       };
       setPresentation(defaultPresentation);
     }
@@ -228,7 +228,7 @@ export function Presentation2CrownStyle({ projectId, fixedSlide, performanceItem
 }
 
 // 耐震性能スライド（CROWN SAFETY風）
-function EarthquakeResistanceSlide({ item }: { item: any }) {
+function EarthquakeResistanceSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-gray-900 to-black text-white">
       {/* ヘッダー */}
@@ -323,7 +323,7 @@ function EarthquakeResistanceSlide({ item }: { item: any }) {
 }
 
 // 断熱・気密性能スライド（CROWN PERFORMANCE風）
-function InsulationSlide({ item }: { item: any }) {
+function InsulationSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-white">
       {/* ヘッダー */}
@@ -409,7 +409,7 @@ function InsulationSlide({ item }: { item: any }) {
 }
 
 // 空気質スライド
-function AirQualitySlide({ item }: { item: any }) {
+function AirQualitySlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-white to-gray-50">
       {/* ヘッダー */}
@@ -515,7 +515,7 @@ function AirQualitySlide({ item }: { item: any }) {
 }
 
 // 空調計画スライド
-function AirConditioningSlide({ item }: { item: any }) {
+function AirConditioningSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-white">
       {/* ヘッダー */}
@@ -597,7 +597,7 @@ function AirConditioningSlide({ item }: { item: any }) {
 }
 
 // 耐久性スライド
-function DurabilitySlide({ item }: { item: any }) {
+function DurabilitySlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       {/* ヘッダー */}
@@ -678,7 +678,7 @@ function DurabilitySlide({ item }: { item: any }) {
 }
 
 // デザイン性スライド
-function DesignSlide({ item }: { item: any }) {
+function DesignSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-white">
       {/* ヘッダー */}
@@ -750,7 +750,7 @@ function DesignSlide({ item }: { item: any }) {
 }
 
 // 施工品質スライド
-function ConstructionQualitySlide({ item }: { item: any }) {
+function ConstructionQualitySlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-white to-gray-50">
       {/* ヘッダー */}
@@ -851,7 +851,7 @@ function ConstructionQualitySlide({ item }: { item: any }) {
 }
 
 // 保証・アフターサービススライド
-function WarrantySlide({ item }: { item: any }) {
+function WarrantySlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-r from-blue-900 to-blue-700 text-white">
       {/* ヘッダー */}
@@ -939,7 +939,7 @@ function WarrantySlide({ item }: { item: any }) {
 }
 
 // 省エネ性スライド（CONNECTED風）
-function EnergySavingSlide({ item }: { item: any }) {
+function EnergySavingSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-green-50 to-white">
       {/* ヘッダー */}
@@ -1015,7 +1015,7 @@ function EnergySavingSlide({ item }: { item: any }) {
 }
 
 // スマートホームスライド
-function SmartHomeSlide({ item }: { item: any }) {
+function SmartHomeSlide({ item }: { item: PerformanceItem }) {
   return (
     <div className="h-full bg-gradient-to-b from-gray-900 via-blue-900 to-black text-white">
       {/* ヘッダー */}
@@ -1108,7 +1108,7 @@ function SmartHomeSlide({ item }: { item: any }) {
 }
 
 // デフォルトスライド
-function DefaultSlide({ item, Icon }: { item: any; Icon: any }) {
+function DefaultSlide({ item, Icon }: { item: PerformanceItem; Icon: any }) {
   return (
     <div className="h-full bg-white">
       <div className="bg-black text-white px-8 py-4">

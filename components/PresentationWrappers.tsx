@@ -11,11 +11,11 @@ export function Presentation2Wrapper({ projectId }: { projectId: string }) {
 }
 
 // Presentation3のラッパー
-export function Presentation3Wrapper({ projectId }: { projectId: string }) {
+export function Presentation3Wrapper({ }: { projectId: string }) {
   return <Presentation3Interactive />;
 }
 
 // Presentation5のラッパー
-export function Presentation5Wrapper({ projectId }: { projectId: string }) {
+export function Presentation5Wrapper({ }: { projectId: string }) {
   return <Presentation5RunningCost />;
 }

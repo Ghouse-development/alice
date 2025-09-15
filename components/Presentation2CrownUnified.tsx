@@ -69,8 +69,9 @@ const categoryIcons: { [key: string]: any } = {
 };
 
 export default function Presentation2CrownUnified({ projectId, fixedSlide, performanceItems: externalItems }: Presentation2CrownUnifiedProps) {
-  const { currentProject } = useStore();
+  const { currentProject, theme } = useStore();
   const [performanceItems, setPerformanceItems] = useState<any[]>([]);
+  const isDark = theme === 'dark';
   const [currentSlide, setCurrentSlide] = useState(fixedSlide ?? 0);
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
     // A3横カタログテンプレート
     return (
       <div
-        className="relative bg-black text-white overflow-hidden"
+        className={`relative overflow-hidden ${isDark ? 'bg-black text-white' : 'bg-white text-gray-900'}`}
         style={{
           width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
           height: '842px', // A3横の基準高さ(px) - PresentationContainerと統一
@@ -145,7 +146,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
       >
         {/* 背景パターン */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+          <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-black via-gray-950 to-black' : 'bg-gradient-to-br from-gray-50 via-white to-gray-50'}`} />
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0" style={{
               backgroundImage: `
@@ -157,7 +158,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
         </div>
 
         {/* ヘッダー */}
-        <div className="relative bg-gradient-to-r from-black via-gray-900 to-black border-b border-red-900/30">
+        <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
           <div className="px-4 py-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-12">
@@ -165,7 +166,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
                   <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
                 </div>
                 <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-                <span className="text-[11px] font-bold tracking-[0.2em] text-white uppercase border-b-2 border-red-600 pb-1">
+                <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {item.category}
                 </span>
               </div>
@@ -189,18 +190,18 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
 
                 {/* タイトル */}
                 <div className="space-y-2">
-                  <h1 className="text-xl font-bold tracking-[0.1em] leading-tight">
+                  <h1 className={`text-xl font-bold tracking-[0.1em] leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {item.category}
                   </h1>
                   <div className="h-px bg-gradient-to-r from-red-600 via-red-600/50 to-transparent w-20" />
-                  <p className="text-sm text-gray-300 font-light leading-relaxed">
+                  <p className={`text-sm font-light leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     {item.title}
                   </p>
                 </div>
 
                 {/* サブテキスト */}
-                <div className="bg-gradient-to-r from-gray-900/50 to-transparent p-3 rounded-lg border-l-2 border-red-600/50">
-                  <p className="text-gray-400 text-xs leading-relaxed">
+                <div className={`p-3 rounded-lg border-l-2 border-red-600/50 ${isDark ? 'bg-gradient-to-r from-gray-900/50 to-transparent' : 'bg-gradient-to-r from-gray-100 to-transparent'}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {item.description}
                   </p>
                 </div>
@@ -212,7 +213,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
               {getDetailCards(item.category).map((card, index) => (
                 <div key={index} className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 rounded" />
-                  <div className="relative bg-gradient-to-b from-gray-900/80 to-gray-900/40 backdrop-blur-sm border border-gray-800/50 rounded p-3 hover:border-red-600/30 transition-all duration-300 h-full">
+                  <div className={`relative backdrop-blur-sm border rounded p-3 transition-all duration-300 h-full ${isDark ? 'bg-gradient-to-b from-gray-900/80 to-gray-900/40 border-gray-800/50 hover:border-red-600/30' : 'bg-white border-gray-200 hover:border-red-500/50 shadow-md'}`}>
                     <div className="flex flex-col h-full">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="text-red-600 text-sm font-bold">
@@ -220,19 +221,19 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
                         </div>
                         <div className="h-px flex-1 bg-gradient-to-r from-red-600/30 to-transparent" />
                       </div>
-                      <h3 className="text-sm font-medium mb-2 text-white tracking-wide">
+                      <h3 className={`text-sm font-medium mb-2 tracking-wide ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {card.title}
                       </h3>
-                      <p className="text-xs text-gray-300 leading-relaxed mb-2 flex-1">
+                      <p className={`text-xs leading-relaxed mb-2 flex-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         {card.description}
                       </p>
                       {card.value && (
-                        <div className="pt-2 border-t border-gray-800/50">
+                        <div className={`pt-2 border-t ${isDark ? 'border-gray-800/50' : 'border-gray-200'}`}>
                           <span className="text-base font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                             {card.value}
                           </span>
                           {card.unit && (
-                            <span className="text-xs text-gray-400 ml-1">
+                            <span className={`text-xs ml-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                               {card.unit}
                             </span>
                           )}
@@ -247,7 +248,7 @@ export default function Presentation2CrownUnified({ projectId, fixedSlide, perfo
 
           {/* フッター */}
           <div className="absolute bottom-6 left-12 right-12">
-            <div className="flex items-center justify-between pt-4 border-t border-red-900/30">
+            <div className={`flex items-center justify-between pt-4 border-t ${isDark ? 'border-red-900/30' : 'border-gray-200'}`}>
               <div className="flex items-center gap-8">
               </div>
               <div className="flex items-center gap-3">

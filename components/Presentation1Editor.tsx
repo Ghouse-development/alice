@@ -38,7 +38,7 @@ export function Presentation1Editor({ projectId }: Presentation1EditorProps) {
     const presentation1: Partial<Presentation1> = {
       id: currentProject?.presentation1?.id || `pres1-${Date.now()}`,
       projectId,
-      uploadedFiles: uploadedFiles,
+      uploadedFiles: uploadedFiles as any,
       exteriorImages: [],
       interiorImages: [],
       floorPlans: [],
