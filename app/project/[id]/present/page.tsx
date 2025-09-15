@@ -40,6 +40,7 @@ export default function ProjectPresentPage() {
   const router = useRouter();
   const { projects, currentProject, setCurrentProject, setPresentationMode, currentStep, setCurrentStep } = useStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(true);
 
   useEffect(() => {
     const project = projects.find((p) => p.id === params.id);
@@ -149,17 +150,9 @@ export default function ProjectPresentPage() {
                   編集モード
                 </Button>
               </Link>
-              <Button variant="outline" size="sm" onClick={handlePDFExport}>
-                <Download className="mr-2 h-4 w-4" />
-                現在のスライド
-              </Button>
-              <Button variant="default" size="sm" onClick={handleDownloadAllSlides}>
-                <FileDown className="mr-2 h-4 w-4" />
-                全スライドをダウンロード
-              </Button>
               <Button variant="outline" size="sm" onClick={toggleFullscreen}>
                 <Maximize2 className="mr-2 h-4 w-4" />
-                全画面
+                {isPresentationMode ? '全画面表示' : '全画面'}
               </Button>
             </div>
           </div>

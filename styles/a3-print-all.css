@@ -1,0 +1,312 @@
+/* A3全ページ印刷専用スタイル - 改ページ最適化・はみ出しゼロ */
+
+/* @page設定 - A3横向き */
+@page {
+  size: A3 landscape; /* 420mm × 297mm */
+  margin: 0;
+}
+
+/* 印刷時の設定 */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  html, body {
+    width: 420mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: white;
+  }
+
+  /* 余計なUIは完全非表示 */
+  .viewer-ui, .nav, .footer, .hotkeys, .page-indicator,
+  .black-band, .header-bar, [data-role="viewer-ui"],
+  .controls, .help, .navigation, .pagination, .slide-counter,
+  .progress-bar, .toolbar, .sidebar, .menu, .overlay, .modal,
+  .toast, .tooltip, .project-header, .date-header, .breadcrumb,
+  .navigation-controls, .slide-navigation, .page-counter,
+  .key-hints, .hotkey-help, .status-bar, .action-bar,
+  .control-panel, [data-role="navigation"], [data-role="controls"],
+  [class*="viewer-"], [class*="nav-"], [class*="control-"],
+  [class*="header-"], [class*="status-"], [class*="action-"],
+  [id*="nav"], [id*="control"], [id*="header"], .no-print,
+  *[class*="新規案件"], *[class*="2025"], *[class*="1/14"],
+  *[class*="page-"], *[class*="slide-count"], *[class*="keyboard"],
+  *[class*="shortcut"], *[class*="settings"], *[class*="control"],
+  *[class*="button"]:not(.slide-canvas *),
+  button:not(.slide-canvas *),
+  input[type="range"]:not(.slide-canvas *),
+  input[type="number"]:not(.slide-canvas *),
+  .settings-panel, .control-panel, .interactive-controls,
+  .loading-container {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* A3全ページ印刷コンテナ */
+  #print-root,
+  .a3-print-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: block !important;
+  }
+
+  /* A3シート設定（1スライド=1ページ） */
+  .a3-sheet {
+    width: 420mm;
+    height: 297mm;
+    display: block !important;  /* flex禁止：改ページが崩れる */
+    overflow: hidden;           /* ページ内からはみ出さない */
+    background: white;
+    break-after: page;          /* 新仕様 */
+    page-break-after: always;   /* 互換 */
+    margin: 0;
+    padding: 0;
+  }
+
+  .a3-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* 改ページ妨害を無効化 */
+  #print-root, .a3-sheet, .slide-canvas {
+    position: static !important;
+    transform: none !important;     /* 親にtransform禁止 */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* スライドキャンバス（子要素のみスケール可能） */
+  .slide-canvas {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* transformは子要素にJSで適用 */
+  }
+
+  /* 印刷時の全スライド表示保証 */
+  .a3-print-container .a3-sheet {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* 画面プレビュー時の設定 */
+@media screen {
+  .loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #f5f5f5;
+    font-size: 18px;
+    color: #666;
+  }
+
+  #print-root,
+  .a3-print-container {
+    background: #e5e5e5;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  .a3-sheet {
+    width: 1587px; /* 420mm * 96dpi / 25.4 */
+    height: 1123px; /* 297mm * 96dpi / 25.4 */
+    background: white;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+    border-radius: 4px;
+  }
+
+  .slide-canvas {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+}
+
+/* フォント設定 */
+.a3-sheet {
+  font-family: 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* テキストサイズの最小保証 */
+.a3-sheet * {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.a3-sheet h1 { font-size: 2em; }
+.a3-sheet h2 { font-size: 1.5em; }
+.a3-sheet h3 { font-size: 1.25em; }
+.a3-sheet h4 { font-size: 1.125em; }
+.a3-sheet h5 { font-size: 1em; }
+.a3-sheet h6 { font-size: 0.875em; }
+
+/* 画像とメディアの調整 */
+.a3-sheet img,
+.a3-sheet video,
+.a3-sheet canvas,
+.a3-sheet svg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* 画像の遅延読み込み無効化（印刷用） */
+.a3-sheet img[loading="lazy"] {
+  loading: eager !important;
+}
+
+/* テーブルの調整 */
+.a3-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: inherit;
+}
+
+.a3-sheet td,
+.a3-sheet th {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+  font-size: inherit;
+}
+
+/* リストの調整 */
+.a3-sheet ul,
+.a3-sheet ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+/* 印刷時の統一レイアウト */
+@media print {
+  .a3-sheet * {
+    /* フォントの最小サイズ保証 */
+    min-font-size: 10px;
+    line-height: 1.4;
+  }
+
+  /* 見出しのスタイル統一 */
+  .a3-sheet h1 {
+    font-size: 2.5em !important;
+    font-weight: bold !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+  }
+
+  .a3-sheet h2 {
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  .a3-sheet h3 {
+    font-size: 1.25em !important;
+    font-weight: bold !important;
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  /* テーブルの統一スタイル（13-15枚目対策） */
+  .a3-sheet table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0.5rem 0 !important;
+    table-layout: fixed !important; /* 列幅を固定 */
+  }
+
+  .a3-sheet td,
+  .a3-sheet th {
+    padding: 0.5rem !important;
+    border: 1px solid #ddd !important;
+    font-size: inherit !important;
+    vertical-align: top !important;
+    word-wrap: break-word !important;
+  }
+
+  /* マージンとパディングの統一 */
+  .a3-sheet .grid {
+    gap: 1rem !important;
+  }
+
+  .a3-sheet .rounded-lg {
+    border-radius: 0.5rem !important;
+  }
+
+  .a3-sheet .p-4 {
+    padding: 1rem !important;
+  }
+
+  .a3-sheet .p-6 {
+    padding: 1.5rem !important;
+  }
+
+  .a3-sheet .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  .a3-sheet .mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* 色のコントラスト確保 */
+  .a3-sheet {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .a3-sheet .text-gray-600,
+  .a3-sheet .text-gray-700,
+  .a3-sheet .text-gray-800,
+  .a3-sheet .text-gray-900 {
+    color: #374151 !important;
+  }
+
+  .a3-sheet .text-white {
+    color: #000 !important;
+  }
+
+  .a3-sheet .bg-black,
+  .a3-sheet .bg-gray-900,
+  .a3-sheet .bg-gray-800 {
+    background: #f9fafb !important;
+    color: #000 !important;
+  }
+}
+
+/* デバッグ用：境界線表示（開発時のみ） */
+/*
+.a3-sheet {
+  border: 2px solid red;
+}
+
+.slide-canvas {
+  border: 1px solid blue;
+}
+*/

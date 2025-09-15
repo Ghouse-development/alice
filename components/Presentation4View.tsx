@@ -174,200 +174,221 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
         </div>
       </div>
 
-      {/* メインコンテンツ - A3横レイアウト */}
-      <div className="relative px-4 py-3 h-[calc(100%-80px)]">
-        {/* 費用カテゴリー */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {categories.map((category, index) => {
-            const Icon = categoryIcons[category.label as keyof typeof categoryIcons] || FileText;
-            return (
-              <div
-                key={category.key}
-                className={`rounded-lg p-3 backdrop-blur-sm border ${
-                  isDark
-                    ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/40 border-gray-700/50'
-                    : 'bg-gradient-to-br from-gray-100 to-white border-gray-300'
-                }`}
-                style={{
-                  background: isDark
-                    ? `linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(60,60,60,0.3) 100%)`
-                    : `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.8) 100%)`,
-                  borderColor: index === 0
-                    ? (isDark ? CROWN_DESIGN.colors.accent : '#dc2626')
-                    : (isDark ? 'rgba(115,115,115,0.3)' : '#d1d5db')
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{
-                      backgroundColor: isDark ? `${CROWN_DESIGN.colors.accent}20` : 'rgba(220,38,38,0.1)',
-                      color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
-                    }}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-                </div>
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs mb-1 font-medium ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {category.label}
-                </h3>
-                <p className={`text-lg font-bold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  ¥{category.value.toLocaleString()}
-                </p>
-              </div>
-            );
-          })}
+      {/* メインコンテンツ - A3横レイアウト最適化 */}
+      <div className="relative px-8 py-6 h-[calc(100%-80px)] overflow-hidden">
+        {/* 見出し：資金計画概要 */}
+        <div className="text-center mb-6">
+          <h1 className={`text-3xl font-bold mb-3 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`} style={{color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'}}>
+            資金計画
+          </h1>
+          <p className={`text-lg ${
+            isDark ? 'text-gray-300' : 'text-gray-600'
+          }`}>住宅建築における総費用とローン計画</p>
         </div>
 
-        {/* 総費用セクション */}
-        <div
-          className={`p-3 rounded-lg mb-4 border ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}
-          style={{
-            background: isDark
-              ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.accent}20 0%, rgba(196,30,58,0.1) 100%)`
-              : `linear-gradient(135deg, rgba(220,38,38,0.1) 0%, rgba(220,38,38,0.05) 100%)`,
-            borderColor: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
-          }}
-        >
-          <h3 className={`${CROWN_DESIGN.typography.heading} text-base mb-1`}
-            style={{color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'}}>
-            TOTAL COST
-          </h3>
-          <p className={`text-2xl font-bold ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            ¥{presentation.totalCost.toLocaleString()}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {/* 費用内訳詳細 */}
-          {presentation.costBreakdown && presentation.costBreakdown.length > 0 && (
-            <div className={`rounded-lg overflow-hidden h-fit border ${
-              isDark
-                ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
-                : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
-            }`}>
-              <div className={`px-3 py-2 border-b ${
-                isDark
-                  ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
-                  : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
-              }`}>
-                <h3 className={`${CROWN_DESIGN.typography.japanese} text-xs font-semibold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>
-                  費用内訳詳細
-                </h3>
-              </div>
-              <div className="p-3">
-                <table className="w-full">
-                  <tbody>
-                    {presentation.costBreakdown.slice(0, 5).map((item) => (
-                      <tr key={item.id} className={`border-b last:border-0 ${
-                        isDark ? 'border-gray-800' : 'border-gray-200'
-                      }`}>
-                        <td className={`py-2 text-xs ${
-                          isDark ? 'text-white' : 'text-gray-900'
-                        }`}>{item.item}</td>
-                        <td className={`py-2 text-xs text-right font-bold ${
-                          isDark ? 'text-white' : 'text-gray-900'
-                        }`}>
-                          ¥{item.amount.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ローンシミュレーション */}
-          <div className={`rounded-lg p-3 h-fit border ${
+        {/* 表：費用構成（2列レイアウト） */}
+        <div className="grid grid-cols-2 gap-8 mb-6">
+          {/* 左列：費用構成 */}
+          <div className={`rounded-lg border ${
             isDark
               ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
               : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
           }`}>
-            <h3 className={`${CROWN_DESIGN.typography.japanese} text-base font-bold mb-3 flex items-center ${
-              isDark ? 'text-white' : 'text-gray-900'
+            <div className={`px-4 py-3 border-b ${
+              isDark
+                ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
+                : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
             }`}>
-              <Calculator className="mr-2 h-5 w-5" style={{
-                color: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
-              }} />
-              ローンシミュレーション
-            </h3>
+              <h2 className={`text-xl font-bold flex items-center gap-3 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
+                <Home className="h-6 w-6" style={{
+                  color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
+                }} />
+                建築費用構成
+              </h2>
+            </div>
+            <div className="p-4">
+              <table className="w-full">
+                <tbody>
+                  {categories.map((category, index) => {
+                    const Icon = categoryIcons[category.label as keyof typeof categoryIcons] || FileText;
+                    return (
+                      <tr key={category.key} className={`border-b last:border-0 ${
+                        isDark ? 'border-gray-700' : 'border-gray-200'
+                      }`}>
+                        <td className="py-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center"
+                              style={{
+                                backgroundColor: isDark ? `${CROWN_DESIGN.colors.accent}20` : 'rgba(220,38,38,0.1)',
+                                color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'
+                              }}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <span className={`text-base font-medium ${
+                              isDark ? 'text-white' : 'text-gray-900'
+                            }`}>{category.label}</span>
+                          </div>
+                        </td>
+                        <td className={`py-3 text-right text-xl font-bold ${
+                          isDark ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          ¥{category.value.toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr className={`border-t-2 ${
+                    isDark ? 'border-red-600' : 'border-red-700'
+                  }`}>
+                    <td className={`py-4 text-xl font-bold ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      総建築費用
+                    </td>
+                    <td className={`py-4 text-right text-3xl font-bold ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`} style={{color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626'}}>
+                      ¥{presentation.totalCost.toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className={`p-2 rounded border ${
-                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+          {/* 右列：ローンシミュレーション */}
+          <div className={`rounded-lg border ${
+            isDark
+              ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
+              : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
+          }`}>
+            <div className={`px-4 py-3 border-b ${
+              isDark
+                ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
+                : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
+            }`}>
+              <h2 className={`text-xl font-bold flex items-center gap-3 ${
+                isDark ? 'text-white' : 'text-gray-900'
               }`}>
-                <p className={`text-[10px] mb-1 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>借入金額</p>
-                <p className={`text-xs font-bold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>¥{presentation.loanAmount.toLocaleString()}</p>
+                <Calculator className="h-6 w-6" style={{
+                  color: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
+                }} />
+                ローンシミュレーション
+              </h2>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className={`p-3 rounded border ${
+                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+                }`}>
+                  <p className={`text-sm mb-2 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>借入金額</p>
+                  <p className={`text-lg font-bold ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>¥{presentation.loanAmount.toLocaleString()}</p>
+                </div>
+                <div className={`p-3 rounded border ${
+                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+                }`}>
+                  <p className={`text-sm mb-2 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>頭金</p>
+                  <p className={`text-lg font-bold ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>¥{presentation.downPayment.toLocaleString()}</p>
+                </div>
+                <div className={`p-3 rounded border ${
+                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+                }`}>
+                  <p className={`text-sm mb-2 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>金利</p>
+                  <p className={`text-lg font-bold ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{presentation.interestRate.toFixed(1)}%</p>
+                </div>
+                <div className={`p-3 rounded border ${
+                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
+                }`}>
+                  <p className={`text-sm mb-2 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>返済期間</p>
+                  <p className={`text-lg font-bold ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{presentation.loanPeriod}年</p>
+                </div>
               </div>
-              <div className={`p-2 rounded border ${
-                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-              }`}>
-                <p className={`text-[10px] mb-1 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>頭金</p>
-                <p className={`text-xs font-bold ${
+
+              <div
+                className={`p-6 rounded-lg text-center border-2 ${
                   isDark ? 'text-white' : 'text-gray-900'
-                }`}>¥{presentation.downPayment.toLocaleString()}</p>
-              </div>
-              <div className={`p-2 rounded border ${
-                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-              }`}>
-                <p className={`text-[10px] mb-1 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>金利</p>
-                <p className={`text-xs font-bold ${
+                }`}
+                style={{
+                  background: isDark
+                    ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`
+                    : `linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.1) 100%)`,
+                  borderColor: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
+                }}
+              >
+                <p className="text-lg font-bold mb-2">月々のお支払い</p>
+                <p className={`text-4xl font-bold mb-2 ${
                   isDark ? 'text-white' : 'text-gray-900'
-                }`}>{presentation.interestRate.toFixed(1)}%</p>
-              </div>
-              <div className={`p-2 rounded border ${
-                isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-              }`}>
-                <p className={`text-[10px] mb-1 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>返済期間</p>
-                <p className={`text-xs font-bold ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>{presentation.loanPeriod}年</p>
+                }`} style={{color: isDark ? CROWN_DESIGN.colors.gold : '#eab308'}}>
+                  ¥{presentation.monthlyPayment.toLocaleString()}
+                </p>
+                <p className={`text-sm ${
+                  isDark ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  ※ボーナス払いなし、元利均等返済の場合
+                </p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div
-              className={`p-3 rounded-lg text-center border ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}
-              style={{
-                background: isDark
-                  ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`
-                  : `linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.1) 100%)`,
-                borderColor: isDark ? CROWN_DESIGN.colors.gold : '#eab308'
-              }}
-            >
-              <p className={`${CROWN_DESIGN.typography.japanese} text-xs mb-1`}>月々のお支払い</p>
-              <p className={`text-xl font-bold ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>
-                ¥{presentation.monthlyPayment.toLocaleString()}
-              </p>
-              <p className={`text-[10px] mt-1 ${
+        {/* 補足説明：資金計画のポイント */}
+        <div className={`rounded-lg p-6 border ${
+          isDark
+            ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
+            : 'bg-gradient-to-br from-blue-50 to-white border-blue-300'
+        }`}>
+          <h3 className={`text-xl font-bold mb-4 flex items-center gap-3 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
+            <FileText className="h-6 w-6 text-blue-600" />
+            資金計画のポイント
+          </h3>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {((presentation.downPayment / presentation.totalCost) * 100).toFixed(1)}%
+              </div>
+              <p className={`text-sm ${
                 isDark ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                ※ボーナス払いなし、元利均等返済の場合
-              </p>
+              }`}>自己資金比率</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {presentation.loanPeriod}年
+              </div>
+              <p className={`text-sm ${
+                isDark ? 'text-gray-300' : 'text-gray-600'
+              }`}>返済期間</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                {((presentation.monthlyPayment * 12 / 10000)).toFixed(0)}万円
+              </div>
+              <p className={`text-sm ${
+                isDark ? 'text-gray-300' : 'text-gray-600'
+              }`}>年間返済額</p>
             </div>
           </div>
         </div>

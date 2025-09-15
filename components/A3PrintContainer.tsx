@@ -66,7 +66,7 @@ export const A3PrintContainer: React.FC<A3PrintContainerProps> = ({
   const handleExportPDF = async () => {
     if (containerRef.current) {
       try {
-        const { exportA3LandscapePDF } = await import('@/lib/pdf-export');
+        const { exportA3LandscapePDF } = await import('@/lib/pdf-export-client');
         const filename = `${title?.replace(/\s+/g, '_') || 'document'}_${new Date().toISOString().split('T')[0]}.pdf`;
         await exportA3LandscapePDF(containerRef.current, filename);
       } catch (error) {

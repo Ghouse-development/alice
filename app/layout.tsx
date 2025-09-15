@@ -22,7 +22,11 @@ export default function RootLayout({
     <html lang="ja">
       <body className={inter.className}>
         <ThemeProvider>
-          {children}
+          <div className="page-shell">
+            <main className="page-main">
+              {children}
+            </main>
+          </div>
         </ThemeProvider>
       </body>
     </html>

@@ -1,0 +1,411 @@
+/* A3印刷専用スタイルシート - UI除外、完全フィット */
+
+/* @page設定 - A3横向き */
+@page {
+  size: A3 landscape; /* 420mm × 297mm */
+  margin: 0;
+  padding: 0;
+}
+
+/* 印刷時の設定 */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  html, body {
+    width: 420mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: white;
+  }
+
+  /* ビューアUI・ナビゲーション要素の完全除去 */
+  .viewer-ui,
+  .hotkeys,
+  .page-indicator,
+  .controls,
+  .nav,
+  .help,
+  .footer,
+  .navigation,
+  .pagination,
+  .slide-counter,
+  .progress-bar,
+  .toolbar,
+  .sidebar,
+  .menu,
+  .overlay,
+  .modal,
+  .toast,
+  .tooltip,
+  .black-band,
+  .header-bar,
+  .project-header,
+  .date-header,
+  .breadcrumb,
+  .navigation-controls,
+  .slide-navigation,
+  .page-counter,
+  .key-hints,
+  .hotkey-help,
+  .status-bar,
+  .action-bar,
+  .control-panel,
+  [data-role="viewer-ui"],
+  [data-role="navigation"],
+  [data-role="controls"],
+  [class*="viewer-"],
+  [class*="nav-"],
+  [class*="control-"],
+  [class*="header-"],
+  [class*="status-"],
+  [class*="action-"],
+  [id*="nav"],
+  [id*="control"],
+  [id*="header"],
+  .no-print,
+  /* 特定の問題要素 */
+  *[class*="新規案件"],
+  *[class*="2025"],
+  *[class*="1/14"],
+  *[class*="page-"],
+  *[class*="slide-count"],
+  *[class*="keyboard"],
+  *[class*="shortcut"],
+  /* 追加：設定パネルやインタラクティブ要素 */
+  *[class*="settings"],
+  *[class*="control"],
+  *[class*="button"],
+  button,
+  input[type="range"],
+  input[type="number"],
+  .settings-panel,
+  .control-panel,
+  .interactive-controls {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* A3シート設定 */
+  .sheet.a3.landscape {
+    width: 420mm;
+    height: 297mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+    page-break-before: auto;
+    page-break-inside: avoid;
+  }
+
+  .sheet.a3.landscape:last-child {
+    page-break-after: avoid;
+  }
+
+  /* 印刷時の全スライド表示保証 */
+  .print-preview-container {
+    display: block !important;
+  }
+
+  .print-preview-container .sheet.a3.landscape {
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* スライドラッパー */
+  .slide-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* スライドコンテンツ */
+  .slide-content {
+    transform-origin: center center;
+    max-width: 420mm;
+    max-height: 297mm;
+    background: white;
+  }
+}
+
+/* 画面プレビュー時の設定 */
+@media screen {
+  .print-preview-container {
+    background: #e5e5e5;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  .sheet.a3.landscape {
+    width: 1587px; /* 420mm * 96dpi / 25.4 */
+    height: 1123px; /* 297mm * 96dpi / 25.4 */
+    background: white;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+
+  .slide-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .slide-content {
+    transform-origin: center center;
+    max-width: 100%;
+    max-height: 100%;
+    background: white;
+  }
+
+  /* プレビュー用コントロール */
+  .print-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .print-controls button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .print-controls button:hover {
+    background: #f5f5f5;
+  }
+
+  .print-controls button.primary {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+
+  .print-controls button.primary:hover {
+    background: #0056b3;
+  }
+
+  /* 隠すべき要素の指定 */
+  .no-print,
+  .viewer-ui,
+  .hotkeys,
+  .page-indicator,
+  .controls,
+  .nav,
+  .help,
+  .footer,
+  .navigation,
+  .pagination,
+  .slide-counter,
+  .progress-bar,
+  .toolbar,
+  .sidebar,
+  .menu {
+    display: none !important;
+  }
+}
+
+/* フォント設定 */
+.sheet.a3.landscape {
+  font-family: 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* テキストサイズの最小保証 */
+.sheet.a3.landscape * {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.sheet.a3.landscape h1 { font-size: 2em; }
+.sheet.a3.landscape h2 { font-size: 1.5em; }
+.sheet.a3.landscape h3 { font-size: 1.25em; }
+.sheet.a3.landscape h4 { font-size: 1.125em; }
+.sheet.a3.landscape h5 { font-size: 1em; }
+.sheet.a3.landscape h6 { font-size: 0.875em; }
+
+/* 画像とメディアの調整 */
+.sheet.a3.landscape img,
+.sheet.a3.landscape video,
+.sheet.a3.landscape canvas,
+.sheet.a3.landscape svg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* テーブルの調整 */
+.sheet.a3.landscape table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: inherit;
+}
+
+.sheet.a3.landscape td,
+.sheet.a3.landscape th {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+  font-size: inherit;
+}
+
+/* リストの調整 */
+.sheet.a3.landscape ul,
+.sheet.a3.landscape ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+/* ボタンなどの非印刷要素 */
+.sheet.a3.landscape button,
+.sheet.a3.landscape input,
+.sheet.a3.landscape select,
+.sheet.a3.landscape textarea {
+  display: none !important;
+}
+
+/* 印刷時の統一レイアウト */
+@media print {
+  .sheet.a3.landscape * {
+    /* フォントの最小サイズ保証 */
+    min-font-size: 10px;
+    line-height: 1.4;
+  }
+
+  /* 見出しのスタイル統一 */
+  .sheet.a3.landscape h1 {
+    font-size: 2.5em !important;
+    font-weight: bold !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+  }
+
+  .sheet.a3.landscape h2 {
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  .sheet.a3.landscape h3 {
+    font-size: 1.25em !important;
+    font-weight: bold !important;
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  /* テーブルの統一スタイル */
+  .sheet.a3.landscape table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  .sheet.a3.landscape td,
+  .sheet.a3.landscape th {
+    padding: 0.5rem !important;
+    border: 1px solid #ddd !important;
+    font-size: inherit !important;
+    vertical-align: top !important;
+  }
+
+  /* マージンとパディングの統一 */
+  .sheet.a3.landscape .grid {
+    gap: 1rem !important;
+  }
+
+  .sheet.a3.landscape .rounded-lg {
+    border-radius: 0.5rem !important;
+  }
+
+  .sheet.a3.landscape .p-4 {
+    padding: 1rem !important;
+  }
+
+  .sheet.a3.landscape .p-6 {
+    padding: 1.5rem !important;
+  }
+
+  .sheet.a3.landscape .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  .sheet.a3.landscape .mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* 色のコントラスト確保 */
+  .sheet.a3.landscape {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .sheet.a3.landscape .text-gray-600,
+  .sheet.a3.landscape .text-gray-700,
+  .sheet.a3.landscape .text-gray-800,
+  .sheet.a3.landscape .text-gray-900 {
+    color: #374151 !important;
+  }
+
+  .sheet.a3.landscape .text-white {
+    color: #000 !important;
+  }
+
+  .sheet.a3.landscape .bg-black,
+  .sheet.a3.landscape .bg-gray-900,
+  .sheet.a3.landscape .bg-gray-800 {
+    background: #f9fafb !important;
+    color: #000 !important;
+  }
+}
+
+/* デバッグ用：境界線表示（必要時のみ有効化） */
+/*
+.sheet.a3.landscape {
+  border: 2px solid red;
+}
+
+.slide-wrapper {
+  border: 1px solid blue;
+}
+
+.slide-content {
+  border: 1px solid green;
+}
+*/

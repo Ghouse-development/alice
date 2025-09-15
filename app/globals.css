@@ -1,6 +1,380 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ========================================
+   グローバル変数とリセット
+   ======================================== */
+:root {
+  --page-max: 1200px;      /* 画面の最大幅 */
+  --gap: 24px;              /* 標準余白 */
+  --gap-sm: 16px;
+  --gap-lg: 32px;
+}
+
+/* Box-sizing統一（はみ出し防止の基本） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 横はみ出しの最終防御 */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* ========================================
+   共通レイアウトクラス（全ページで使用）
+   ======================================== */
+
+/* ページコンテナ：中央寄せ・最大幅・余白 */
+.page-container {
+  max-width: min(var(--page-max), 95vw);
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+}
+
+/* Flex/Grid子要素の突き破り防止 */
+.page-container *,
+.grid-3 > *,
+.grid-2 > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 3カラムグリッド（オプション画面など） */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* 2カラムグリッド */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* カード/パネル共通（切れ防止） */
+.card,
+.panel,
+.section {
+  overflow: visible; /* hidden禁止 */
+  border-radius: 12px;
+  background: white;
+}
+
+/* 縦長スクロール（画面のみ） */
+.scroll-y {
+  max-height: clamp(400px, 60vh, 800px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* インラインスクロール設定 */
+.scroll-sm { max-height: 300px; }
+.scroll-md { max-height: 500px; }
+.scroll-lg { max-height: 700px; }
+
+/* ========================================
+   A3スライド専用レイアウト
+   ======================================== */
+
+.a3-sheet {
+  width: 420mm;
+  height: 297mm;
+  padding: 10mm;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.a3-canvas {
+  width: 400mm;
+  height: 277mm;
+  display: grid;
+  gap: 6mm;
+  grid-template-columns: 1.1fr 1.1fr 1.2fr; /* 右カラムをわずかに広め */
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  overflow: visible;
+}
+
+/* 全体原則：はみ出し再発防止 */
+.a3-canvas * {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  position: static;
+}
+
+/* A3タイトル */
+.a3-title {
+  font-size: 18pt;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 2mm;
+}
+
+.a3-subtitle-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 4mm;
+}
+
+.a3-subtitle {
+  font-size: 13pt;
+  font-weight: 700;
+  width: max-content;
+  padding-bottom: 1mm;
+}
+
+.a3-subtitle.left {
+  border-bottom: 2px solid #E11D48;
+}
+
+.a3-subtitle.right {
+  border-bottom: 2px solid #EF4444;
+  justify-self: end;
+}
+
+/* A3カード基本 */
+.a3-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6mm;
+  padding: 5mm;
+  background: #fff;
+  box-shadow: 0 2mm 6mm rgba(0, 0, 0, 0.06);
+  overflow: visible;
+  height: 100%;
+}
+
+/* パネル：画像を優先的に大きく */
+.a3-panel {
+  display: grid;
+  gap: 4mm;
+  grid-template-rows: auto minmax(70mm, 1fr) auto auto;
+  height: 100%;
+}
+
+.a3-panel-title {
+  font-size: 12pt;
+  font-weight: 700;
+  text-align: center;
+  padding: 2mm 0;
+}
+
+.a3-panel-title.red { color: #DC2626; }
+.a3-panel-title.blue { color: #2563EB; }
+
+.a3-image-box {
+  border-radius: 4mm;
+  background: #F3F4F6;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-height: 70mm;
+}
+
+.a3-image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* チェックリストをコンパクトに */
+.a3-checklist {
+  font-size: 10.5pt;
+  line-height: 1.3;
+}
+
+.a3-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  padding: 1mm 0;
+}
+
+.a3-checklist-item input[type="checkbox"] {
+  width: 3.5mm;
+  height: 3.5mm;
+  flex-shrink: 0;
+}
+
+.a3-checklist-item .label {
+  flex: 1;
+}
+
+.a3-checklist-item .price {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+/* 小計タグ */
+.a3-subtotal-tag {
+  padding: 3mm;
+  border-radius: 3mm;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 2mm;
+}
+
+.a3-subtotal-tag.red {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.a3-subtotal-tag.blue {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+/* 縦長スクロール（画面のみ） */
+.a3-scroll-y {
+  max-height: 150mm;
+  overflow-y: auto;
+  padding-right: 2mm;
+}
+
+/* 合計パネル行 */
+.a3-total-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6mm;
+}
+
+.a3-total-card {
+  padding: 5mm;
+  border-radius: 5mm;
+  border: 2px solid;
+}
+
+.a3-total-card.pattern1 {
+  background: linear-gradient(to bottom right, #FEE2E2, #FFF);
+  border-color: #DC2626;
+}
+
+.a3-total-card.pattern2 {
+  background: linear-gradient(to bottom right, #DBEAFE, #FFF);
+  border-color: #2563EB;
+}
+
+/* 再発防止：重なり・はみ出しの元を一掃 */
+.a3-canvas [class*="sticky"],
+.a3-canvas [style*="position:fixed"],
+.a3-canvas [style*="position:absolute"],
+.a3-canvas [style*="transform"] {
+  position: static !important;
+  transform: none !important;
+}
+
+/* ========================================
+   印刷用スタイル
+   ======================================== */
+
+/* A3全ページ印刷用 */
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    width: 420mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    overflow-x: visible; /* 印刷時は横スクロール制限解除 */
+  }
+
+  /* 縦長スクロール無効化（印刷時は全量表示） */
+  .scroll-y,
+  .scroll-sm,
+  .scroll-md,
+  .scroll-lg,
+  .a3-scroll-y {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* カード/パネルの影削除 */
+  .card,
+  .panel,
+  .section {
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* 1スライド=1ページ（改ページ） */
+  .a3-sheet {
+    display: block !important;
+    width: 420mm;
+    height: 297mm;
+    overflow: hidden;
+    break-after: page;
+    page-break-after: always;
+    margin: 0;
+    padding: 0;
+  }
+
+  .a3-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* 改ページ妨害の無効化 */
+  #print-root, .a3-sheet, .slide-canvas {
+    position: static !important;
+    transform: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 余計なUIは完全非表示 */
+  .viewer-ui, .hotkeys, .page-indicator, .controls, .nav, .help, .footer,
+  .black-band, .header-bar, [data-role="viewer-ui"],
+  .no-print, .navigation, .pagination, .slide-counter,
+  .progress-bar, .toolbar, .sidebar, .menu, .overlay, .modal,
+  .toast, .tooltip, .project-header, .date-header, .breadcrumb {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 印刷色調整 */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
+
+/* A3内で"はみ出しゼロ最大化 & 中央配置"（子要素にのみ transform） */
+.a3-sheet .slide-canvas {
+  transform-origin: center center;
+  margin: 0 auto;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

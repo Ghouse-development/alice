@@ -33,6 +33,7 @@ export default function PresentationFlowPage() {
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(true); // プレゼンモード状態を追加
 
   // 全画面時にボディのスタイルを制御
   useEffect(() => {
@@ -101,16 +102,8 @@ export default function PresentationFlowPage() {
     }
   }, [currentSlideIndex]);
 
-  // 印刷機能
-  const handlePrintAll = () => {
-    setIsPrinting(true);
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 1000);
-    }, 100);
-  };
+  // 印刷機能（削除済み - 使用されていません）
+  // handlePrintAll は削除されました
 
   // キーボードナビゲーション対応
   useEffect(() => {
@@ -337,24 +330,6 @@ export default function PresentationFlowPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handlePrintAll}
-                className="text-white hover:bg-white/20"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                全て印刷
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAutoPlay(!autoPlay)}
-                className="text-white hover:bg-white/20"
-              >
-                {autoPlay ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                {autoPlay ? 'ストップ' : 'オート'}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
                 onClick={() => {
                   if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
@@ -365,9 +340,11 @@ export default function PresentationFlowPage() {
                   }
                 }}
                 className="text-white hover:bg-white/20"
+                title={isPresentationMode ? '全画面表示' : '全画面'}
+                aria-label={isPresentationMode ? '全画面表示' : '全画面'}
               >
                 {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-                {isFullscreen ? '終了' : '全画面'}
+                {isPresentationMode ? '全画面表示' : '全画面'}
               </Button>
             </div>
           </div>
