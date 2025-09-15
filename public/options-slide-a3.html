@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オプション - A3横印刷</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @page {
+      size: A3 landscape;
+      margin: 12mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .container-a3 {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+      }
+    }
+
+    /* 重なり防止の強制ルール */
+    * {
+      position: static !important;
+      z-index: auto !important;
+    }
+
+    /* 数値の右揃え */
+    .price-align {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* カスタムフォント */
+    body {
+      font-family: 'Noto Sans JP', system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="container-a3 w-[1400px] mx-auto p-6">
+    <!-- ヘッダー -->
+    <header class="mb-6">
+      <h1 class="text-[28px] font-bold text-center mb-3">オプション</h1>
+      <div class="flex justify-between items-center">
+        <div class="text-[18px] font-semibold text-gray-700 border-b-2 border-red-500 pb-1">外装オプション</div>
+        <div class="text-[18px] font-semibold text-gray-700 border-b-2 border-red-500 pb-1">内装オプション</div>
+      </div>
+    </header>
+
+    <!-- 上段グリッド（3カラム） -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <!-- 外観パターン① -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
+        <h2 class="text-[18px] font-semibold text-red-600 border-b-2 border-red-600 pb-2 mb-4">
+          外観パターン①
+        </h2>
+
+        <!-- 画像領域（55%以上） -->
+        <div class="h-[280px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+          <span class="text-gray-500 text-xl font-medium">外観イメージ①</span>
+        </div>
+
+        <!-- チェックリスト -->
+        <div class="flex-1 space-y-2 text-[12.5px] leading-tight">
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥100,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥150,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥200,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥250,000</span>
+          </label>
+        </div>
+
+        <!-- 小計 -->
+        <div class="mt-4 p-3 bg-red-50 rounded-lg text-center">
+          <span class="text-[14px] font-semibold text-red-600">小計 ¥0</span>
+        </div>
+      </div>
+
+      <!-- 外観パターン② -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
+        <h2 class="text-[18px] font-semibold text-blue-600 border-b-2 border-blue-600 pb-2 mb-4">
+          外観パターン②
+        </h2>
+
+        <!-- 画像領域（55%以上） -->
+        <div class="h-[280px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+          <span class="text-gray-500 text-xl font-medium">外観イメージ②</span>
+        </div>
+
+        <!-- チェックリスト -->
+        <div class="flex-1 space-y-2 text-[12.5px] leading-tight">
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥120,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥180,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥220,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥280,000</span>
+          </label>
+        </div>
+
+        <!-- 小計 -->
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-center">
+          <span class="text-[14px] font-semibold text-blue-600">小計 ¥0</span>
+        </div>
+      </div>
+
+      <!-- 内装オプション -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
+        <h2 class="text-[18px] font-semibold text-gray-700 border-b-2 border-gray-400 pb-2 mb-4">
+          内装オプション
+        </h2>
+
+        <!-- タブ -->
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">リビング</div>
+          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">ダイニング</div>
+          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">キッチン</div>
+          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">和室</div>
+        </div>
+
+        <!-- 画像領域（最大） -->
+        <div class="h-[320px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+          <span class="text-gray-500 text-xl font-medium">内装イメージ</span>
+        </div>
+
+        <!-- チェックリスト（スクロール可能） -->
+        <div class="flex-1 overflow-y-auto max-h-[120px] space-y-1 text-[11px] leading-tight pr-2">
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥50,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥80,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥100,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥120,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥150,000</span>
+          </label>
+          <label class="flex items-start">
+            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
+            <span class="flex-1">てすとてすと</span>
+            <span class="price-align ml-2">¥180,000</span>
+          </label>
+        </div>
+
+        <!-- 小計 -->
+        <div class="mt-4 p-3 bg-gray-100 rounded-lg text-center">
+          <span class="text-[14px] font-semibold text-gray-700">内装オプション合計 ¥0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下段：合計金額セクション -->
+    <div class="border-t-2 border-gray-300 pt-6">
+      <h3 class="text-[22px] font-bold text-center mb-6">
+        <span class="border-b-2 border-red-600 pb-1 px-8">オプション合計金額</span>
+      </h3>
+
+      <!-- 下段グリッド（2カラム） -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- パターン① -->
+        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border-2 border-red-500 p-6 min-h-[220px]">
+          <h4 class="text-[20px] font-bold text-center text-red-600 mb-3">パターン①</h4>
+          <p class="text-[14px] text-center text-gray-600 mb-4">
+            外観パターン① ＋ 内装オプション
+          </p>
+
+          <div class="bg-white rounded-lg p-4">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-[16px]">合計金額</span>
+              <span class="text-[24px] font-bold text-red-600 price-align">¥0</span>
+            </div>
+            <div class="bg-yellow-50 rounded-lg p-3">
+              <div class="flex justify-between items-center">
+                <span class="text-[14px]">月々</span>
+                <span class="text-[20px] font-bold text-yellow-700 price-align">¥0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- パターン② -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-500 p-6 min-h-[220px]">
+          <h4 class="text-[20px] font-bold text-center text-blue-600 mb-3">パターン②</h4>
+          <p class="text-[14px] text-center text-gray-600 mb-4">
+            外観パターン② ＋ 内装オプション
+          </p>
+
+          <div class="bg-white rounded-lg p-4">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-[16px]">合計金額</span>
+              <span class="text-[24px] font-bold text-blue-600 price-align">¥0</span>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-3">
+              <div class="flex justify-between items-center">
+                <span class="text-[14px]">月々</span>
+                <span class="text-[20px] font-bold text-blue-700 price-align">¥0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

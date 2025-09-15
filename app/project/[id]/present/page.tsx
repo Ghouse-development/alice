@@ -8,8 +8,6 @@ import {
   ArrowRight,
   Edit,
   Maximize2,
-  Download,
-  FileDown,
   Home,
   Building,
   Wrench,
@@ -25,7 +23,6 @@ import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import { Presentation2Wrapper, Presentation3Wrapper, Presentation5Wrapper } from '@/components/PresentationWrappers';
 import { Presentation4View } from '@/components/Presentation4View';
-import PrintAllSlidesA3 from '@/components/PrintAllSlidesA3';
 
 const steps = [
   { id: 1, label: 'デザイン', icon: Home, component: Presentation1View },
@@ -82,26 +79,6 @@ export default function ProjectPresentPage() {
     }
   };
 
-  const handlePDFExport = async () => {
-    // 現在のスライドのみ印刷
-    window.print();
-  };
-
-  const handleDownloadAllSlides = () => {
-    // 全スライドを印刷用に準備
-    // 一時的にbodyにクラスを追加して印刷モードにする
-    document.body.classList.add('print-all-slides');
-
-    // 印刷ダイアログを開く
-    setTimeout(() => {
-      window.print();
-
-      // 印刷後にクラスを削除
-      setTimeout(() => {
-        document.body.classList.remove('print-all-slides');
-      }, 100);
-    }, 100);
-  };
 
   if (!currentProject) {
     return (
@@ -120,8 +97,6 @@ export default function ProjectPresentPage() {
 
   return (
     <>
-      {/* 印刷用の全スライド（画面では非表示） */}
-      <PrintAllSlidesA3 projectId={currentProject?.id || ''} />
 
       <div className={`min-h-screen bg-gray-50 ${isFullscreen ? 'p-0' : 'py-4'} no-print`}>
       {!isFullscreen && (

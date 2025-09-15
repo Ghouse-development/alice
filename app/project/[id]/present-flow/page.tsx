@@ -2,17 +2,16 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize } from 'lucide-react';
 import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import Presentation3Interactive from '@/components/Presentation3Interactive';
+import OptionsSlideRevised from '@/components/OptionsSlideRevised';
 import { Presentation4View } from '@/components/Presentation4View';
-import Presentation5RunningCost from '@/components/Presentation5RunningCost';
+import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
 import { PresentationContainer } from '@/components/PresentationContainer';
-import PrintAllSlides from '@/components/PrintAllSlides';
 
 interface SlideInfo {
   presentation: number;
@@ -32,7 +31,6 @@ export default function PresentationFlowPage() {
   const [autoPlay, setAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(true); // プレゼンモード状態を追加
 
   // 全画面時にボディのスタイルを制御
@@ -102,20 +100,10 @@ export default function PresentationFlowPage() {
     }
   }, [currentSlideIndex]);
 
-  // 印刷機能（削除済み - 使用されていません）
-  // handlePrintAll は削除されました
-
   // キーボードナビゲーション対応
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (!isFullscreen) return;
-
-      // Ctrl+P で印刷
-      if (event.ctrlKey && event.key === 'p') {
-        event.preventDefault();
-        window.print();
-        return;
-      }
 
       switch (event.key) {
         case 'ArrowLeft':
@@ -262,7 +250,7 @@ export default function PresentationFlowPage() {
       case 3:
         return (
           <PresentationContainer fullscreen>
-            <Presentation3Interactive />
+            <OptionsSlideRevised projectId={projectId} />
           </PresentationContainer>
         );
       case 4:
@@ -272,11 +260,7 @@ export default function PresentationFlowPage() {
           </PresentationContainer>
         );
       case 5:
-        return (
-          <PresentationContainer fullscreen>
-            <Presentation5RunningCost />
-          </PresentationContainer>
-        );
+        return <SolarSimulatorConclusionFirst projectId={projectId} />;
       default:
         return <div>Invalid presentation</div>;
     }
@@ -525,8 +509,6 @@ export default function PresentationFlowPage() {
         </div>
       </div>
 
-      {/* 印刷用コンポーネント（非表示、印刷時のみ表示） */}
-      {isPrinting && <PrintAllSlides projectId={projectId} />}
     </div>
   );
 }

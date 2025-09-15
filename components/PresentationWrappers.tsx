@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Presentation2CrownUnified from './Presentation2CrownUnified';
-import Presentation3Interactive from './Presentation3Interactive';
-import Presentation5RunningCost from './Presentation5RunningCost';
+import OptionsSlideRevised from './OptionsSlideRevised';
+import SolarSimulatorConclusionFirst from './SolarSimulatorConclusionFirst';
 
 // Presentation2のラッパー
 export function Presentation2Wrapper({ projectId }: { projectId: string }) {
@@ -11,11 +11,11 @@ export function Presentation2Wrapper({ projectId }: { projectId: string }) {
 }
 
 // Presentation3のラッパー
-export function Presentation3Wrapper({ }: { projectId: string }) {
-  return <Presentation3Interactive />;
+export function Presentation3Wrapper({ projectId }: { projectId: string }) {
+  return <OptionsSlideRevised projectId={projectId} />;
 }
 
 // Presentation5のラッパー
-export function Presentation5Wrapper({ }: { projectId: string }) {
-  return <Presentation5RunningCost />;
+export function Presentation5Wrapper({ projectId }: { projectId: string }) {
+  return <SolarSimulatorConclusionFirst projectId={projectId} />;
 }

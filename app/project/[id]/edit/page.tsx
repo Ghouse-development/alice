@@ -33,9 +33,9 @@ import { Presentation4Editor } from '@/components/Presentation4Editor';
 import { Presentation5Editor } from '@/components/Presentation5Editor';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import Presentation3Interactive from '@/components/Presentation3Interactive';
+import OptionsSlideRevised from '@/components/OptionsSlideRevised';
 import { Presentation4View } from '@/components/Presentation4View';
-import Presentation5RunningCost from '@/components/Presentation5RunningCost';
+import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
 import { PresentationContainer } from '@/components/PresentationContainer';
 
 const tabs = [
@@ -51,9 +51,9 @@ const tabs = [
 const presentationComponents = {
   pres1: Presentation1View,
   pres2: Presentation2CrownUnified,
-  pres3: Presentation3Interactive,
+  pres3: OptionsSlideRevised,
   pres4: Presentation4View,
-  pres5: Presentation5RunningCost,
+  pres5: SolarSimulatorConclusionFirst,
 };
 
 export default function ProjectEditPage() {
@@ -287,15 +287,22 @@ export default function ProjectEditPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0 bg-black">
-                    <div style={{ aspectRatio: '1.414 / 1' }}>
-                      <PresentationContainer>
-                        {activeTab === 'pres2' ? (
-                          <Presentation2CrownUnified projectId={currentProject.id} />
-                        ) : (
-                          <CurrentPreviewComponent projectId={currentProject.id} />
-                        )}
-                      </PresentationContainer>
-                    </div>
+                    {activeTab === 'pres5' ? (
+                      // Solar simulator conclusion-first layout
+                      <div className="bg-white" style={{ aspectRatio: '1.414 / 1', overflow: 'auto' }}>
+                        <SolarSimulatorConclusionFirst projectId={currentProject.id} />
+                      </div>
+                    ) : (
+                      <div style={{ aspectRatio: '1.414 / 1' }}>
+                        <PresentationContainer>
+                          {activeTab === 'pres2' ? (
+                            <Presentation2CrownUnified projectId={currentProject.id} />
+                          ) : (
+                            <CurrentPreviewComponent projectId={currentProject.id} />
+                          )}
+                        </PresentationContainer>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -323,9 +330,14 @@ export default function ProjectEditPage() {
               </Button>
             </div>
             <div className="flex-1 flex items-center justify-center">
-              <PresentationContainer fullscreen>
-                <CurrentPreviewComponent projectId={currentProject.id} />
-              </PresentationContainer>
+              {activeTab === 'pres5' ? (
+                // Solar simulator conclusion-first layout
+                <SolarSimulatorConclusionFirst projectId={currentProject.id} />
+              ) : (
+                <PresentationContainer fullscreen>
+                  <CurrentPreviewComponent projectId={currentProject.id} />
+                </PresentationContainer>
+              )}
             </div>
           </div>
         </div>
