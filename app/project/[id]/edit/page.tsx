@@ -33,7 +33,7 @@ import { Presentation4Editor } from '@/components/Presentation4Editor';
 import { Presentation5Editor } from '@/components/Presentation5Editor';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import OptionsSlideRevised from '@/components/OptionsSlideRevised';
+import OptionsSlideFixed from '@/components/OptionsSlideFixed';
 import { Presentation4View } from '@/components/Presentation4View';
 import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
 import { PresentationContainer } from '@/components/PresentationContainer';
@@ -51,7 +51,7 @@ const tabs = [
 const presentationComponents = {
   pres1: Presentation1View,
   pres2: Presentation2CrownUnified,
-  pres3: OptionsSlideRevised,
+  pres3: OptionsSlideFixed,
   pres4: Presentation4View,
   pres5: SolarSimulatorConclusionFirst,
 };

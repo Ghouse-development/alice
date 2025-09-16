@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Presentation2CrownUnified from './Presentation2CrownUnified';
-import OptionsSlideRevised from './OptionsSlideRevised';
+import OptionsSlideFixed from './OptionsSlideFixed';
 import SolarSimulatorConclusionFirst from './SolarSimulatorConclusionFirst';
 
 // Presentation2のラッパー
@@ -12,7 +12,7 @@ export function Presentation2Wrapper({ projectId }: { projectId: string }) {
 
 // Presentation3のラッパー
 export function Presentation3Wrapper({ projectId }: { projectId: string }) {
-  return <OptionsSlideRevised projectId={projectId} />;
+  return <OptionsSlideFixed projectId={projectId} />;
 }
 
 // Presentation5のラッパー

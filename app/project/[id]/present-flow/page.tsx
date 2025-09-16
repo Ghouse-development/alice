@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import OptionsSlideRevised from '@/components/OptionsSlideRevised';
+import OptionsSlideFixed from '@/components/OptionsSlideFixed';
 import { Presentation4View } from '@/components/Presentation4View';
 import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
 import { PresentationContainer } from '@/components/PresentationContainer';
@@ -85,6 +85,120 @@ export default function PresentationFlowPage() {
     if (index >= 0 && index < totalSlides) {
       setCurrentSlideIndex(index);
     }
+  };
+
+  // 全スライドを印刷用に出力（全画面で全ページA3横印刷）
+  const handlePrintAllSlides = async () => {
+    try {
+      // 1) フルスクリーン（ユーザー操作起点なのでawait可能）
+      if (!document.fullscreenElement) {
+        try {
+          await document.documentElement.requestFullscreen();
+        } catch {
+          /* ブラウザが拒否しても続行 */
+        }
+      }
+
+      // 2) 全スライドのDOMを取得
+      const allSlides = await getAllSlides();
+
+      if (!allSlides?.length) return;
+
+      // 3) 印刷ホストを作成し、全ページをクローンして突っ込む
+      const host = document.createElement('div');
+      host.id = 'print-host';
+      document.body.appendChild(host);
+
+      allSlides.forEach((node, i) => {
+        const clone = node.cloneNode(true) as HTMLElement;
+        clone.classList.add('print-slide');
+        // スライド内のツールバーや余計なUIは除去
+        clone.querySelectorAll('.toolbar, .present-controls, .no-print').forEach(el => el.remove());
+        host.appendChild(clone);
+      });
+
+      // 4) 画像とフォントのロード待ち
+      await Promise.all([
+        waitForImages(host),
+        (document as any).fonts?.ready?.catch(() => {})
+      ]);
+
+      // 5) 印刷
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      window.print();
+
+    } finally {
+      // 6) 後片付け
+      document.getElementById('print-host')?.remove();
+      if (document.fullscreenElement) {
+        try {
+          await document.exitFullscreen();
+        } catch {}
+      }
+    }
+  };
+
+  // 画像のロード待機処理
+  const waitForImages = (root: HTMLElement) => {
+    const imgs = Array.from(root.querySelectorAll('img'));
+    return Promise.all(imgs.map(img => {
+      if (img.complete) return Promise.resolve(null);
+      return new Promise<void>(res => {
+        img.addEventListener('load', () => res(), { once: true });
+        img.addEventListener('error', () => res(), { once: true });
+        // 遅延読み込みを無効化
+        img.loading = 'eager';
+        (img as any).decoding = 'sync';
+      });
+    }));
+  };
+
+  // 全スライドのDOMを取得（仮想化対応）
+  const getAllSlides = async (): Promise<HTMLElement[]> => {
+    const slideElements: HTMLElement[] = [];
+
+    // 各スライドをレンダリングしてDOMを取得
+    for (let i = 0; i < slides.length; i++) {
+      const slideData = slides[i];
+      const slideWrapper = document.createElement('div');
+      slideWrapper.className = 'presentation-wrapper';
+      slideWrapper.style.width = '420mm';
+      slideWrapper.style.height = '297mm';
+      slideWrapper.style.background = 'white';
+
+      // スライドのレンダリング用のコンテナ
+      const renderContainer = document.createElement('div');
+      renderContainer.id = `slide-render-${i}`;
+      renderContainer.style.width = '100%';
+      renderContainer.style.height = '100%';
+      renderContainer.style.position = 'relative';
+
+      // 各プレゼンテーションタイプに応じたコンテンツを生成
+      let content = '';
+      switch (slideData.presentation) {
+        case 1:
+          content = `<div class="slide-placeholder">デザイン ${slideData.slideIndex !== undefined ? slideData.slideIndex + 1 : ''}</div>`;
+          break;
+        case 2:
+          content = `<div class="slide-placeholder">標準仕様 ${slideData.slideIndex !== undefined ? slideData.slideIndex + 1 : ''}</div>`;
+          break;
+        case 3:
+          content = `<div class="slide-placeholder">オプション</div>`;
+          break;
+        case 4:
+          content = `<div class="slide-placeholder">資金計画</div>`;
+          break;
+        case 5:
+          content = `<div class="slide-placeholder">光熱費</div>`;
+          break;
+      }
+
+      renderContainer.innerHTML = content;
+      slideWrapper.appendChild(renderContainer);
+      slideElements.push(slideWrapper);
+    }
+
+    return slideElements;
   };
 
   // ナビゲーション関数を定義（useEffectで使用するため先に定義）
@@ -219,6 +333,9 @@ export default function PresentationFlowPage() {
         prevSlide();
       } else if (e.key === 'Escape') {
         router.push(`/project/${projectId}/edit`);
+      } else if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        handlePrintAllSlides();
       }
     };
 
@@ -250,7 +367,7 @@ export default function PresentationFlowPage() {
       case 3:
         return (
           <PresentationContainer fullscreen>
-            <OptionsSlideRevised projectId={projectId} />
+            <OptionsSlideFixed projectId={projectId} />
           </PresentationContainer>
         );
       case 4:
@@ -394,7 +511,7 @@ export default function PresentationFlowPage() {
       )}
 
       {/* メインコンテンツ */}
-      <div className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'}`} style={isFullscreen ? {
+      <div id="current-slide-content" className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'} slide-container`} style={isFullscreen ? {
         width: '100vw',
         height: '100vh',
         margin: 0,

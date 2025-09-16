@@ -1,6 +1,76 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* プレゼン画面のツールバーボタンを完全削除 */
+.btn-print, .btn-pdf, .btn-actual-size, .btn-fit,
+button[aria-label="印刷"], button[aria-label="PDF出力"],
+button[aria-label="実寸表示"], button[aria-label="画面幅に合わせる"],
+button[title*="印刷"], button[title*="PDF"],
+button[title*="実寸"], button[title*="画面幅"],
+.print-button, .pdf-button, .scale-button, .fit-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 全スライド印刷用スタイル（A3横） */
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print, .toolbar, .present-controls {
+    display: none !important;
+  }
+}
+
+/* 印刷用に複製したスライド */
+#print-host {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 2147483647;
+}
+
+.print-slide {
+  width: 420mm;
+  height: 297mm;
+  break-after: page;
+  page-break-after: always;
+  transform: none !important;
+  overflow: visible !important;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.print-slide:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.slide-placeholder {
+  font-size: 48pt;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
 /* ========================================
    グローバル変数とリセット
    ======================================== */
@@ -31,12 +101,15 @@ html, body {
    共通レイアウトクラス（全ページで使用）
    ======================================== */
 
-/* ページコンテナ：中央寄せ・最大幅・余白 */
+/* 1) ページの共通枠：中央寄せ＆横スクロール禁止の土台 */
 .page-container {
-  max-width: min(var(--page-max), 95vw);
+  max-width: min(1200px, 95vw);
   margin: 0 auto;
-  padding: 16px;
-  width: 100%;
+  padding-inline: 16px;
+}
+.page-container * {
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 /* Flex/Grid子要素の突き破り防止 */
@@ -47,11 +120,11 @@ html, body {
   min-height: 0;
 }
 
-/* 3カラムグリッド（オプション画面など） */
+/* 2) 3カラムの安全グリッド（右を少し広め） */
 .grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--gap);
+  grid-template-columns: 1fr 1fr 1.2fr;  /* 右カラム(内装/サイド)を広めに */
+  gap: 24px;
   align-items: start;
 }
 
@@ -63,10 +136,15 @@ html, body {
   align-items: start;
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 1200px) {
+/* 幅が狭い環境では崩さない */
+@media (max-width: 1400px) {
   .grid-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 1024px) {
+  .grid-3 {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -77,20 +155,31 @@ html, body {
   }
 }
 
-/* カード/パネル共通（切れ防止） */
+/* 3) カードの切れ・影欠けを防ぐ */
 .card,
 .panel,
 .section {
-  overflow: visible; /* hidden禁止 */
+  overflow: visible;      /* 角丸のための hidden は使わない */
   border-radius: 12px;
   background: white;
 }
 
-/* 縦長スクロール（画面のみ） */
+/* 4) 右の長いリストは "画面のみ" 縦スクロール、印刷は全量表示 */
 .scroll-y {
-  max-height: clamp(400px, 60vh, 800px);
-  overflow-y: auto;
+  max-height: clamp(520px, 70vh, 900px);
+  overflow: auto;
   padding-right: 8px;
+}
+@media print {
+  .scroll-y {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* 5) 合計カードは必ず別行に（重なり禁止） */
+.total-row {
+  grid-column: 1 / -1;     /* グリッドの新しい行に配置 */
 }
 
 /* インラインスクロール設定 */
@@ -935,6 +1024,334 @@ html, body {
   position: static !important;
   z-index: auto !important;
   transform: none !important;
+}
+
+/* ========================================
+   IoTスタイル オプションスライド
+   ======================================== */
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+.a3-sheet-iot {
+  width: 420mm;
+  height: 297mm;
+  padding: 10mm;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.a3-canvas-iot {
+  width: 400mm;
+  height: 277mm;
+  display: grid;
+  gap: 12mm;
+  grid-template-rows: auto auto 1fr auto;
+  overflow: visible;
+}
+
+/* 再発防止：重なりを作る属性は禁止 */
+.a3-canvas-iot * {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  position: static;
+  z-index: auto !important;
+}
+
+/* ヘッダー */
+.a3-header-iot {
+  text-align: center;
+}
+
+.a3-title-iot {
+  font-size: 20pt;
+  font-weight: 800;
+  text-align: center;
+  color: #111827;
+  margin-bottom: 4mm;
+}
+
+.a3-subtitle-iot {
+  text-align: center;
+  opacity: 0.7;
+  color: #6B7280;
+  font-size: 11pt;
+}
+
+/* パターン切替ピル */
+.pattern-pills {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid #E5E7EB;
+  border-radius: 999px;
+  background: #F9FAFB;
+}
+
+.pill-button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: #111827;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10pt;
+  transition: all 0.2s;
+}
+
+.pill-button.active {
+  background: #111827;
+  color: #fff;
+}
+
+.pill-button:hover:not(.active) {
+  background: #F3F4F6;
+}
+
+/* メインセクション */
+.a3-main-iot {
+  display: grid;
+  grid-template-columns: 1.1fr 2fr;
+  gap: 12mm;
+  align-items: start;
+}
+
+/* ヒーローセクション */
+.hero-section {
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 8mm;
+  background: linear-gradient(180deg, #F8FAFC, #F1F5F9);
+}
+
+.hero-header {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 6mm;
+}
+
+.hero-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0));
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-title {
+  font-size: 13pt;
+  font-weight: 800;
+  color: #111827;
+}
+
+.hero-desc {
+  opacity: 0.7;
+  color: #6B7280;
+  font-size: 10pt;
+}
+
+.hero-image {
+  height: 90mm;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #F1F5F9;
+  border: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* カテゴリグリッド */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8mm;
+}
+
+/* カテゴリカード */
+.category-card {
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid #F3F4F6;
+  background: #FAFBFC;
+}
+
+.card-number {
+  font-weight: 900;
+  color: #EF4444;
+  font-size: 10pt;
+  margin-bottom: 2px;
+}
+
+.card-title {
+  font-weight: 800;
+  color: #111827;
+  font-size: 11pt;
+}
+
+.card-subtitle {
+  opacity: 0.65;
+  color: #6B7280;
+  font-size: 9pt;
+  margin-top: 2px;
+}
+
+.card-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  font-size: 9pt;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
+}
+
+/* カードボディ */
+.card-body {
+  padding: 10px 14px;
+}
+
+.scroll-y-iot {
+  max-height: 70mm;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+@media print {
+  .scroll-y-iot {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+.check-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  cursor: pointer;
+  border-bottom: 1px solid #F9FAFB;
+}
+
+.check-item:hover {
+  background: #F9FAFB;
+  margin: 0 -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.check-input {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.check-label {
+  font-size: 10pt;
+  color: #374151;
+}
+
+.check-price {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #111827;
+  font-size: 10pt;
+}
+
+/* フッターサマリー */
+.a3-footer-iot {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8mm;
+}
+
+.summary-card {
+  padding: 8mm;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+.total-card {
+  background: #FAFBFC;
+}
+
+.monthly-card {
+  background: #4F46E5;
+  color: #fff;
+  border-color: #4F46E5;
+}
+
+.summary-label {
+  font-weight: 700;
+  font-size: 12pt;
+  margin-bottom: 4mm;
+}
+
+.monthly-card .summary-label {
+  opacity: 0.9;
+}
+
+.summary-value {
+  font-size: 22pt;
+  font-weight: 900;
+}
+
+.total-card .summary-value {
+  color: #111827;
+}
+
+.summary-note {
+  opacity: 0.85;
+  margin-top: 4px;
+  font-size: 10pt;
+}
+
+/* レスポンシブ調整 */
+@media screen and (max-width: 1200px) {
+  .a3-sheet-iot {
+    transform: scale(0.6);
+    transform-origin: top left;
+  }
+}
+
+@media print {
+  .a3-sheet-iot {
+    transform: none !important;
+    width: 420mm !important;
+    height: 297mm !important;
+    page-break-inside: avoid;
+    page-break-after: always;
+  }
 }
 
 /* ========================================
