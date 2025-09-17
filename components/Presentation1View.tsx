@@ -115,8 +115,7 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
-      <div className="h-full flex flex-col">
+    <A3PrintContainer className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
         {/* ヘッダー - Presentation2と統一 */}
         <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
           <div className="px-4 py-2">
@@ -137,8 +136,8 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
         {/* メインコンテンツ */}
         <div className="flex-1 overflow-auto px-8 py-6">
           <div className="a3-constrain">
-        {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
-        {(currentFileIndex !== undefined
+            {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
+            {(currentFileIndex !== undefined
           ? [presentation.uploadedFiles[currentFileIndex]].filter(Boolean)
           : presentation.uploadedFiles
         ).map((file) => (
@@ -191,7 +190,6 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
         ))}
           </div>
         </div>
-      </div>
-    </div>
+    </A3PrintContainer>
   );
 }

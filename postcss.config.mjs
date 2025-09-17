@@ -30,7 +30,7 @@ const config = {
   plugins: [
     "@tailwindcss/postcss",
     // Only convert oklch colors in production builds
-    ...(process.env.NODE_ENV === 'production' ? [oklchToRgbPlugin] : [])
+    ...(process.env.NODE_ENV === 'production' ? [oklchToRgbPlugin()] : [])
   ],
 };
 

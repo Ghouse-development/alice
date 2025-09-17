@@ -50,10 +50,18 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    initializeSampleData();
-  }, [initializeSampleData]);
+    // Hydrate the store after mounting
+    (useStore as any).persist?.rehydrate?.();
+    setIsHydrated(true);
+
+    // Initialize sample data if needed
+    if (projects.length === 0) {
+      initializeSampleData();
+    }
+  }, []);
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -88,6 +96,17 @@ export default function DashboardPage() {
     }
     setDeleteDialogOpen(false);
   };
+
+  // Wait for hydration to avoid SSR issues
+  if (!isHydrated) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-center items-center h-screen">
+          <div className="text-gray-500">読み込み中...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">

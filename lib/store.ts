@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
   Project,
   Customer,
@@ -303,6 +303,8 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'g-house-storage',
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
     }
   )
 );
