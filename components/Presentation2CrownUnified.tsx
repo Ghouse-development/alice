@@ -16,6 +16,7 @@ import {
 import { useStore } from '@/lib/store';
 import type { Presentation2 } from '@/types';
 import { A3SlideTemplate } from './A3SlideTemplate';
+import { A3Grid, A3Card } from './A3ViewportContainer';
 
 interface Presentation2CrownUnifiedProps {
   projectId: string;
@@ -167,57 +168,95 @@ export default function Presentation2CrownUnified({
 
     return (
       <A3SlideTemplate title={item.category} subtitle={item.title}>
-        <div className="h-full flex flex-col">
-          <div className="grid grid-cols-12 gap-8 flex-1">
-            {/* 左側：メインビジュアル＆タイトル */}
-            <div className="col-span-4 flex flex-col justify-center">
-              <div className="space-y-6">
-                {/* アイコン */}
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-red-600/20 blur-xl rounded-full" />
-                    <div className="relative w-24 h-24 bg-white border-2 border-red-600 rounded-full flex items-center justify-center shadow-lg">
-                      <Icon className="w-12 h-12 text-red-600" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 説明 */}
-                <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-red-600">
-                  <p className="text-sm text-gray-700 leading-relaxed">{item.description}</p>
-                </div>
+        <div style={{ width: '100%', height: '100%', display: 'flex', gap: '8mm' }}>
+          {/* 左側：メインビジュアル＆タイトル */}
+          <div
+            style={{
+              flex: '0 0 30%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: '6mm',
+            }}
+          >
+            {/* アイコン */}
+            <div className="text-center">
+              <div
+                style={{
+                  display: 'inline-flex',
+                  width: '30mm',
+                  height: '30mm',
+                  backgroundColor: 'white',
+                  border: '2px solid #c41e3a',
+                  borderRadius: '50%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 8px rgba(196,30,58,0.2)',
+                }}
+              >
+                <Icon className="text-primary" style={{ width: '15mm', height: '15mm' }} />
               </div>
             </div>
 
-            {/* 右側：詳細情報 */}
-            <div className="col-span-8">
-              <div className="grid grid-cols-2 gap-4 h-full content-center">
-                {getDetailCards(item.category).map((card, index) => (
-                  <div
-                    key={index}
-                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-sm font-bold">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-1">{card.title}</h3>
-                        <p className="text-xs text-gray-600 mb-2">{card.description}</p>
-                        {card.value && (
-                          <div className="pt-2 border-t border-gray-100">
-                            <span className="text-lg font-bold text-red-600">{card.value}</span>
-                            {card.unit && (
-                              <span className="text-xs text-gray-500 ml-1">{card.unit}</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
+            {/* 説明 */}
+            <div className="content-card" style={{ borderLeft: '3mm solid #c41e3a' }}>
+              <p className="text-normal">{item.description}</p>
+            </div>
+          </div>
+
+          {/* 右側：詳細情報 */}
+          <div style={{ flex: '1', overflow: 'auto' }}>
+            <A3Grid columns={2}>
+              {getDetailCards(item.category).map((card, index) => (
+                <A3Card key={index}>
+                  <div style={{ display: 'flex', alignItems: 'start', gap: '4mm' }}>
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: '10mm',
+                        height: '10mm',
+                        backgroundColor: '#fee',
+                        color: '#c41e3a',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12pt',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h3
+                        className="text-normal"
+                        style={{ fontWeight: 'bold', marginBottom: '2mm' }}
+                      >
+                        {card.title}
+                      </h3>
+                      <p className="text-small text-secondary" style={{ marginBottom: '3mm' }}>
+                        {card.description}
+                      </p>
+                      {card.value && (
+                        <div style={{ paddingTop: '3mm', borderTop: '1px solid #f0f0f0' }}>
+                          <span className="text-large text-primary" style={{ fontWeight: 'bold' }}>
+                            {card.value}
+                          </span>
+                          {card.unit && (
+                            <span
+                              className="text-small text-secondary"
+                              style={{ marginLeft: '2mm' }}
+                            >
+                              {card.unit}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </A3Card>
+              ))}
+            </A3Grid>
           </div>
         </div>
       </A3SlideTemplate>
