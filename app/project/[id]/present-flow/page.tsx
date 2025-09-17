@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
 import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
@@ -157,46 +157,46 @@ export default function PresentationFlowPage() {
   const getAllSlides = async (): Promise<HTMLElement[]> => {
     const slideElements: HTMLElement[] = [];
 
+    // 一時的なレンダリング用コンテナを作成
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.width = '420mm';
+    tempContainer.style.height = '297mm';
+    document.body.appendChild(tempContainer);
+
     // 各スライドをレンダリングしてDOMを取得
     for (let i = 0; i < slides.length; i++) {
       const slideData = slides[i];
-      const slideWrapper = document.createElement('div');
-      slideWrapper.className = 'presentation-wrapper';
-      slideWrapper.style.width = '420mm';
-      slideWrapper.style.height = '297mm';
-      slideWrapper.style.background = 'white';
 
-      // スライドのレンダリング用のコンテナ
-      const renderContainer = document.createElement('div');
-      renderContainer.id = `slide-render-${i}`;
-      renderContainer.style.width = '100%';
-      renderContainer.style.height = '100%';
-      renderContainer.style.position = 'relative';
+      // 現在のスライドに移動
+      setCurrentSlideIndex(i);
 
-      // 各プレゼンテーションタイプに応じたコンテンツを生成
-      let content = '';
-      switch (slideData.presentation) {
-        case 1:
-          content = `<div class="slide-placeholder">デザイン ${slideData.slideIndex !== undefined ? slideData.slideIndex + 1 : ''}</div>`;
-          break;
-        case 2:
-          content = `<div class="slide-placeholder">標準仕様 ${slideData.slideIndex !== undefined ? slideData.slideIndex + 1 : ''}</div>`;
-          break;
-        case 3:
-          content = `<div class="slide-placeholder">オプション</div>`;
-          break;
-        case 4:
-          content = `<div class="slide-placeholder">資金計画</div>`;
-          break;
-        case 5:
-          content = `<div class="slide-placeholder">光熱費</div>`;
-          break;
+      // 少し待って描画を完了させる
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 現在表示されているスライドのDOMをクローン
+      const slideElement = document.querySelector('.presentation-wrapper') || document.querySelector('[data-presentation]');
+      if (slideElement) {
+        const clonedSlide = slideElement.cloneNode(true) as HTMLElement;
+
+        // A3サイズに設定
+        const slideWrapper = document.createElement('div');
+        slideWrapper.className = 'print-slide';
+        slideWrapper.style.width = '420mm';
+        slideWrapper.style.height = '297mm';
+        slideWrapper.style.background = 'white';
+        slideWrapper.style.pageBreakAfter = 'always';
+        slideWrapper.style.overflow = 'hidden';
+
+        // クローンしたスライドを追加
+        slideWrapper.appendChild(clonedSlide);
+        slideElements.push(slideWrapper);
       }
-
-      renderContainer.innerHTML = content;
-      slideWrapper.appendChild(renderContainer);
-      slideElements.push(slideWrapper);
     }
+
+    // 一時コンテナを削除
+    document.body.removeChild(tempContainer);
 
     return slideElements;
   };
@@ -491,23 +491,34 @@ export default function PresentationFlowPage() {
         </div>
       )}
 
-      {/* 全画面時の終了ボタン - 右上に配置 */}
+      {/* 全画面時のボタン - 右上に配置 */}
       {isFullscreen && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (document.fullscreenElement) {
-              document.exitFullscreen();
-            }
-            setIsFullscreen(false);
-            router.push(`/project/${projectId}/edit`);
-          }}
-          className="fixed top-4 right-4 z-50 bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
-        >
-          <Minimize className="h-4 w-4 mr-2" />
-          終了
-        </Button>
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrintAllSlides}
+            className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            全スライド印刷
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (document.fullscreenElement) {
+                document.exitFullscreen();
+              }
+              setIsFullscreen(false);
+              router.push(`/project/${projectId}/edit`);
+            }}
+            className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
+          >
+            <Minimize className="h-4 w-4 mr-2" />
+            終了
+          </Button>
+        </div>
       )}
 
       {/* メインコンテンツ */}

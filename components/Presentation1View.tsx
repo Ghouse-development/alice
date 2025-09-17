@@ -61,26 +61,41 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
 
   if (!presentation || !presentation.uploadedFiles || presentation.uploadedFiles.length === 0) {
     return (
-      <A3PrintContainer
-        title="G-HOUSE デザイン"
-        subtitle="プレゼンテーション資料"
-        footer="G-HOUSE PRESENTATION SYSTEM"
-        className={isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'}
-      >
-        <A3Section className="a3-flex-center">
-          <div className="text-center">
-            <FileText className={`h-24 w-24 mx-auto mb-6 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-            <p className={`a3-text-large ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>プレゼンテーション資料が</p>
-            <p className={`a3-text-large ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>アップロードされていません</p>
-            <p className={`a3-text-normal mt-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
-              編集モードでPDFまたはPowerPointファイルを
-            </p>
-            <p className={`a3-text-normal ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
-              アップロードしてください
-            </p>
+      <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
+        <div className="h-full flex flex-col">
+          {/* ヘッダー - Presentation2と統一 */}
+          <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+            <div className="px-4 py-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-12">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                  </div>
+                  <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+                  <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    デザインプレゼンテーション
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        </A3Section>
-      </A3PrintContainer>
+
+          {/* メインコンテンツ */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <FileText className={`h-24 w-24 mx-auto mb-6 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>プレゼンテーション資料が</p>
+              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>アップロードされていません</p>
+              <p className={`text-base mt-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                編集モードでPDFまたはPowerPointファイルを
+              </p>
+              <p className={`text-base ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                アップロードしてください
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -100,13 +115,28 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
   };
 
   return (
-    <A3PrintContainer
-      title="G-HOUSE デザイン"
-      subtitle="プレゼンテーション資料"
-      footer="G-HOUSE PRESENTATION SYSTEM"
-      className="bg-black text-white"
-    >
-      <div className="a3-constrain">
+    <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
+      <div className="h-full flex flex-col">
+        {/* ヘッダー - Presentation2と統一 */}
+        <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+          <div className="px-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-12">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                </div>
+                <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+                <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  デザインプレゼンテーション
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* メインコンテンツ */}
+        <div className="flex-1 overflow-auto px-8 py-6">
+          <div className="a3-constrain">
         {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
         {(currentFileIndex !== undefined
           ? [presentation.uploadedFiles[currentFileIndex]].filter(Boolean)
@@ -159,7 +189,9 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
             </div>
           </A3Section>
         ))}
+          </div>
+        </div>
       </div>
-    </A3PrintContainer>
+    </div>
   );
 }

@@ -144,32 +144,19 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
         )}
       </div>
 
-      {/* ヘッダー */}
-      <div className={`relative border-b ${
-        isDark
-          ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30'
-          : 'bg-gradient-to-r from-gray-100 via-white to-gray-100 border-gray-300'
-      }`}>
-        <div className="px-3 py-1">
+      {/* ヘッダー - Presentation2と統一 */}
+      <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+        <div className="px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-12">
               <div className="flex flex-col">
-                <span className={`text-[9px] font-bold tracking-[0.4em] uppercase ${
-                  isDark ? 'text-red-600' : 'text-red-700'
-                }`}>G-HOUSE</span>
+                <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
               </div>
-              <div className={`h-8 w-px bg-gradient-to-b from-transparent ${
-                isDark ? 'via-red-600/50' : 'via-red-700/50'
-              } to-transparent`} />
-              <span className={`text-[10px] font-bold tracking-[0.2em] uppercase border-b-2 pb-1 ${
-                isDark
-                  ? 'text-white border-red-600'
-                  : 'text-gray-900 border-red-700'
-              }`}>
+              <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+              <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 資金計画
               </span>
             </div>
-            <div></div>
           </div>
         </div>
       </div>

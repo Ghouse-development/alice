@@ -115,36 +115,29 @@ export default function OptionsSlideFixed({
   }, [totalAmount]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white overflow-hidden">
-      <div className="page-container h-screen flex flex-col py-6">
-        {/* ヘッダー - 標準スライドデザイン */}
-        <div className="flex-shrink-0 mb-6">
-          {/* プロジェクト情報バー */}
-          <div className="bg-black/50 backdrop-blur-sm border-b border-gray-800 px-6 py-3 mb-4">
-            <div className="flex justify-between items-center text-sm">
-              <div className="flex items-center gap-6">
-                <span className="text-gray-400">PROJECT ID</span>
-                <span className="text-white font-medium">{projectId}</span>
-              </div>
-              <div className="flex items-center gap-6">
-                <span className="text-white font-medium">{customerName} 様</span>
-                <span className="text-gray-400">{projectDate}</span>
+    <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
+      <div className="h-full flex flex-col">
+        {/* ヘッダー - Presentation2と統一 */}
+        <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+          <div className="px-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-12">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                </div>
+                <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+                <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  オプション選択
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* タイトルセクション */}
-          <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold tracking-[0.15em] uppercase mb-2 bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">
-              OPTIONS SELECTION
-            </h1>
-            <p className="text-lg font-light tracking-[0.1em] text-gray-300">
-              住まいのオプション選択
-            </p>
-          </div>
-
+        {/* メインコンテンツ */}
+        <div className="flex-1 overflow-auto px-8 py-6">
           {/* カテゴリヘッダー */}
-          <div className="flex justify-center gap-12 max-w-6xl mx-auto">
+          <div className="flex justify-center gap-12 max-w-6xl mx-auto mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-[2px] bg-red-600"></div>
               <span className="text-red-400 font-medium tracking-wider">外装オプション</span>
@@ -156,10 +149,9 @@ export default function OptionsSlideFixed({
               <div className="w-12 h-[2px] bg-blue-600"></div>
             </div>
           </div>
-        </div>
 
-        {/* メインコンテンツ：4カラムグリッド */}
-        <div className="flex-1 grid grid-cols-4 gap-4 min-h-0">
+          {/* 4カラムグリッド */}
+          <div className="grid grid-cols-4 gap-4">
           {/* 外装オプション1 */}
           <Card className="h-full flex flex-col overflow-hidden bg-black/40 backdrop-blur-sm border border-gray-800">
             <CardHeader className="pb-2 px-3 flex-shrink-0 bg-gradient-to-r from-red-900/20 to-transparent border-b border-red-900/30">
@@ -376,6 +368,7 @@ export default function OptionsSlideFixed({
                 </div>
               </CardContent>
             </Card>
+          </div>
           </div>
         </div>
       </div>

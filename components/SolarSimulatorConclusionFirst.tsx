@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { useStore } from '@/lib/store';
 import {
   LineChart,
   Line,
@@ -146,6 +147,9 @@ function calculateTimeline(settings: Settings): YearData[] {
 
 // Main component
 export default function SolarSimulatorConclusionFirst({ projectId }: { projectId?: string }) {
+  const { theme } = useStore();
+  const isDark = theme === 'dark';
+
   // Settings state
   const [settings, setSettings] = useState<Settings>({
     panel_count: 15,
@@ -270,8 +274,28 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
   }, [timeline, useBattery]);
 
   return (
-    <main id="solar-simulator-main" className="min-h-screen w-screen bg-white">
-      <div className="h-[100svh] max-w-[1600px] mx-auto px-6 py-5 grid gap-6">
+    <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
+      <div className="h-full flex flex-col">
+        {/* ヘッダー - Presentation2と統一 */}
+        <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+          <div className="px-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-12">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                </div>
+                <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
+                <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  光熱費シミュレーション
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* メインコンテンツ */}
+        <main id="solar-simulator-main" className="flex-1 bg-white overflow-auto">
+          <div className="h-full max-w-[1600px] mx-auto px-6 py-5 grid gap-6">
         {/* Layout Grid */}
         <div className="grid grid-cols-[minmax(280px,360px)_1fr_minmax(280px,360px)] grid-rows-[auto_1fr] gap-6">
 
@@ -693,8 +717,8 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

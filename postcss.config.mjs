@@ -1,4 +1,4 @@
-import culori from 'culori';
+import * as culori from 'culori';
 
 // Custom PostCSS plugin to convert oklch/oklab to rgb
 const oklchToRgbPlugin = () => {
