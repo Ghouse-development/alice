@@ -756,8 +756,8 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
