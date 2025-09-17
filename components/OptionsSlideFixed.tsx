@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { A3PrintContainer } from './A3PrintContainer';
+import { A3SlideTemplate } from './A3SlideTemplate';
 
 interface OptionItem {
   id: string;
@@ -120,12 +120,7 @@ export default function OptionsSlideFixed({
   }, [totalAmount]);
 
   return (
-    <A3PrintContainer
-      title="オプション選択"
-      subtitle={`${customerName}様 プロジェクト`}
-      className="bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white"
-      autoScale={true}
-    >
+    <A3SlideTemplate title="オプション選択" subtitle={`${customerName}様 プロジェクト`}>
       <div className="h-full flex flex-col">
         {/* ヘッダー - Presentation2と統一 */}
         <div
@@ -389,6 +384,6 @@ export default function OptionsSlideFixed({
           </div>
         </div>
       </div>
-    </A3PrintContainer>
+    </A3SlideTemplate>
   );
 }

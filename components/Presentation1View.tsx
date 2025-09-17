@@ -5,7 +5,7 @@ import { FileText, File, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import type { Presentation1 } from '@/types';
-import { A3PrintContainer, A3Section } from './A3PrintContainer';
+import { A3SlideTemplate } from './A3SlideTemplate';
 
 // デザインシステム定数 - A3横(420mm x 297mm)対応
 const CROWN_DESIGN = {
@@ -19,19 +19,19 @@ const CROWN_DESIGN = {
   colors: {
     primary: '#1a1a1a',
     secondary: '#2d2d2d',
-    accent: '#c41e3a',  // CROWN レッド
-    gold: '#b8860b',    // CROWN ゴールド
+    accent: '#c41e3a', // CROWN レッド
+    gold: '#b8860b', // CROWN ゴールド
     platinum: '#e5e4e2', // プラチナシルバー
     text: {
       primary: '#ffffff',
       secondary: '#a0a0a0',
-      accent: '#c41e3a'
+      accent: '#c41e3a',
     },
     gradients: {
       black: 'bg-gradient-to-b from-gray-900 via-black to-gray-900',
       premium: 'bg-gradient-to-r from-black via-gray-900 to-black',
-      accent: 'bg-gradient-to-br from-red-900/10 to-red-800/5'
-    }
+      accent: 'bg-gradient-to-br from-red-900/10 to-red-800/5',
+    },
   },
   // CROWN タイポグラフィ
   typography: {
@@ -39,8 +39,8 @@ const CROWN_DESIGN = {
     subheading: 'font-light tracking-[0.1em]',
     body: 'font-light tracking-wide',
     accent: 'font-medium tracking-[0.2em] uppercase',
-    japanese: 'font-medium'
-  }
+    japanese: 'font-medium',
+  },
 };
 
 interface Presentation1ViewProps {
@@ -64,15 +64,21 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
       <div className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
         <div className="h-full flex flex-col">
           {/* ヘッダー - Presentation2と統一 */}
-          <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
+          <div
+            className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}
+          >
             <div className="px-4 py-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-12">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
+                    <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">
+                      G-HOUSE
+                    </span>
                   </div>
                   <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-                  <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <span
+                    className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}
+                  >
                     デザインプレゼンテーション
                   </span>
                 </div>
@@ -83,9 +89,15 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
           {/* メインコンテンツ */}
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <FileText className={`h-24 w-24 mx-auto mb-6 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>プレゼンテーション資料が</p>
-              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>アップロードされていません</p>
+              <FileText
+                className={`h-24 w-24 mx-auto mb-6 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}
+              />
+              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                プレゼンテーション資料が
+              </p>
+              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                アップロードされていません
+              </p>
               <p className={`text-base mt-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
                 編集モードでPDFまたはPowerPointファイルを
               </p>
@@ -104,7 +116,7 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   const getFileIcon = (type: string) => {
@@ -115,65 +127,48 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
   };
 
   return (
-    <A3PrintContainer className="w-full h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
-        {/* ヘッダー - Presentation2と統一 */}
-        <div className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}>
-          <div className="px-4 py-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-12">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">G-HOUSE</span>
-                </div>
-                <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-                <span className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  デザインプレゼンテーション
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* メインコンテンツ */}
-        <div className="flex-1 overflow-auto px-8 py-6">
-          <div className="a3-constrain">
-            {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
-            {(currentFileIndex !== undefined
+    <A3SlideTemplate title="デザインプレゼンテーション" subtitle="プロジェクト資料">
+      <div className="w-full">
+        {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
+        {(currentFileIndex !== undefined
           ? [presentation.uploadedFiles[currentFileIndex]].filter(Boolean)
           : presentation.uploadedFiles
         ).map((file) => (
-          <A3Section
+          <div
             key={file.id}
-            title={file.name}
-            className={`a3-card ${isDark ? 'bg-gradient-to-b from-gray-900/80 to-gray-900/40' : 'bg-white/90'}`}
+            className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-4"
           >
-            <div className="a3-flex-between">
-              <div className="a3-flex" style={{ gap: '24px', alignItems: 'center' }}>
-                <div style={{ transform: 'scale(1.5)' }}>
-                  {getFileIcon(file.type)}
-                </div>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{file.name}</h3>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex-shrink-0">{getFileIcon(file.type)}</div>
                 <div>
-                  <p className={`a3-text-normal mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {formatFileSize(file.size)} • {(file as any).type === 'application/pdf' ? 'PDF' : 'PowerPoint'}
-                    {file.uploadedAt && ` • アップロード日: ${new Date(file.uploadedAt).toLocaleDateString('ja-JP')}`}
+                  <p className="text-sm text-gray-600">
+                    {formatFileSize(file.size)} •{' '}
+                    {(file as any).type === 'application/pdf' ? 'PDF' : 'PowerPoint'}
+                    {file.uploadedAt &&
+                      ` • アップロード日: ${new Date(file.uploadedAt).toLocaleDateString('ja-JP')}`}
                   </p>
                 </div>
               </div>
-              <div className="a3-flex" style={{ gap: '16px' }}>
+              <div className="flex gap-3">
                 {(file as any).type === 'application/pdf' && (
                   <Button
                     variant="outline"
-                    size="lg"
-                    className={`no-print px-6 py-4 a3-text-normal ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}
+                    size="default"
+                    className="no-print"
                     onClick={() => window.open(file.url, '_blank')}
                   >
-                    <Eye className="mr-2 h-5 w-5" />
+                    <Eye className="mr-2 h-4 w-4" />
                     閲覧
                   </Button>
                 )}
                 <Button
                   variant="default"
-                  size="lg"
-                  className="no-print px-6 py-4 a3-text-normal bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0"
+                  size="default"
+                  className="no-print bg-red-600 hover:bg-red-700 text-white"
                   onClick={() => {
                     const a = document.createElement('a');
                     a.href = file.url;
@@ -181,15 +176,14 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
                     a.click();
                   }}
                 >
-                  <Download className="mr-2 h-5 w-5" />
+                  <Download className="mr-2 h-4 w-4" />
                   ダウンロード
                 </Button>
               </div>
             </div>
-          </A3Section>
-        ))}
           </div>
-        </div>
-    </A3PrintContainer>
+        ))}
+      </div>
+    </A3SlideTemplate>
   );
 }

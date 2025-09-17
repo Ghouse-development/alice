@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Calculator, Home, Hammer, FileText, Landmark } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Presentation4 } from '@/types';
-import { A3PrintContainer } from './A3PrintContainer';
+import { A3SlideTemplate } from './A3SlideTemplate';
 
 interface Presentation4ViewProps {
   projectId: string;
@@ -110,12 +110,7 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
   ];
 
   return (
-    <A3PrintContainer
-      title="資金計画"
-      subtitle="住宅建築における総費用とローン計画"
-      className={`${isDark ? 'bg-black text-white' : 'bg-white text-gray-900'}`}
-      autoScale={true}
-    >
+    <A3SlideTemplate title="資金計画" subtitle="住宅建築における総費用とローン計画">
       {/* 背景パターン */}
       <div className="absolute inset-0">
         <div
@@ -441,6 +436,6 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
           </div>
         </div>
       </div>
-    </A3PrintContainer>
+    </A3SlideTemplate>
   );
 }

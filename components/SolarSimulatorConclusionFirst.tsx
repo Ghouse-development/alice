@@ -17,7 +17,7 @@ import {
 import { ChevronDown, ChevronUp, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { A3PrintContainer } from './A3PrintContainer';
+import { A3SlideTemplate } from './A3SlideTemplate';
 
 // Types
 interface Settings {
@@ -283,12 +283,7 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
   }, [timeline, useBattery]);
 
   return (
-    <A3PrintContainer
-      title="光熱費シミュレーション"
-      subtitle="太陽光発電・蓄電池導入効果"
-      className="bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white"
-      autoScale={true}
-    >
+    <A3SlideTemplate title="光熱費シミュレーション" subtitle="太陽光発電・蓄電池導入効果">
       <div className="h-full flex flex-col">
         {/* ヘッダー - Presentation2と統一 */}
         <div
@@ -764,6 +759,6 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
           </div>
         </main>
       </div>
-    </A3PrintContainer>
+    </A3SlideTemplate>
   );
 }
