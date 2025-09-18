@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface A3PageProps {
   children: React.ReactNode;
@@ -10,7 +10,6 @@ interface A3PageProps {
   className?: string;
 }
 
-// 全スライドの親コンポーネント - 指示書v2準拠
 export default function A3Page({
   children,
   title,
@@ -18,119 +17,127 @@ export default function A3Page({
   showFooter = true,
   className = '',
 }: A3PageProps) {
-  const zoomWrapRef = useRef<HTMLDivElement>(null);
-  const pageRef = useRef<HTMLElement>(null);
-  const [scale, setScale] = useState(1);
-  const [isAutoFit, setIsAutoFit] = useState(false);
   const [isInsideContainer, setIsInsideContainer] = useState(false);
 
-  // PresentationContainer内にいるかチェック
   useEffect(() => {
-    const checkContainer = () => {
-      const container = document.querySelector('.presentation-wrapper');
-      setIsInsideContainer(!!container);
-    };
-    checkContainer();
+    // PresentationContainer内にいるかチェック
+    const container = document.querySelector('.presentation-wrapper');
+    setIsInsideContainer(!!container);
   }, []);
 
-  // 実寸表示（指示書v2のshowActualSize()）
-  const showActualSize = () => {
-    if (isInsideContainer) return; // PresentationContainer内では無効化
-    document.querySelectorAll('.zoom-wrap').forEach((w) => {
-      (w as HTMLElement).style.transform = 'none';
-    });
-    setScale(1);
-    setIsAutoFit(false);
-  };
+  // PresentationContainer内の場合はシンプルなレイアウト
+  if (isInsideContainer) {
+    return (
+      <div
+        className="a3-page-simple"
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* ヘッダー */}
+        {(title || subtitle) && (
+          <div
+            style={{
+              padding: '40px 60px 20px',
+              borderBottom: '2px solid #e0e0e0',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div>
+                <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>
+                  G-HOUSE
+                </div>
+                <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
+              </div>
+              {(title || subtitle) && (
+                <>
+                  <div
+                    style={{
+                      width: '2px',
+                      height: '40px',
+                      background: 'linear-gradient(to bottom, transparent, #c41e3a, transparent)',
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    {title && (
+                      <h1
+                        style={{
+                          margin: 0,
+                          fontSize: '28px',
+                          fontWeight: 'bold',
+                          color: '#222',
+                        }}
+                      >
+                        {title}
+                      </h1>
+                    )}
+                    {subtitle && (
+                      <p
+                        style={{
+                          margin: '4px 0 0',
+                          fontSize: '16px',
+                          color: '#666',
+                        }}
+                      >
+                        {subtitle}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
-  // 画面フィット（指示書v2のfitToScreen()）
-  const fitToScreen = () => {
-    if (isInsideContainer) return; // PresentationContainer内では無効化
-    const page = document.querySelector('.page-a3') as HTMLElement;
-    const wrap = document.querySelector('.zoom-wrap') as HTMLElement;
-    if (!page || !wrap) return;
+        {/* メインコンテンツ */}
+        <div
+          style={{
+            flex: 1,
+            padding: '40px 60px',
+            overflow: 'auto',
+            height: showFooter ? 'calc(100% - 160px)' : 'calc(100% - 100px)',
+          }}
+        >
+          {children}
+        </div>
 
-    const vw = window.innerWidth - 48;
-    const vh = window.innerHeight - 48;
-    const scale = Math.min(vw / page.offsetWidth, vh / page.offsetHeight);
-    wrap.style.transform = `scale(${scale})`;
-    setScale(scale);
-    setIsAutoFit(true);
-  };
+        {/* フッター */}
+        {showFooter && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '20px 60px',
+              borderTop: '1px solid #e0e0e0',
+              fontSize: '14px',
+              color: '#666',
+            }}
+          >
+            <span>© G-HOUSE</span>
+            <span>{new Date().toLocaleDateString('ja-JP')}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
-  // ウィンドウリサイズ時の処理（指示書v2準拠）
-  useEffect(() => {
-    if (isInsideContainer) {
-      // PresentationContainer内の場合はスケーリングを無効化
-      const wrap = zoomWrapRef.current;
-      if (wrap) {
-        wrap.style.transform = 'none';
-      }
-      return;
-    }
-
-    const handleResize = () => {
-      const wrap = document.querySelector('.zoom-wrap') as HTMLElement;
-      if (wrap?.style.transform.startsWith('scale')) {
-        fitToScreen();
-      }
-    };
-
-    // 初期表示時に画面幅に合わせる
-    fitToScreen();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isInsideContainer]);
-
-  // 印刷処理
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // PDF出力
-  const handleExportPDF = async () => {
-    if (pageRef.current) {
-      try {
-        const { exportA3LandscapePDF } = await import('@/lib/pdf-export-client');
-        const filename = `${title?.replace(/\s+/g, '_') || 'document'}_${new Date().toISOString().split('T')[0]}.pdf`;
-        await exportA3LandscapePDF(pageRef.current, filename);
-      } catch (error) {
-        console.error('PDF export failed:', error);
-        handlePrint(); // フォールバック
-      }
-    }
-  };
-
+  // スタンドアロン版（編集画面など）
   return (
     <>
-      {/* ツールバー（印刷時非表示、PresentationContainer内では非表示） */}
-      {!isInsideContainer && (
-        <div className="toolbar no-print">
-          <button className="btn-print" onClick={handlePrint}>
-            印刷
-          </button>
-          <button className="btn-pdf" onClick={handleExportPDF}>
-            PDF出力
-          </button>
-          <button className="btn-actual" onClick={showActualSize}>
-            実寸表示
-          </button>
-          <button className="btn-fit" onClick={fitToScreen}>
-            画面幅に合わせる
-          </button>
-        </div>
-      )}
-
-      {/* スケール表示（印刷時非表示、PresentationContainer内では非表示） */}
-      {!isInsideContainer && (
-        <div className="scale-indicator no-print">表示倍率: {Math.round(scale * 100)}%</div>
-      )}
-
-      {/* 指示書v2準拠: viewport → zoom-wrap → page-a3 → safe */}
+      <style jsx>{`
+        @import url('/styles/a3.css');
+      `}</style>
       <div className={`viewport no-print-bg ${className}`}>
-        <div className="zoom-wrap" ref={zoomWrapRef}>
-          <section className="page-a3" ref={pageRef}>
+        <div className="zoom-wrap">
+          <section className="page-a3">
             <div className="safe">
               {/* ヘッダー */}
               {(title || subtitle) && (

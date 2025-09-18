@@ -15,91 +15,53 @@ export function PresentationContainer({
 
   useEffect(() => {
     const calculateScale = () => {
-      const contentWidth = 1587; // A3横の基準幅(px) - 420mm at 96dpi
-      const contentHeight = 1123; // A3横の基準高さ(px) - 297mm at 96dpi
+      // A3横サイズ（固定）
+      const A3_WIDTH = 1587;
+      const A3_HEIGHT = 1123;
 
-      if (fullscreen) {
-        // For fullscreen, use viewport dimensions directly
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+      // ビューポートサイズ取得
+      const viewportWidth = fullscreen ? window.innerWidth : window.innerWidth * 0.9;
+      const viewportHeight = fullscreen ? window.innerHeight : window.innerHeight * 0.85;
 
-        // Calculate scale to fill height 100% while maintaining aspect ratio
-        const scaleByHeight = viewportHeight / contentHeight;
-        const scaledWidth = contentWidth * scaleByHeight;
+      // アスペクト比を維持してスケール計算
+      const scaleX = viewportWidth / A3_WIDTH;
+      const scaleY = viewportHeight / A3_HEIGHT;
+      const newScale = Math.min(scaleX, scaleY, 1); // 最大1倍まで
 
-        // If scaled width exceeds viewport width, scale by width instead
-        if (scaledWidth > viewportWidth) {
-          const scaleByWidth = viewportWidth / contentWidth;
-          setScale(scaleByWidth);
-        } else {
-          setScale(scaleByHeight);
-        }
-        return;
-      }
-
-      const container = document.querySelector('.presentation-wrapper');
-      if (!container) return;
-
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-
-      // Calculate scale to fill height 100% while maintaining aspect ratio
-      const scaleByHeight = containerHeight / contentHeight;
-      const scaledWidth = contentWidth * scaleByHeight;
-
-      // If scaled width exceeds container width, scale by width instead
-      if (scaledWidth > containerWidth) {
-        const scaleByWidth = containerWidth / contentWidth;
-        setScale(scaleByWidth);
-      } else {
-        setScale(scaleByHeight);
-      }
+      setScale(newScale);
     };
 
-    // Delay initial calculation to ensure DOM is ready
-    setTimeout(calculateScale, 100);
+    calculateScale();
     window.addEventListener('resize', calculateScale);
     return () => window.removeEventListener('resize', calculateScale);
   }, [fullscreen]);
 
   return (
     <div
-      className={`presentation-wrapper ${fullscreen ? 'w-screen h-screen bg-white' : 'w-full h-full bg-white'} overflow-hidden`}
-      style={
-        fullscreen
-          ? {
-              width: '100vw',
-              height: '100vh',
-              maxWidth: 'none',
-              maxHeight: 'none',
-              margin: 0,
-              padding: 0,
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'white',
-            }
-          : {
-              width: '100%',
-              height: '100%',
-              aspectRatio: '1.414 / 1', // A3横サイズ比率
-              maxWidth: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }
-      }
+      className="presentation-wrapper"
+      style={{
+        width: '100%',
+        height: fullscreen ? '100vh' : '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: fullscreen ? '#000' : 'transparent',
+        position: fullscreen ? 'fixed' : 'relative',
+        top: fullscreen ? 0 : 'auto',
+        left: fullscreen ? 0 : 'auto',
+        zIndex: fullscreen ? 9999 : 'auto',
+        overflow: 'hidden',
+      }}
     >
       <div
+        className="presentation-scaler"
         style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
           width: '1587px',
           height: '1123px',
-          boxSizing: 'border-box',
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
+          backgroundColor: 'white',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
           position: 'relative',
           overflow: 'hidden',
         }}
