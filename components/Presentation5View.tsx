@@ -1,28 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, Clock, Phone, Home, Wrench, CheckCircle } from 'lucide-react';
+import { Shield, CheckCircle, Clock, Phone, Wrench, Home } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import A3Page from './A3Page';
 import type { Presentation5 } from '@/types';
 
 interface Presentation5ViewProps {
   projectId: string;
 }
 
-export function Presentation5View({}: Presentation5ViewProps) {
+export function Presentation5View({ projectId }: Presentation5ViewProps) {
   const { currentProject } = useStore();
   const [presentation, setPresentation] = useState<Presentation5 | null>(null);
 
   useEffect(() => {
     if (currentProject?.presentation5) {
       setPresentation(currentProject.presentation5);
+    } else {
+      // デフォルトデータ
+      setPresentation({
+        afterServiceItems: [
+          {
+            id: '1',
+            title: '定期点検プログラム',
+            description:
+              '専門スタッフによる定期的な点検で、住まいの状態を詳しくチェック。早期発見・早期対応で長く快適にお住まいいただけます。',
+            schedule: ['3ヶ月点検', '1年点検', '2年点検', '5年点検', '10年点検'],
+          },
+          {
+            id: '2',
+            title: '24時間緊急対応',
+            description: '水漏れや設備の故障など、緊急時には24時間365日対応いたします。',
+            schedule: ['緊急コールセンター', '専門スタッフ派遣', '即日対応可能'],
+          },
+          {
+            id: '3',
+            title: '長期保証制度',
+            description: '構造躯体は35年、防水は20年など、充実の保証制度で安心をお約束。',
+            schedule: ['構造躯体：35年保証', '防水：20年保証', '設備：最大10年保証'],
+          },
+          {
+            id: '4',
+            title: '住まいのコンシェルジュ',
+            description:
+              'メンテナンスや増改築のご相談など、お住まいに関することは何でもご相談ください。',
+            schedule: ['リフォーム相談', 'メンテナンスアドバイス', 'ライフスタイル提案'],
+          },
+          {
+            id: '5',
+            title: 'オーナー様限定イベント',
+            description: '定期的なイベントや情報交換会で、オーナー様同士の交流の場をご提供。',
+            schedule: ['季節のイベント', '住まいのセミナー', 'キッズワークショップ'],
+          },
+        ],
+      });
     }
-  }, [currentProject]);
+  }, [currentProject, projectId]);
 
-  if (!presentation || !presentation.afterServiceItems) {
+  if (!presentation) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">プレゼンテーション5のデータがありません</p>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">データを読み込んでいます...</p>
       </div>
     );
   }
@@ -37,139 +76,85 @@ export function Presentation5View({}: Presentation5ViewProps) {
   };
 
   return (
-    <div
-      className="relative bg-black text-white overflow-hidden"
-      style={{
-        width: '1190px', // A3横の基準幅(px) - PresentationContainerと統一
-        height: '842px', // A3横の基準高さ(px) - PresentationContainerと統一
-        maxWidth: '100%',
-        maxHeight: '100%',
-        margin: '0 auto',
-        aspectRatio: '1.414 / 1', // A3横比率を明示
-        transformOrigin: 'center center',
-      }}
+    <A3Page
+      title="アフターサービス"
+      subtitle="お引き渡し後も安心してお住まいいただける充実のサポート"
+      showFooter={false}
     >
-      {/* 背景パターン */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-              repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
-              repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
-            `,
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="relative p-8 space-y-8 overflow-auto">
-        <h2 className="text-2xl font-bold mb-6 text-white">光熱費・ランニングコスト</h2>
-        <p className="text-gray-300 mb-4">
-          お引き渡し後も安心してお住まいいただけるよう、充実したサポート体制をご用意しています
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {presentation.afterServiceItems.map((item) => {
-          const Icon = getIcon(item.title);
-          return (
-            <div
-              key={item.id}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-6 w-6" />
+      <div className="w-full h-full p-8 space-y-8 overflow-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {presentation.afterServiceItems.map((item) => {
+            const Icon = getIcon(item.title);
+            return (
+              <div
+                key={item.id}
+                className="bg-white rounded-lg border-2 border-gray-200 p-6 hover:border-primary transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 p-3 bg-primary/10 rounded-lg">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
-                    {item.period && (
-                      <span className="inline-block mt-1 px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded">
-                        {item.period}
-                      </span>
+                    <h3 className="text-xl font-bold mb-2 text-gray-900">{item.title}</h3>
+                    <p className="text-gray-600 mb-4">{item.description}</p>
+                    {item.schedule && (
+                      <ul className="space-y-1">
+                        {item.schedule.map((schedule, index) => (
+                          <li key={index} className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">{schedule}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="p-6">
-                <p className="text-gray-700 leading-relaxed">{item.description}</p>
-                {item.images && item.images.length > 0 && (
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    {item.images.map((image, imgIndex) => (
-                      <img
-                        key={imgIndex}
-                        src={image}
-                        alt={`${item.title}-${imgIndex + 1}`}
-                        className="img-responsive block rounded"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg">
-        <h3 className="text-xl font-bold mb-4">
-          <Shield className="inline-block mr-2 h-6 w-6" />
-          保証期間一覧
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          {presentation.afterServiceItems
-            .filter((item) => item.period && item.period !== '永年')
-            .sort((a, b) => {
-              const getYears = (period: string) => {
-                const match = period.match(/(\d+)/);
-                return match ? parseInt(match[1]) : 0;
-              };
-              return getYears(b.period) - getYears(a.period);
-            })
-            .map((item) => (
-              <div
-                key={item.id}
-                className="bg-white p-3 rounded-lg flex justify-between items-center"
-              >
-                <span className="font-medium text-gray-700">{item.title}</span>
-                <span className="text-lg font-bold text-green-600">{item.period}</span>
-              </div>
-            ))}
+        <div className="bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg p-8">
+          <h3 className="text-2xl font-bold mb-4">Gハウスの5つの約束</h3>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                1
+              </span>
+              <span className="text-white/90">定期的な点検で住まいの健康を守ります</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                2
+              </span>
+              <span className="text-white/90">緊急時には24時間365日対応いたします</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                3
+              </span>
+              <span className="text-white/90">長期保証で大切な資産を守ります</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                4
+              </span>
+              <span className="text-white/90">ライフスタイルの変化にも柔軟に対応します</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                5
+              </span>
+              <span className="text-white/90">オーナー様との絆を大切にします</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <h3 className="text-2xl font-bold mb-2 text-gray-900">安心の住まいづくり</h3>
+          <p className="text-gray-600">Gハウスは、お客様との末永いお付き合いをお約束します</p>
         </div>
       </div>
-
-      <div className="bg-blue-50 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold mb-3">Gハウスの約束</h3>
-        <ul className="space-y-2">
-          <li className="flex items-start gap-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">
-              お客様の大切な住まいを長期にわたってサポートします
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">
-              定期的な点検とメンテナンスで、住まいの価値を維持します
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">
-              困った時はいつでもご相談いただける体制を整えています
-            </span>
-          </li>
-        </ul>
-      </div>
-
-      <div className="text-center py-8 bg-gray-50 rounded-lg">
-        <h3 className="text-2xl font-bold mb-2">安心の住まいづくり</h3>
-        <p className="text-gray-600">Gハウスは、お客様との末永いお付き合いをお約束します</p>
-      </div>
-    </div>
+    </A3Page>
   );
 }

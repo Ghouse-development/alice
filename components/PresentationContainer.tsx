@@ -64,7 +64,7 @@ export function PresentationContainer({
 
   return (
     <div
-      className={`presentation-wrapper ${fullscreen ? 'w-screen h-screen bg-black' : 'w-full h-full bg-white'} overflow-hidden`}
+      className={`presentation-wrapper ${fullscreen ? 'w-screen h-screen bg-white' : 'w-full h-full bg-white'} overflow-hidden`}
       style={
         fullscreen
           ? {
@@ -80,7 +80,7 @@ export function PresentationContainer({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'black',
+              backgroundColor: 'white',
             }
           : {
               width: '100%',
