@@ -1,0 +1,359 @@
+/* ---- 基本 ---- */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #111;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* 画面中央配置 */
+.viewport {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* 実寸ページ：A3横 */
+.page-a3 {
+  position: relative;
+  width: 420mm;   /* px禁止 */
+  height: 297mm;  /* px禁止 */
+  background: #fff;
+  overflow: hidden;            /* はみ出し物理禁止 */
+  box-shadow: 0 6px 24px rgba(0,0,0,.2); /* 画面プレビュー専用 */
+}
+
+/* 安全余白（ここにだけ置く） */
+.page-a3 .safe {
+  position: absolute;
+  inset: 12mm;   /* 共通余白。必要なら数値だけ調整 */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 画像/表/ブロックのはみ出し防止 */
+.page-a3 img,
+.page-a3 table,
+.page-a3 .block {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* 画面用ズームはここだけに掛ける（ページには絶対に掛けない） */
+.zoom-wrap {
+  transform-origin: top left;
+  transition: transform 0.3s ease;
+}
+
+/* ---- ヘッダー ---- */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  padding-bottom: 5mm;
+  border-bottom: 0.5mm solid #e0e0e0;
+  margin-bottom: 8mm;
+  flex-shrink: 0;
+}
+
+.header-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-text {
+  font-size: 14pt;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #c41e3a;
+}
+
+.brand-sub {
+  font-size: 10pt;
+  color: #666;
+}
+
+.header-divider {
+  width: 0.5mm;
+  height: 10mm;
+  background: linear-gradient(to bottom, transparent, #c41e3a, transparent);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 18pt;
+  font-weight: bold;
+  color: #222;
+}
+
+.header-subtitle {
+  margin: 1mm 0 0;
+  font-size: 12pt;
+  color: #666;
+}
+
+/* ---- メインコンテンツ ---- */
+.page-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+/* ---- フッター ---- */
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 5mm;
+  margin-top: 8mm;
+  border-top: 0.3mm solid #e0e0e0;
+  font-size: 10pt;
+  color: #666;
+  flex-shrink: 0;
+}
+
+/* ---- ツールバー ---- */
+.toolbar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 400px;
+}
+
+.toolbar button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  color: white;
+}
+
+.btn-print {
+  background: #6c757d;
+}
+
+.btn-print:hover {
+  background: #5a6268;
+}
+
+.btn-pdf {
+  background: #007bff;
+}
+
+.btn-pdf:hover {
+  background: #0056b3;
+}
+
+.btn-actual {
+  background: #6c757d;
+}
+
+.btn-actual:hover {
+  background: #5a6268;
+}
+
+.btn-fit {
+  background: #28a745;
+}
+
+.btn-fit:hover {
+  background: #218838;
+}
+
+/* ---- スケールインジケーター ---- */
+.scale-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+/* ---- レイアウトヘルパー ---- */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6mm;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6mm;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5mm;
+}
+
+.flex-row {
+  display: flex;
+  gap: 6mm;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+}
+
+/* ---- カード要素 ---- */
+.card {
+  background: white;
+  border: 0.3mm solid #e0e0e0;
+  border-radius: 2mm;
+  padding: 4mm;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-size: 14pt;
+  font-weight: bold;
+  margin-bottom: 3mm;
+  padding-bottom: 2mm;
+  border-bottom: 0.3mm solid #f0f0f0;
+}
+
+.card-body {
+  font-size: 11pt;
+  line-height: 1.6;
+}
+
+/* ---- テーブル ---- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11pt;
+}
+
+.table th,
+.table td {
+  padding: 3mm;
+  text-align: left;
+  border: 0.3mm solid #ddd;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* ---- テキストスタイル ---- */
+.text-large {
+  font-size: 16pt;
+}
+
+.text-normal {
+  font-size: 12pt;
+}
+
+.text-small {
+  font-size: 10pt;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-primary {
+  color: #c41e3a;
+}
+
+.text-secondary {
+  color: #666;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+/* ---- 色設定 ---- */
+.bg-light {
+  background-color: #f8f9fa;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.bg-primary {
+  background-color: #c41e3a;
+  color: white;
+}
+
+/* ---- 印刷/PDF ---- */
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: transparent;
+  }
+
+  .viewport {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .zoom-wrap {
+    transform: none !important;  /* ズーム完全無効化 */
+  }
+
+  .no-print,
+  .no-print-bg,
+  .toolbar,
+  .controls,
+  .scale-indicator {
+    display: none !important;
+  }
+
+  .page-a3 {
+    page-break-after: always;
+    box-shadow: none;
+    margin: 0 auto;
+  }
+
+  /* 最後のページには改ページを入れない */
+  .page-a3:last-child {
+    page-break-after: auto;
+  }
+}

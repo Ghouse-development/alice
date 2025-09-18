@@ -5,16 +5,10 @@ import { FileText, File, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import type { Presentation1 } from '@/types';
-import { A3SlideTemplate } from './A3SlideTemplate';
+import A3Page from './A3Page';
 
-// デザインシステム定数 - A3横(420mm x 297mm)対応
+// デザインシステム定数 - 指示書v2準拠（px禁止）
 const CROWN_DESIGN = {
-  // A3横サイズ設定 - 96dpi基準
-  dimensions: {
-    width: '1587px', // 420mm at 96dpi
-    height: '1123px', // 297mm at 96dpi
-    aspectRatio: '1.414',
-  },
   // CROWN カラーパレット
   colors: {
     primary: '#1a1a1a',
@@ -127,7 +121,7 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
   };
 
   return (
-    <A3SlideTemplate title="デザインプレゼンテーション" subtitle="プロジェクト資料">
+    <A3Page title="デザインプレゼンテーション" subtitle="プロジェクト資料">
       <div className="w-full">
         {/* currentFileIndexが指定されている場合は、そのファイルのみを表示 */}
         {(currentFileIndex !== undefined
@@ -184,6 +178,6 @@ export function Presentation1View({ currentFileIndex }: Presentation1ViewProps) 
           </div>
         ))}
       </div>
-    </A3SlideTemplate>
+    </A3Page>
   );
 }

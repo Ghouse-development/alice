@@ -9,7 +9,7 @@ interface Presentation5ViewProps {
   projectId: string;
 }
 
-export function Presentation5View({ }: Presentation5ViewProps) {
+export function Presentation5View({}: Presentation5ViewProps) {
   const { currentProject } = useStore();
   const [presentation, setPresentation] = useState<Presentation5 | null>(null);
 
@@ -46,19 +46,22 @@ export function Presentation5View({ }: Presentation5ViewProps) {
         maxHeight: '100%',
         margin: '0 auto',
         aspectRatio: '1.414 / 1', // A3横比率を明示
-        transformOrigin: 'center center'
+        transformOrigin: 'center center',
       }}
     >
       {/* 背景パターン */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
               repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
               repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
             `,
-          }} />
+            }}
+          />
         </div>
       </div>
 
@@ -73,7 +76,10 @@ export function Presentation5View({ }: Presentation5ViewProps) {
         {presentation.afterServiceItems.map((item) => {
           const Icon = getIcon(item.title);
           return (
-            <div key={item.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div
+              key={item.id}
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+            >
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center flex-shrink-0">
@@ -90,9 +96,7 @@ export function Presentation5View({ }: Presentation5ViewProps) {
                 </div>
               </div>
               <div className="p-6">
-                <p className="text-gray-700 leading-relaxed">
-                  {item.description}
-                </p>
+                <p className="text-gray-700 leading-relaxed">{item.description}</p>
                 {item.images && item.images.length > 0 && (
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {item.images.map((image, imgIndex) => (
@@ -100,7 +104,7 @@ export function Presentation5View({ }: Presentation5ViewProps) {
                         key={imgIndex}
                         src={image}
                         alt={`${item.title}-${imgIndex + 1}`}
-                        className="w-full h-20 object-cover rounded"
+                        className="img-responsive block rounded"
                       />
                     ))}
                   </div>
@@ -127,7 +131,10 @@ export function Presentation5View({ }: Presentation5ViewProps) {
               return getYears(b.period) - getYears(a.period);
             })
             .map((item) => (
-              <div key={item.id} className="bg-white p-3 rounded-lg flex justify-between items-center">
+              <div
+                key={item.id}
+                className="bg-white p-3 rounded-lg flex justify-between items-center"
+              >
                 <span className="font-medium text-gray-700">{item.title}</span>
                 <span className="text-lg font-bold text-green-600">{item.period}</span>
               </div>
@@ -140,24 +147,28 @@ export function Presentation5View({ }: Presentation5ViewProps) {
         <ul className="space-y-2">
           <li className="flex items-start gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">お客様の大切な住まいを長期にわたってサポートします</span>
+            <span className="text-gray-700">
+              お客様の大切な住まいを長期にわたってサポートします
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">定期的な点検とメンテナンスで、住まいの価値を維持します</span>
+            <span className="text-gray-700">
+              定期的な点検とメンテナンスで、住まいの価値を維持します
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">困った時はいつでもご相談いただける体制を整えています</span>
+            <span className="text-gray-700">
+              困った時はいつでもご相談いただける体制を整えています
+            </span>
           </li>
         </ul>
       </div>
 
       <div className="text-center py-8 bg-gray-50 rounded-lg">
         <h3 className="text-2xl font-bold mb-2">安心の住まいづくり</h3>
-        <p className="text-gray-600">
-          Gハウスは、お客様との末永いお付き合いをお約束します
-        </p>
+        <p className="text-gray-600">Gハウスは、お客様との末永いお付き合いをお約束します</p>
       </div>
     </div>
   );

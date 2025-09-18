@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Calculator, Home, Hammer, FileText, Landmark } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Presentation4 } from '@/types';
-import { A3SlideTemplate } from './A3SlideTemplate';
+import A3Page from './A3Page';
 
 interface Presentation4ViewProps {
   projectId: string;
@@ -110,7 +110,7 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
   ];
 
   return (
-    <A3SlideTemplate title="資金計画" subtitle="住宅建築における総費用とローン計画">
+    <A3Page title="資金計画" subtitle="住宅建築における総費用とローン計画">
       {/* 背景パターン */}
       <div className="absolute inset-0">
         <div
@@ -205,7 +205,7 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
               </h2>
             </div>
             <div className="p-4">
-              <table className="w-full">
+              <table className="table block">
                 <tbody>
                   {categories.map((category, index) => {
                     const Icon =
@@ -436,6 +436,6 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
           </div>
         </div>
       </div>
-    </A3SlideTemplate>
+    </A3Page>
   );
 }

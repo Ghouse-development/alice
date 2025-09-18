@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { A3SlideTemplate } from './A3SlideTemplate';
+import A3Page from './A3Page';
 
 interface OptionItem {
   id: string;
@@ -120,7 +120,7 @@ export default function OptionsSlideFixed({
   }, [totalAmount]);
 
   return (
-    <A3SlideTemplate title="オプション選択" subtitle={`${customerName}様 プロジェクト`}>
+    <A3Page title="オプション選択" subtitle={`${customerName}様 プロジェクト`}>
       <div className="h-full flex flex-col">
         {/* ヘッダー - Presentation2と統一 */}
         <div
@@ -384,6 +384,6 @@ export default function OptionsSlideFixed({
           </div>
         </div>
       </div>
-    </A3SlideTemplate>
+    </A3Page>
   );
 }

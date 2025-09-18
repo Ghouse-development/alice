@@ -7,13 +7,16 @@ interface PresentationContainerProps {
   fullscreen?: boolean;
 }
 
-export function PresentationContainer({ children, fullscreen = false }: PresentationContainerProps) {
+export function PresentationContainer({
+  children,
+  fullscreen = false,
+}: PresentationContainerProps) {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
     const calculateScale = () => {
-      const contentWidth = 1190; // A3横の基準幅(px)
-      const contentHeight = 842; // A3横の基準高さ(px)
+      const contentWidth = 1587; // A3横の基準幅(px) - 420mm at 96dpi
+      const contentHeight = 1123; // A3横の基準高さ(px) - 297mm at 96dpi
 
       if (fullscreen) {
         // For fullscreen, use viewport dimensions directly
@@ -62,39 +65,43 @@ export function PresentationContainer({ children, fullscreen = false }: Presenta
   return (
     <div
       className={`presentation-wrapper ${fullscreen ? 'w-screen h-screen bg-black' : 'w-full h-full bg-white'} overflow-hidden`}
-      style={fullscreen ? {
-        width: '100vw',
-        height: '100vh',
-        maxWidth: 'none',
-        maxHeight: 'none',
-        margin: 0,
-        padding: 0,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'black'
-      } : {
-        width: '100%',
-        height: '100%',
-        aspectRatio: '1.414 / 1', // A3横サイズ比率
-        maxWidth: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
+      style={
+        fullscreen
+          ? {
+              width: '100vw',
+              height: '100vh',
+              maxWidth: 'none',
+              maxHeight: 'none',
+              margin: 0,
+              padding: 0,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'black',
+            }
+          : {
+              width: '100%',
+              height: '100%',
+              aspectRatio: '1.414 / 1', // A3横サイズ比率
+              maxWidth: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }
+      }
     >
       <div
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          width: '1190px',
-          height: '842px',
+          width: '1587px',
+          height: '1123px',
           boxSizing: 'border-box',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
         {children}

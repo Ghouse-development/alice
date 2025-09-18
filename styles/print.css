@@ -1,0 +1,178 @@
+/* 印刷/PDF専用CSS - 指示書v3準拠 */
+
+/* 印刷時の基本設定 */
+@media print {
+  /* ページ設定: A3横 */
+  @page {
+    size: A3 landscape;
+    margin: 0;
+  }
+
+  /* body設定 */
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 印刷モード時のビューポート */
+  .print-viewport {
+    display: block;
+    width: 420mm;
+    height: auto;
+  }
+
+  /* 印刷時はズーム解除 */
+  .print-zoom-wrap,
+  .zoom-wrap {
+    transform: none !important;
+    transform-origin: center center;
+  }
+
+  /* 各ページ設定 */
+  .print-page,
+  .page-a3 {
+    width: 420mm;
+    height: 297mm;
+    page-break-after: always;
+    page-break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 最後のページは改ページなし */
+  .print-page:last-child,
+  .page-a3:last-child {
+    page-break-after: auto;
+  }
+
+  /* セーフエリア */
+  .print-page .safe,
+  .page-a3 .safe {
+    position: absolute;
+    top: 12mm;
+    right: 12mm;
+    bottom: 12mm;
+    left: 12mm;
+    overflow: hidden;
+  }
+
+  /* UI要素を完全に非表示 */
+  .no-print,
+  nav,
+  header > nav,
+  aside,
+  footer,
+  .navigation,
+  .nav-menu,
+  .sidebar,
+  .toolbar,
+  .menu,
+  .controls,
+  .edit-mode,
+  .preview-controls,
+  .zoom-controls,
+  button:not(.print-button),
+  .button-group,
+  .modal,
+  .dialog,
+  .tooltip,
+  .popover,
+  .dropdown,
+  [role="navigation"],
+  [role="toolbar"],
+  [aria-label="Navigation"],
+  [aria-label="Controls"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 編集系UI要素も非表示 */
+  .edit-button,
+  .delete-button,
+  .save-button,
+  .cancel-button,
+  input[type="file"],
+  .file-upload,
+  .drag-drop-zone,
+  .resize-handle {
+    display: none !important;
+  }
+
+  /* スクロールバー非表示 */
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  *::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* テーブルのオーバーフロー制御 */
+  table {
+    page-break-inside: avoid;
+    max-width: 100%;
+  }
+
+  /* 画像のオーバーフロー制御 */
+  img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+
+  /* インタラクティブ要素を静的に */
+  input,
+  select,
+  textarea {
+    border: 1px solid #ccc !important;
+    background: white !important;
+  }
+
+  /* リンクの見た目を印刷用に */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* 背景色の保持 */
+  .bg-gradient-to-b,
+  .bg-gradient-to-r,
+  .bg-gradient-to-br,
+  [class*="bg-"] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* 印刷モード専用クラス */
+body.print-mode {
+  overflow: visible;
+}
+
+body.print-mode .print-viewport {
+  display: block;
+}
+
+body.print-mode .print-page {
+  margin-bottom: 20px; /* ブラウザ表示時のページ間隔 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 印刷プレビュー時の調整 */
+@media screen and (min-width: 1600px) {
+  body.print-mode .print-viewport {
+    max-width: 1587px;
+    margin: 0 auto;
+  }
+
+  body.print-mode .print-page {
+    transform: scale(0.95);
+    transform-origin: center top;
+  }
+}

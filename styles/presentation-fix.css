@@ -1,0 +1,197 @@
+/* プレゼンテーションモードのはみ出し修正CSS */
+
+/* 全プレゼンテーションコンポーネントに対して強制的にA3サイズを適用 */
+.presentation-wrapper > div {
+  width: 1587px !important;
+  height: 1123px !important;
+  max-width: 1587px !important;
+  max-height: 1123px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* 各プレゼンテーションビュー内のコンテンツを制限 */
+[class*="Presentation"] {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Presentation1View - アップロードファイルカード */
+.presentation-1-content {
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+}
+
+/* Presentation2CrownUnified - カテゴリカード */
+.crown-category-content {
+  max-height: calc(100% - 150px);
+  overflow-y: auto;
+}
+
+/* Presentation3Interactive - インタラクティブコンテンツ */
+.interactive-content {
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Presentation4View - 設備仕様テーブル */
+.specification-table {
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+}
+
+.specification-table table {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.specification-table td,
+.specification-table th {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Presentation5View - アフターサービス */
+.after-service-grid {
+  max-height: calc(100% - 120px);
+  overflow-y: auto;
+}
+
+/* 太陽光シミュレーター系 */
+.solar-simulator-content {
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.solar-chart-container {
+  max-height: 400px;
+}
+
+/* グリッドレイアウトの制限 */
+.grid,
+[class*="grid-"] {
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.grid > *,
+[class*="grid-"] > * {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* カードコンポーネントの制限 */
+.card,
+[class*="card"] {
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 画像の制限 */
+img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* テキストのはみ出し防止 */
+p, span, div, h1, h2, h3, h4, h5, h6 {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* 長いテキストは省略 */
+.text-ellipsis {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* フレックスボックスの子要素制限 */
+.flex > *,
+[class*="flex-"] > * {
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+}
+
+/* 絶対位置要素の制限 */
+.absolute,
+[class*="absolute"] {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* プレゼンテーションモード時の背景制限 */
+.presentation-mode {
+  overflow: hidden !important;
+}
+
+.presentation-mode .bg-gradient-to-b,
+.presentation-mode .bg-gradient-to-r,
+.presentation-mode .bg-gradient-to-br {
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+}
+
+/* スクロールバーを非表示（はみ出し防止） */
+.presentation-wrapper *::-webkit-scrollbar {
+  display: none;
+}
+
+.presentation-wrapper * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* A3Page使用時の強制制限 */
+.page-a3 {
+  width: 420mm !important;
+  height: 297mm !important;
+  max-width: 420mm !important;
+  max-height: 297mm !important;
+  overflow: hidden !important;
+  margin: 0 auto !important;
+  position: relative !important;
+}
+
+/* プレゼンテーションモードでのpx変換 */
+.presentation-mode .page-a3,
+.presentation-wrapper .page-a3 {
+  width: 1587px !important;
+  height: 1123px !important;
+  max-width: 1587px !important;
+  max-height: 1123px !important;
+}
+
+/* セーフエリアの強制 */
+.page-a3 .safe {
+  position: absolute !important;
+  top: 45px !important;  /* 12mm */
+  right: 45px !important;
+  bottom: 45px !important;
+  left: 45px !important;
+  overflow: hidden !important;
+  max-width: calc(100% - 90px) !important;
+  max-height: calc(100% - 90px) !important;
+}
+
+/* デバッグ用: はみ出し箇所を可視化（本番では削除） */
+/*
+.presentation-wrapper > div {
+  border: 3px solid red !important;
+}
+
+.page-a3 {
+  border: 3px solid blue !important;
+}
+
+.page-a3 .safe {
+  border: 3px solid green !important;
+}
+*/

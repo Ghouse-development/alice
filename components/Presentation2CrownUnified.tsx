@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Presentation2 } from '@/types';
-import { A3SlideTemplate } from './A3SlideTemplate';
+import A3Page from './A3Page';
 import { A3Grid, A3Card } from './A3ViewportContainer';
 
 interface Presentation2CrownUnifiedProps {
@@ -167,7 +167,7 @@ export default function Presentation2CrownUnified({
     const Icon = categoryIcons[item.category] || Shield;
 
     return (
-      <A3SlideTemplate title={item.category} subtitle={item.title}>
+      <A3Page title={item.category} subtitle={item.title}>
         <div style={{ width: '100%', height: '100%', display: 'flex', gap: '8mm' }}>
           {/* 左側：メインビジュアル＆タイトル */}
           <div
@@ -259,7 +259,7 @@ export default function Presentation2CrownUnified({
             </A3Grid>
           </div>
         </div>
-      </A3SlideTemplate>
+      </A3Page>
     );
   };
 

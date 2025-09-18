@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/a3.css";
+@import "../styles/print.css";
+@import "../styles/presentation-fix.css";
 
 /* プレゼン画面のツールバーボタンを完全削除 */
 .btn-print, .btn-pdf, .btn-actual-size, .btn-fit,

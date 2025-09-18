@@ -17,7 +17,7 @@ import {
 import { ChevronDown, ChevronUp, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { A3SlideTemplate } from './A3SlideTemplate';
+import A3Page from './A3Page';
 
 // Types
 interface Settings {
@@ -283,7 +283,7 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
   }, [timeline, useBattery]);
 
   return (
-    <A3SlideTemplate title="光熱費シミュレーション" subtitle="太陽光発電・蓄電池導入効果">
+    <A3Page title="光熱費シミュレーション" subtitle="太陽光発電・蓄電池導入効果">
       <div className="h-full flex flex-col">
         {/* ヘッダー - Presentation2と統一 */}
         <div
@@ -678,7 +678,7 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
                 </div>
 
                 <div className="overflow-hidden">
-                  <table className="w-full text-xs">
+                  <table className="table block">
                     <thead>
                       <tr className="border-b text-gray-600">
                         <th className="py-2 text-left">年</th>
@@ -759,6 +759,6 @@ export default function SolarSimulatorConclusionFirst({ projectId }: { projectId
           </div>
         </main>
       </div>
-    </A3SlideTemplate>
+    </A3Page>
   );
 }

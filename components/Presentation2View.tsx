@@ -1,7 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, Home, Snowflake, Wind, Clock, Palette, Hammer, Award, Zap, Wifi } from 'lucide-react';
+import {
+  Shield,
+  Home,
+  Snowflake,
+  Wind,
+  Clock,
+  Palette,
+  Hammer,
+  Award,
+  Zap,
+  Wifi,
+} from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { EarthquakeResistanceSlide } from './EarthquakeResistanceSlide';
 import type { Presentation2, PerformanceItem } from '@/types';
@@ -13,19 +24,23 @@ interface Presentation2ViewProps {
 }
 
 const categoryIcons: { [key: string]: React.ComponentType<{ className?: string }> } = {
-  '耐震': Shield,
+  耐震: Shield,
   '断熱・気密': Snowflake,
-  '空気質': Wind,
-  '空調計画': Wind,
-  '耐久性': Clock,
-  'デザイン性': Palette,
-  '施工品質': Hammer,
+  空気質: Wind,
+  空調計画: Wind,
+  耐久性: Clock,
+  デザイン性: Palette,
+  施工品質: Hammer,
   '保証・アフターサービス': Award,
-  '省エネ性': Zap,
+  省エネ性: Zap,
   '最新テクノロジー（IoT）': Wifi,
 };
 
-export function Presentation2View({ projectId, fixedSlide, performanceItems: externalItems }: Presentation2ViewProps) {
+export function Presentation2View({
+  projectId,
+  fixedSlide,
+  performanceItems: externalItems,
+}: Presentation2ViewProps) {
   const { currentProject } = useStore();
   const [presentation, setPresentation] = useState<Presentation2 | null>(null);
   const [currentSlide, setCurrentSlide] = useState(fixedSlide ?? 0);
@@ -58,86 +73,105 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
       }
     }
 
-    if (currentProject?.presentation2?.performanceItems && currentProject.presentation2.performanceItems.length > 0) {
+    if (
+      currentProject?.presentation2?.performanceItems &&
+      currentProject.presentation2.performanceItems.length > 0
+    ) {
       setPresentation(currentProject.presentation2);
     } else {
       // デフォルトデータで初期化
       const defaultPresentation: Presentation2 = {
         id: `pres2-${Date.now()}`,
         projectId,
-        performanceItems: defaultItems.length > 0 ? defaultItems : [
-          {
-            id: '1',
-            category: '耐震',
-            title: '最高等級の耐震性能×evoltz制震システム',
-            description: 'ビルシュタイン社と共同開発したevoltz制震ダンパーにより、地震の揺れを最大45%低減。耐震等級3と制震技術の組み合わせで、大地震後も住み続けられる安心を提供します。',
-            priority: 1,
-          },
-          {
-            id: '2',
-            category: '断熱・気密',
-            title: 'HEAT20 G2グレードの高断熱・高気密設計',
-            description: 'UA値0.46以下、C値0.5以下を実現。北海道基準の断熱性能により、夏涼しく冬暖かい快適な住環境を一年中提供します。',
-            priority: 2,
-          },
-          {
-            id: '3',
-            category: '空気質',
-            title: '清潔空気システム',
-            description: '高性能フィルターでPM2.5、花粉を99.8%カット。常に新鮮で清潔な空気を供給し、アレルギー対策にも効果的です。',
-            priority: 3,
-          },
-          {
-            id: '4',
-            category: '空調計画',
-            title: '24時間全熱交換換気システム',
-            description: '第一種換気システムで熱ロスを最小限に抑え、省エネと快適性を両立。湿度調整機能で結露も防止します。',
-            priority: 4,
-          },
-          {
-            id: '5',
-            category: '耐久性',
-            title: '長期優良住宅認定・100年住宅',
-            description: '劣化対策等級3、維持管理対策等級3を取得。構造踯体は100年以上の耐久性を実現し、メンテナンスコストも大幅削減。',
-            priority: 5,
-          },
-          {
-            id: '6',
-            category: 'デザイン性',
-            title: '洗練された外観と機能美の融合',
-            description: '建築家とのコラボレーションにより、街並みに調和しながらも個性的な外観デザインを実現。採光と通風を考慮した美しく機能的な設計。',
-            priority: 6,
-          },
-          {
-            id: '7',
-            category: '施工品質',
-            title: '自社大工による匠の技術',
-            description: '経験豊富な自社大工による丁寧な施工。第三者機関による10回検査と、施工中の見える化により、最高品質を保証します。',
-            priority: 7,
-          },
-          {
-            id: '8',
-            category: '保証・アフターサービス',
-            title: '業界最長クラスの安心保証',
-            description: '構造踯体35年保証、防水20年保証、シロアリ10年保証。24時間365日の緊急対応と、50年間の定期点検プログラムで末長く安心。',
-            priority: 8,
-          },
-          {
-            id: '9',
-            category: '省エネ性',
-            title: 'ZEH基準を超える省エネ性能',
-            description: '太陽光発電5.5kW標準搭載、HEMS導入により光熱費。50%以上削減。売電収入と合わせて実質光熱費ゼロも実現可能です。',
-            priority: 9,
-          },
-          {
-            id: '10',
-            category: '最新テクノロジー（IoT）',
-            title: 'スマートホーム標準装備',
-            description: 'Google Home/Alexa対応、スマートロック、見守りカメラ、遠隔家電操作など、最新のIoT技術で快適で安全な暮らしをサポート。',
-            priority: 10,
-          }
-        ],
-        sortedOrder: defaultItems.length > 0 ? defaultItems.map((item: PerformanceItem) => item.id) : undefined
+        performanceItems:
+          defaultItems.length > 0
+            ? defaultItems
+            : [
+                {
+                  id: '1',
+                  category: '耐震',
+                  title: '最高等級の耐震性能×evoltz制震システム',
+                  description:
+                    'ビルシュタイン社と共同開発したevoltz制震ダンパーにより、地震の揺れを最大45%低減。耐震等級3と制震技術の組み合わせで、大地震後も住み続けられる安心を提供します。',
+                  priority: 1,
+                },
+                {
+                  id: '2',
+                  category: '断熱・気密',
+                  title: 'HEAT20 G2グレードの高断熱・高気密設計',
+                  description:
+                    'UA値0.46以下、C値0.5以下を実現。北海道基準の断熱性能により、夏涼しく冬暖かい快適な住環境を一年中提供します。',
+                  priority: 2,
+                },
+                {
+                  id: '3',
+                  category: '空気質',
+                  title: '清潔空気システム',
+                  description:
+                    '高性能フィルターでPM2.5、花粉を99.8%カット。常に新鮮で清潔な空気を供給し、アレルギー対策にも効果的です。',
+                  priority: 3,
+                },
+                {
+                  id: '4',
+                  category: '空調計画',
+                  title: '24時間全熱交換換気システム',
+                  description:
+                    '第一種換気システムで熱ロスを最小限に抑え、省エネと快適性を両立。湿度調整機能で結露も防止します。',
+                  priority: 4,
+                },
+                {
+                  id: '5',
+                  category: '耐久性',
+                  title: '長期優良住宅認定・100年住宅',
+                  description:
+                    '劣化対策等級3、維持管理対策等級3を取得。構造踯体は100年以上の耐久性を実現し、メンテナンスコストも大幅削減。',
+                  priority: 5,
+                },
+                {
+                  id: '6',
+                  category: 'デザイン性',
+                  title: '洗練された外観と機能美の融合',
+                  description:
+                    '建築家とのコラボレーションにより、街並みに調和しながらも個性的な外観デザインを実現。採光と通風を考慮した美しく機能的な設計。',
+                  priority: 6,
+                },
+                {
+                  id: '7',
+                  category: '施工品質',
+                  title: '自社大工による匠の技術',
+                  description:
+                    '経験豊富な自社大工による丁寧な施工。第三者機関による10回検査と、施工中の見える化により、最高品質を保証します。',
+                  priority: 7,
+                },
+                {
+                  id: '8',
+                  category: '保証・アフターサービス',
+                  title: '業界最長クラスの安心保証',
+                  description:
+                    '構造踯体35年保証、防水20年保証、シロアリ10年保証。24時間365日の緊急対応と、50年間の定期点検プログラムで末長く安心。',
+                  priority: 8,
+                },
+                {
+                  id: '9',
+                  category: '省エネ性',
+                  title: 'ZEH基準を超える省エネ性能',
+                  description:
+                    '太陽光発電5.5kW標準搭載、HEMS導入により光熱費。50%以上削減。売電収入と合わせて実質光熱費ゼロも実現可能です。',
+                  priority: 9,
+                },
+                {
+                  id: '10',
+                  category: '最新テクノロジー（IoT）',
+                  title: 'スマートホーム標準装備',
+                  description:
+                    'Google Home/Alexa対応、スマートロック、見守りカメラ、遠隔家電操作など、最新のIoT技術で快適で安全な暮らしをサポート。',
+                  priority: 10,
+                },
+              ],
+        sortedOrder:
+          defaultItems.length > 0
+            ? defaultItems.map((item: PerformanceItem) => item.id)
+            : undefined,
       };
       setPresentation(defaultPresentation);
     }
@@ -152,7 +186,11 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
     }
   }, [currentProject, projectId, externalItems]);
 
-  if (!presentation || !presentation.performanceItems || presentation.performanceItems.length === 0) {
+  if (
+    !presentation ||
+    !presentation.performanceItems ||
+    presentation.performanceItems.length === 0
+  ) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">プレゼンテーション2のデータを読み込み中...</p>
@@ -173,7 +211,7 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
         maxHeight: '100%',
         margin: '0 auto',
         aspectRatio: '1.414 / 1', // A3横比率を明示
-        transformOrigin: 'center center'
+        transformOrigin: 'center center',
       }}
     >
       {/* スライドナビゲーション - フロー表示の場合は非表示 */}
@@ -206,7 +244,14 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
       )}
 
       {/* メインスライド - A3横サイズを意識したレイアウト */}
-      <div className={`${fixedSlide !== undefined ? 'w-full h-full' : 'flex-1'} bg-white ${fixedSlide === undefined ? 'rounded-lg border-2 border-gray-200' : ''} overflow-hidden`} style={fixedSlide !== undefined ? { width: '100%', height: '100%' } : { aspectRatio: '1.414 / 1' }}>
+      <div
+        className={`${fixedSlide !== undefined ? 'w-full h-full' : 'flex-1'} bg-white ${fixedSlide === undefined ? 'rounded-lg border-2 border-gray-200' : ''} overflow-hidden`}
+        style={
+          fixedSlide !== undefined
+            ? { width: '100%', height: '100%' }
+            : { aspectRatio: '1.414 / 1' }
+        }
+      >
         {currentItem.category === '耐震' && !currentItem.images?.length ? (
           // 耐震カテゴリの専用スライド
           <EarthquakeResistanceSlide />
@@ -223,7 +268,7 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
               <img
                 src={currentItem.images[0]}
                 alt={currentItem.title}
-                className="w-full h-full object-contain"
+                className="img-responsive block"
               />
             )}
           </div>
@@ -252,9 +297,7 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
             {/* コンテンツエリア */}
             <div className="flex-1 p-12 flex items-center">
               <div className="max-w-4xl">
-                <p className="text-xl leading-relaxed text-gray-700">
-                  {currentItem.description}
-                </p>
+                <p className="text-xl leading-relaxed text-gray-700">{currentItem.description}</p>
 
                 {/* 断熱・気密性能詳細レイアウト */}
                 {currentItem.category === '断熱・気密' && (
@@ -264,7 +307,9 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
                       <div className="absolute inset-0 bg-white/10" />
                       <div className="relative z-10 h-full flex items-center justify-between px-12">
                         <div className="text-white max-w-lg">
-                          <div className="text-sm font-medium mb-2 tracking-wider">THERMAL INSULATION</div>
+                          <div className="text-sm font-medium mb-2 tracking-wider">
+                            THERMAL INSULATION
+                          </div>
                           <h2 className="text-4xl font-bold mb-3">HEAT20 G2グレード</h2>
                           <p className="text-lg opacity-90">北海道基準の高断熱・高気密性能</p>
                         </div>
@@ -340,10 +385,18 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
                   <div className="mt-6 -mx-12">
                     {/* メインビジュアル */}
                     <div className="relative h-56 bg-gradient-to-br from-green-600 to-emerald-500 overflow-hidden">
-                      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)' }} />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage:
+                            'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                        }}
+                      />
                       <div className="relative z-10 h-full flex items-center justify-between px-12">
                         <div className="text-white max-w-lg">
-                          <div className="text-sm font-medium mb-2 tracking-wider">ZERO ENERGY HOUSE</div>
+                          <div className="text-sm font-medium mb-2 tracking-wider">
+                            ZERO ENERGY HOUSE
+                          </div>
                           <h2 className="text-4xl font-bold mb-3">ZEH基準適合住宅</h2>
                           <p className="text-lg opacity-90">創エネと省エネでエネルギー収支ゼロ</p>
                         </div>
@@ -435,9 +488,7 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
             {/* フッター */}
             <div className="border-t bg-gray-50 px-12 py-6">
               <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Gハウス 住宅性能説明資料
-                </div>
+                <div className="text-sm text-gray-600">Gハウス 住宅性能説明資料</div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
@@ -447,7 +498,11 @@ export function Presentation2View({ projectId, fixedSlide, performanceItems: ext
                     前へ
                   </button>
                   <button
-                    onClick={() => setCurrentSlide(Math.min(presentation.performanceItems.length - 1, currentSlide + 1))}
+                    onClick={() =>
+                      setCurrentSlide(
+                        Math.min(presentation.performanceItems.length - 1, currentSlide + 1)
+                      )
+                    }
                     disabled={currentSlide === presentation.performanceItems.length - 1}
                     className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
