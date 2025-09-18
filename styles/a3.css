@@ -42,13 +42,16 @@ body {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 }
 
-/* プレゼンモード時のpx変換 */
+/* プレゼンモード時のpx変換 - 高優先度 */
 .presentation-mode .page-a3,
-.presentation-wrapper .page-a3 {
+.presentation-wrapper .page-a3,
+.presentation-wrapper .zoom-wrap .page-a3 {
   width: 1587px !important;
   height: 1123px !important;
   max-width: 1587px !important;
   max-height: 1123px !important;
+  min-width: 1587px !important;
+  min-height: 1123px !important;
 }
 
 /* 安全余白：ここにだけ要素を置く */
@@ -70,8 +73,12 @@ body {
   max-height: 100% !important;
 }
 
-/* 全ての子要素に対してはみ出し防止 */
-.page-a3 * {
+/* 全ての子要素に対してはみ出し防止 - テーブルや画像のみ制限 */
+.page-a3 img,
+.page-a3 svg,
+.page-a3 table,
+.page-a3 iframe,
+.page-a3 video {
   max-width: 100% !important;
   box-sizing: border-box !important;
 }

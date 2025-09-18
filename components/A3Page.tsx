@@ -22,9 +22,20 @@ export default function A3Page({
   const pageRef = useRef<HTMLElement>(null);
   const [scale, setScale] = useState(1);
   const [isAutoFit, setIsAutoFit] = useState(false);
+  const [isInsideContainer, setIsInsideContainer] = useState(false);
+
+  // PresentationContainer内にいるかチェック
+  useEffect(() => {
+    const checkContainer = () => {
+      const container = document.querySelector('.presentation-wrapper');
+      setIsInsideContainer(!!container);
+    };
+    checkContainer();
+  }, []);
 
   // 実寸表示（指示書v2のshowActualSize()）
   const showActualSize = () => {
+    if (isInsideContainer) return; // PresentationContainer内では無効化
     document.querySelectorAll('.zoom-wrap').forEach((w) => {
       (w as HTMLElement).style.transform = 'none';
     });
@@ -34,6 +45,7 @@ export default function A3Page({
 
   // 画面フィット（指示書v2のfitToScreen()）
   const fitToScreen = () => {
+    if (isInsideContainer) return; // PresentationContainer内では無効化
     const page = document.querySelector('.page-a3') as HTMLElement;
     const wrap = document.querySelector('.zoom-wrap') as HTMLElement;
     if (!page || !wrap) return;
@@ -48,6 +60,15 @@ export default function A3Page({
 
   // ウィンドウリサイズ時の処理（指示書v2準拠）
   useEffect(() => {
+    if (isInsideContainer) {
+      // PresentationContainer内の場合はスケーリングを無効化
+      const wrap = zoomWrapRef.current;
+      if (wrap) {
+        wrap.style.transform = 'none';
+      }
+      return;
+    }
+
     const handleResize = () => {
       const wrap = document.querySelector('.zoom-wrap') as HTMLElement;
       if (wrap?.style.transform.startsWith('scale')) {
@@ -60,7 +81,7 @@ export default function A3Page({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isInsideContainer]);
 
   // 印刷処理
   const handlePrint = () => {
@@ -83,24 +104,28 @@ export default function A3Page({
 
   return (
     <>
-      {/* ツールバー（印刷時非表示） */}
-      <div className="toolbar no-print">
-        <button className="btn-print" onClick={handlePrint}>
-          印刷
-        </button>
-        <button className="btn-pdf" onClick={handleExportPDF}>
-          PDF出力
-        </button>
-        <button className="btn-actual" onClick={showActualSize}>
-          実寸表示
-        </button>
-        <button className="btn-fit" onClick={fitToScreen}>
-          画面幅に合わせる
-        </button>
-      </div>
+      {/* ツールバー（印刷時非表示、PresentationContainer内では非表示） */}
+      {!isInsideContainer && (
+        <div className="toolbar no-print">
+          <button className="btn-print" onClick={handlePrint}>
+            印刷
+          </button>
+          <button className="btn-pdf" onClick={handleExportPDF}>
+            PDF出力
+          </button>
+          <button className="btn-actual" onClick={showActualSize}>
+            実寸表示
+          </button>
+          <button className="btn-fit" onClick={fitToScreen}>
+            画面幅に合わせる
+          </button>
+        </div>
+      )}
 
-      {/* スケール表示（印刷時非表示） */}
-      <div className="scale-indicator no-print">表示倍率: {Math.round(scale * 100)}%</div>
+      {/* スケール表示（印刷時非表示、PresentationContainer内では非表示） */}
+      {!isInsideContainer && (
+        <div className="scale-indicator no-print">表示倍率: {Math.round(scale * 100)}%</div>
+      )}
 
       {/* 指示書v2準拠: viewport → zoom-wrap → page-a3 → safe */}
       <div className={`viewport no-print-bg ${className}`}>
