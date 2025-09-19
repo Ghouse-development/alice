@@ -68,6 +68,11 @@ const createEmptyAdditionalOptions = (
   }));
 };
 
+// 金額フォーマット
+const formatJPY = (price: number): string => {
+  return `¥${price.toLocaleString()}`;
+};
+
 // 追加オプション行コンポーネント
 function AdditionalOptionRow({
   item,
@@ -81,19 +86,19 @@ function AdditionalOptionRow({
   onPriceChange: (id: string, price: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-2 px-2">
-      <div className="flex items-center gap-3">
+    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1.5">
+      <div className="flex items-center gap-2">
         <Checkbox
           checked={item.checked || false}
           onCheckedChange={() => onToggle(item.id)}
-          className="h-5 w-5"
+          className="h-4 w-4"
           disabled={!item.label}
         />
         <input
           value={item.label}
           onChange={(e) => onLabelChange(item.id, e.target.value)}
           placeholder="オプション名"
-          className="border rounded px-2 py-1 text-sm w-full"
+          className="border rounded px-2 py-1 text-xs w-full"
         />
       </div>
       <input
@@ -101,7 +106,7 @@ function AdditionalOptionRow({
         value={item.price || ''}
         onChange={(e) => onPriceChange(item.id, parseInt(e.target.value) || 0)}
         placeholder="0"
-        className="border rounded px-2 py-1 text-sm w-20 text-right tabular-nums"
+        className="border rounded px-2 py-1 text-xs w-16 text-right tabular-nums"
         disabled={!item.label}
       />
     </div>
@@ -149,8 +154,8 @@ function InteriorOptionRow({
   };
 
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1.5 px-2 hover:bg-gray-50 rounded">
-      <label className="flex items-center gap-3 cursor-pointer min-h-[32px]">
+    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1.5">
+      <label className="flex items-center gap-2 cursor-pointer min-h-[28px]">
         <Checkbox
           checked={item.checked}
           onCheckedChange={() => onToggle(item.id)}
@@ -162,14 +167,14 @@ function InteriorOptionRow({
             onChange={handleLabelChange}
             onBlur={handleLabelBlur}
             onKeyDown={handleKeyDown}
-            className="w-full border rounded px-2 py-0.5 text-sm"
+            className="w-full border rounded px-2 py-0.5 text-xs"
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="text-sm">{item.label}</span>
+          <span className="text-xs">{item.label}</span>
         )}
       </label>
-      <span className="text-sm tabular-nums text-right">+{(item.price / 10000).toFixed(0)}万</span>
+      <span className="text-xs tabular-nums text-right">+{(item.price / 10000).toFixed(0)}万</span>
     </div>
   );
 }
@@ -344,10 +349,6 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
   const pattern1Total = subtotals.exterior1 + subtotals.interior;
   const pattern2Total = subtotals.exterior2 + subtotals.interior;
 
-  const formatPrice = (price: number): string => {
-    return `¥${price.toLocaleString()}`;
-  };
-
   const calculateMonthlyPayment = (total: number): number => {
     const rate = loanSettings.annualRatePercent / 100 / 12;
     const months = loanSettings.years * 12;
@@ -358,34 +359,38 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
   };
 
   return (
-    <A3Page title="オプション選択" subtitle="" showFooter={false}>
-      <div className="grid grid-cols-12 grid-rows-6 gap-4 h-full p-5">
-        {/* A: 外観パターン① - 3 columns, 3 rows */}
-        <Card className="col-span-3 row-span-3 flex flex-col overflow-hidden rounded-xl border">
-          <CardHeader className="shrink-0 bg-red-50 px-4 py-3">
+    <A3Page
+      title="オプション選択"
+      subtitle={customerName ? `${customerName}様` : ''}
+      showFooter={false}
+    >
+      <div className="grid grid-cols-12 grid-rows-6 gap-3 h-full p-4">
+        {/* A: 外観パターン① - 4 columns, 3 rows */}
+        <Card className="col-span-4 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border">
+          <CardHeader className="shrink-0 bg-red-50 px-4 py-2">
             <h3 className="text-base font-bold text-red-700">A: 外観パターン①</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col px-4 py-3 overflow-hidden">
+          <CardContent className="flex-1 flex flex-col px-4 py-2 overflow-hidden min-h-0">
             {/* 画像 - 4:3 */}
-            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-3 flex items-center justify-center text-gray-500 text-sm shrink-0">
+            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
               外観イメージ①
             </div>
 
             {/* 既存オプション */}
-            <div className="space-y-1 mb-3 shrink-0">
+            <div className="space-y-1 mb-2 shrink-0">
               {exteriorOptions
                 .filter((opt) => opt.category === 'exterior1')
                 .map((opt) => (
                   <div key={opt.id} className="grid grid-cols-[1fr_auto] items-center gap-x-2 py-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs">
                       <Checkbox
                         checked={selectedOptions.has(opt.id)}
                         onCheckedChange={() => toggleOption(opt.id)}
-                        className="h-4 w-4"
+                        className="h-3.5 w-3.5"
                       />
                       <span className="truncate">{opt.label}</span>
                     </label>
-                    <span className="text-sm tabular-nums text-right">
+                    <span className="text-xs tabular-nums text-right">
                       +{(opt.price / 10000).toFixed(0)}万
                     </span>
                   </div>
@@ -393,8 +398,8 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
 
             {/* 追加入力行 */}
-            <div className="border-t pt-2 space-y-1 flex-1 overflow-auto">
-              <div className="text-xs font-semibold text-gray-600 mb-1">追加オプション</div>
+            <div className="border-t pt-1 space-y-1 flex-1 overflow-auto min-h-0">
+              <div className="text-xs font-semibold text-gray-600">追加オプション</div>
               {additionalExt1Options.map((opt) => (
                 <AdditionalOptionRow
                   key={opt.id}
@@ -411,38 +416,38 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
           </CardContent>
           <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-sm font-bold text-red-700">
-              小計: {formatPrice(subtotals.exterior1)}
+            <div className="text-base font-semibold text-red-700 text-right tabular-nums">
+              小計: {formatJPY(subtotals.exterior1)}
             </div>
           </div>
         </Card>
 
-        {/* B: 外観パターン② - 3 columns, 3 rows */}
-        <Card className="col-span-3 row-span-3 flex flex-col overflow-hidden rounded-xl border">
-          <CardHeader className="shrink-0 bg-blue-50 px-4 py-3">
+        {/* B: 外観パターン② - 4 columns, 3 rows */}
+        <Card className="col-span-4 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border">
+          <CardHeader className="shrink-0 bg-blue-50 px-4 py-2">
             <h3 className="text-base font-bold text-blue-700">B: 外観パターン②</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col px-4 py-3 overflow-hidden">
+          <CardContent className="flex-1 flex flex-col px-4 py-2 overflow-hidden min-h-0">
             {/* 画像 - 4:3 */}
-            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-3 flex items-center justify-center text-gray-500 text-sm shrink-0">
+            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
               外観イメージ②
             </div>
 
             {/* 既存オプション */}
-            <div className="space-y-1 mb-3 shrink-0">
+            <div className="space-y-1 mb-2 shrink-0">
               {exteriorOptions
                 .filter((opt) => opt.category === 'exterior2')
                 .map((opt) => (
                   <div key={opt.id} className="grid grid-cols-[1fr_auto] items-center gap-x-2 py-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs">
                       <Checkbox
                         checked={selectedOptions.has(opt.id)}
                         onCheckedChange={() => toggleOption(opt.id)}
-                        className="h-4 w-4"
+                        className="h-3.5 w-3.5"
                       />
                       <span className="truncate">{opt.label}</span>
                     </label>
-                    <span className="text-sm tabular-nums text-right">
+                    <span className="text-xs tabular-nums text-right">
                       +{(opt.price / 10000).toFixed(0)}万
                     </span>
                   </div>
@@ -450,8 +455,8 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
 
             {/* 追加入力行 */}
-            <div className="border-t pt-2 space-y-1 flex-1 overflow-auto">
-              <div className="text-xs font-semibold text-gray-600 mb-1">追加オプション</div>
+            <div className="border-t pt-1 space-y-1 flex-1 overflow-auto min-h-0">
+              <div className="text-xs font-semibold text-gray-600">追加オプション</div>
               {additionalExt2Options.map((opt) => (
                 <AdditionalOptionRow
                   key={opt.id}
@@ -468,44 +473,56 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
           </CardContent>
           <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-sm font-bold text-blue-700">
-              小計: {formatPrice(subtotals.exterior2)}
+            <div className="text-base font-semibold text-blue-700 text-right tabular-nums">
+              小計: {formatJPY(subtotals.exterior2)}
             </div>
           </div>
         </Card>
 
-        {/* C: 内観イメージ - 3 columns, 3 rows */}
-        <Card className="col-span-3 row-span-3 flex flex-col overflow-hidden rounded-xl border">
-          <CardHeader className="shrink-0 bg-green-50 px-4 py-3">
+        {/* C: 内観イメージ - 4 columns, 3 rows (拡大) */}
+        <Card className="col-span-4 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border">
+          <CardHeader className="shrink-0 bg-green-50 px-4 py-2">
             <h3 className="text-base font-bold text-green-700">C: 内観イメージ</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-3 flex items-center">
-            <div className="grid grid-cols-2 gap-3 w-full">
-              {/* 4つの画像 - テキストオーバーレイなし */}
-              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100"></div>
-              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100"></div>
-              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100"></div>
-              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100"></div>
+          <CardContent className="flex-1 px-4 py-2 overflow-hidden">
+            {/* 画像を外観と同じサイズ（1枚分）で表示 - グリッドを調整 */}
+            <div className="h-full flex flex-col">
+              {/* メイン画像 - 外観と同じサイズ */}
+              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
+                内観イメージ①
+              </div>
+              {/* 残りのスペースに3つの小画像を横並び */}
+              <div className="flex-1 grid grid-cols-3 gap-2">
+                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                  内観②
+                </div>
+                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                  内観③
+                </div>
+                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                  内観④
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* D: 内装オプション - 6 columns, 4 rows (拡張) */}
-        <Card className="col-span-6 row-span-4 flex flex-col overflow-hidden rounded-xl border">
-          <CardHeader className="shrink-0 bg-purple-50 px-5 py-3 flex flex-row items-center justify-between">
-            <h3 className="text-lg font-bold text-purple-700">D: 内装オプション</h3>
+        {/* D: 内装オプション - 6 columns, 3 rows (最も大きく) */}
+        <Card className="col-span-6 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border">
+          <CardHeader className="shrink-0 bg-purple-50 px-4 py-2 flex flex-row items-center justify-between">
+            <h3 className="text-base font-bold text-purple-700">D: 内装オプション</h3>
             <button
               onClick={() => setEditingInterior(!editingInterior)}
-              className="p-1.5 hover:bg-purple-100 rounded-lg transition-colors"
+              className="p-1 hover:bg-purple-100 rounded transition-colors"
               title="項目名を編集"
             >
               <Pencil
-                className={`h-4 w-4 ${editingInterior ? 'text-purple-600' : 'text-gray-500'}`}
+                className={`h-3.5 w-3.5 ${editingInterior ? 'text-purple-600' : 'text-gray-500'}`}
               />
             </button>
           </CardHeader>
-          <CardContent className="flex-1 px-5 py-3 overflow-hidden flex flex-col">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 flex-1">
+          <CardContent className="flex-1 px-4 py-2 overflow-auto min-h-0">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
               {interiorOptions.map((opt) => (
                 <InteriorOptionRow
                   key={opt.id}
@@ -517,65 +534,64 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
               ))}
             </div>
           </CardContent>
-          <div className="shrink-0 border-t px-5 py-3 bg-gray-50">
-            <div className="text-lg font-bold text-purple-700">
-              内装合計: {formatPrice(subtotals.interior)}
+          <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
+            <div className="text-base font-semibold text-purple-700 text-right tabular-nums">
+              内装合計: {formatJPY(subtotals.interior)}
             </div>
           </div>
         </Card>
 
-        {/* E: 外観パターン① ＋ 内装 - 2 columns, 2 rows (縮小) */}
-        <Card className="col-span-2 row-span-2 flex flex-col overflow-hidden rounded-xl border border-amber-400">
+        {/* E: 外観パターン① ＋ 内装 - 2 columns, 3 rows (縮小) */}
+        <Card className="col-span-2 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-amber-400">
           <CardHeader className="shrink-0 bg-amber-100 px-4 py-2">
             <h3 className="text-sm font-bold text-amber-700">E: 外観①＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-3 flex flex-col justify-center">
-            <div className="space-y-3">
+          <CardContent className="flex-1 px-4 py-2 flex flex-col justify-center">
+            <div className="space-y-2">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
-                <div className="text-2xl font-bold text-amber-700">
-                  {formatPrice(pattern1Total)}
+                <div className="text-xl font-bold text-amber-700 tabular-nums">
+                  {formatJPY(pattern1Total)}
                 </div>
               </div>
-              <div className="border-t pt-3">
+              <div className="border-t pt-2">
                 <div className="text-xs text-gray-600">月額(目安)</div>
-                <div className="text-xl font-bold text-amber-700">
-                  {formatPrice(calculateMonthlyPayment(pattern1Total))}
+                <div className="text-lg font-bold text-amber-700 tabular-nums">
+                  {formatJPY(calculateMonthlyPayment(pattern1Total))}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {loanSettings.annualRatePercent}%/{loanSettings.years}年
+                  金利{loanSettings.annualRatePercent}%／{loanSettings.years}年
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* F: 外観パターン② ＋ 内装 - 2 columns, 2 rows (縮小) */}
-        <Card className="col-span-2 row-span-2 flex flex-col overflow-hidden rounded-xl border border-cyan-400">
+        {/* F: 外観パターン② ＋ 内装 - 2 columns, 3 rows (縮小) */}
+        <Card className="col-span-2 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-cyan-400">
           <CardHeader className="shrink-0 bg-cyan-100 px-4 py-2">
             <h3 className="text-sm font-bold text-cyan-700">F: 外観②＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-3 flex flex-col justify-center">
-            <div className="space-y-3">
+          <CardContent className="flex-1 px-4 py-2 flex flex-col justify-center">
+            <div className="space-y-2">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
-                <div className="text-2xl font-bold text-cyan-700">{formatPrice(pattern2Total)}</div>
+                <div className="text-xl font-bold text-cyan-700 tabular-nums">
+                  {formatJPY(pattern2Total)}
+                </div>
               </div>
-              <div className="border-t pt-3">
+              <div className="border-t pt-2">
                 <div className="text-xs text-gray-600">月額(目安)</div>
-                <div className="text-xl font-bold text-cyan-700">
-                  {formatPrice(calculateMonthlyPayment(pattern2Total))}
+                <div className="text-lg font-bold text-cyan-700 tabular-nums">
+                  {formatJPY(calculateMonthlyPayment(pattern2Total))}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {loanSettings.annualRatePercent}%/{loanSettings.years}年
+                  金利{loanSettings.annualRatePercent}%／{loanSettings.years}年
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* Empty space in bottom left - 3 columns, 3 rows */}
-        <div className="col-span-3 row-span-3"></div>
       </div>
     </A3Page>
   );
