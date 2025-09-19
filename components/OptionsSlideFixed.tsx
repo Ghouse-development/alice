@@ -164,7 +164,7 @@ function InteriorOptionRow({
   );
 }
 
-export function OptionsSlideFixed({ projectId }: { projectId: string }) {
+export default function OptionsSlideFixed({ projectId }: { projectId: string }) {
   // 基本オプション
   const [exteriorOptions, setExteriorOptions] = useState<OptionItem[]>(initialExteriorOptions);
   const [exterior2Options, setExterior2Options] = useState<OptionItem[]>(initialExterior2Options);

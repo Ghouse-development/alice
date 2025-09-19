@@ -238,7 +238,7 @@ function calculateTimeline(settings: Settings): YearData[] {
   return timeline;
 }
 
-export function SolarSimulatorConclusionFirst({ projectId }: { projectId: string }) {
+export default function SolarSimulatorConclusionFirst({ projectId }: { projectId: string }) {
   const { currentProject, theme } = useStore();
   const [settings, setSettings] = useState<Settings>(getDefaultSettings());
 
