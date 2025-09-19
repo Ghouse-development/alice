@@ -26,7 +26,9 @@ export function PresentationContainer({
       // アスペクト比を維持してスケール計算
       const scaleX = viewportWidth / A3_WIDTH;
       const scaleY = viewportHeight / A3_HEIGHT;
-      const newScale = Math.min(scaleX, scaleY, 1); // 最大1倍まで
+      // 全画面時は制限なし、通常時は最大1.5倍まで
+      const maxScale = fullscreen ? Infinity : 1.5;
+      const newScale = Math.min(scaleX, scaleY, maxScale);
 
       setScale(newScale);
     };

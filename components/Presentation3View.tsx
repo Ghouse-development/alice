@@ -42,14 +42,17 @@ export function Presentation3View({}: Presentation3ViewProps) {
   );
 
   return (
-    <A3Page
-      title="仕様のご提案"
-      subtitle="お客様のご要望に合わせて、オプション仕様をご提案いたします"
-    >
-      <div className="relative overflow-hidden">
+    <A3Page>
+      <div className="relative overflow-hidden pt-4">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">仕様のご提案</h1>
+          <p className="text-lg text-gray-600">
+            お客様のご要望に合わせて、オプション仕様をご提案いたします
+          </p>
+        </div>
         {Object.entries(groupedOptions).length > 0 ? (
           <>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {Object.entries(groupedOptions).map(([category, options]) => (
                 <div
                   key={category}

@@ -2,7 +2,18 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Home, ChevronLeft, ChevronRight, Play, Pause, Maximize, Minimize, Printer } from 'lucide-react';
+import {
+  Home,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+  Maximize,
+  Minimize,
+  Save,
+} from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
@@ -61,14 +72,14 @@ export default function PresentationFlowPage() {
       presentation: 1,
       slideIndex: i,
       title: `デザイン (${i + 1}/${presentation1SlideCount})`,
-      totalSlides: presentation1SlideCount
+      totalSlides: presentation1SlideCount,
     })),
     // プレゼン2（標準仕様）: 10枚
     ...Array.from({ length: 10 }, (_, i) => ({
       presentation: 2,
       slideIndex: i,
       title: `標準仕様 (${i + 1}/10)`,
-      totalSlides: 10
+      totalSlides: 10,
     })),
     // プレゼン3（オプション）: 1枚
     { presentation: 3, title: 'オプション', totalSlides: 1 },
@@ -87,8 +98,8 @@ export default function PresentationFlowPage() {
     }
   };
 
-  // 全スライドを印刷用に出力（全画面で全ページA3横印刷）
-  const handlePrintAllSlides = async () => {
+  // 全スライドをPDFとして保存
+  const handleSaveAsPDF = async () => {
     try {
       // 1) フルスクリーン（ユーザー操作起点なのでawait可能）
       if (!document.fullscreenElement) {
@@ -113,20 +124,50 @@ export default function PresentationFlowPage() {
         const clone = node.cloneNode(true) as HTMLElement;
         clone.classList.add('print-slide');
         // スライド内のツールバーや余計なUIは除去
-        clone.querySelectorAll('.toolbar, .present-controls, .no-print').forEach(el => el.remove());
+        clone
+          .querySelectorAll('.toolbar, .present-controls, .no-print')
+          .forEach((el) => el.remove());
         host.appendChild(clone);
       });
 
       // 4) 画像とフォントのロード待ち
-      await Promise.all([
-        waitForImages(host),
-        (document as any).fonts?.ready?.catch(() => {})
-      ]);
+      await Promise.all([waitForImages(host), (document as any).fonts?.ready?.catch(() => {})]);
 
-      // 5) 印刷
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      window.print();
+      // 5) PDF生成
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
+      // PDFドキュメントを作成（A3横）
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a3',
+      });
+
+      // 各スライドをPDFに追加
+      for (let i = 0; i < allSlides.length; i++) {
+        const slide = allSlides[i];
+
+        // html2canvasでスライドをキャンバスに変換
+        const canvas = await html2canvas(slide, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          width: 1587,
+          height: 1123,
+        });
+
+        // キャンバスをPDFに追加
+        const imgData = canvas.toDataURL('image/png');
+
+        if (i > 0) pdf.addPage();
+
+        // A3横のサイズに合わせて画像を配置
+        pdf.addImage(imgData, 'PNG', 0, 0, 420, 297);
+      }
+
+      // PDFをダウンロード
+      const fileName = `presentation_${new Date().toISOString().slice(0, 10)}.pdf`;
+      pdf.save(fileName);
     } finally {
       // 6) 後片付け
       document.getElementById('print-host')?.remove();
@@ -141,16 +182,18 @@ export default function PresentationFlowPage() {
   // 画像のロード待機処理
   const waitForImages = (root: HTMLElement) => {
     const imgs = Array.from(root.querySelectorAll('img'));
-    return Promise.all(imgs.map(img => {
-      if (img.complete) return Promise.resolve(null);
-      return new Promise<void>(res => {
-        img.addEventListener('load', () => res(), { once: true });
-        img.addEventListener('error', () => res(), { once: true });
-        // 遅延読み込みを無効化
-        img.loading = 'eager';
-        (img as any).decoding = 'sync';
-      });
-    }));
+    return Promise.all(
+      imgs.map((img) => {
+        if (img.complete) return Promise.resolve(null);
+        return new Promise<void>((res) => {
+          img.addEventListener('load', () => res(), { once: true });
+          img.addEventListener('error', () => res(), { once: true });
+          // 遅延読み込みを無効化
+          img.loading = 'eager';
+          (img as any).decoding = 'sync';
+        });
+      })
+    );
   };
 
   // 全スライドのDOMを取得（仮想化対応）
@@ -173,10 +216,12 @@ export default function PresentationFlowPage() {
       setCurrentSlideIndex(i);
 
       // 少し待って描画を完了させる
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // 現在表示されているスライドのDOMをクローン
-      const slideElement = document.querySelector('.presentation-wrapper') || document.querySelector('[data-presentation]');
+      const slideElement =
+        document.querySelector('.presentation-wrapper') ||
+        document.querySelector('[data-presentation]');
       if (slideElement) {
         const clonedSlide = slideElement.cloneNode(true) as HTMLElement;
 
@@ -256,7 +301,7 @@ export default function PresentationFlowPage() {
   // デバッグログは削除（本番環境では不要）
 
   useEffect(() => {
-    const project = projects.find(p => p.id === projectId);
+    const project = projects.find((p) => p.id === projectId);
     if (project) {
       setCurrentProject(project);
     }
@@ -287,16 +332,86 @@ export default function PresentationFlowPage() {
     if (items.length === 0) {
       // デフォルトアイテム
       items = [
-        { id: '1', category: '耐震', title: '最高等級の耐震性能×evoltz制震システム', description: 'ビルシュタイン社と共同開発したevoltz制震ダンパーにより、地震の揺れを最大45%低減。', priority: 1 },
-        { id: '2', category: '断熱・気密', title: 'HEAT20 G2グレードの高断熱・高気密設計', description: 'UA値0.46以下、C値0.5以下を実現。北海道基準の断熱性能により、夏涼しく冬暖かい快適な住環境を一年中提供します。', priority: 2 },
-        { id: '3', category: '空気質', title: '清潔空気システム', description: '高性能フィルターでPM2.5、花粉を99.8%カット。常に新鮮で清潔な空気を供給し、アレルギー対策にも効果的です。', priority: 3 },
-        { id: '4', category: '空調計画', title: '24時間全熱交換換気システム', description: '第一種換気システムで熱ロスを最小限に抑え、省エネと快適性を両立。湿度調整機能で結露も防止します。', priority: 4 },
-        { id: '5', category: '耐久性', title: '長期優良住宅認定・100年住宅', description: '劣化対策等級3、維持管理対策等級3を取得。構造躯体は100年以上の耐久性を実現し、メンテナンスコストも大幅削減。', priority: 5 },
-        { id: '6', category: 'デザイン性', title: '洗練された外観と機能美の融合', description: '建築家とのコラボレーションにより、街並みに調和しながらも個性的な外観デザインを実現。', priority: 6 },
-        { id: '7', category: '施工品質', title: '自社大工による匠の技術', description: '経験豊富な自社大工による丁寧な施工。第三者機関による10回検査と、施工中の見える化により、最高品質を保証します。', priority: 7 },
-        { id: '8', category: '保証・アフターサービス', title: '業界最長クラスの安心保証', description: '構造躯体35年保証、防水20年保証、シロアリ10年保証。24時間365日の緊急対応と、50年間の定期点検プログラム。', priority: 8 },
-        { id: '9', category: '省エネ性', title: 'ZEH基準を超える省エネ性能', description: '太陽光発電5.5kW標準搭載、HEMS導入により光熱費を50%以上削減。売電収入と合わせて実質光熱費ゼロも実現可能です。', priority: 9 },
-        { id: '10', category: '最新テクノロジー（IoT）', title: 'スマートホーム標準装備', description: 'Google Home/Alexa対応、スマートロック、見守りカメラ、遠隔家電操作など、最新のIoT技術で快適で安全な暮らしをサポート。', priority: 10 },
+        {
+          id: '1',
+          category: '耐震',
+          title: '最高等級の耐震性能×evoltz制震システム',
+          description:
+            'ビルシュタイン社と共同開発したevoltz制震ダンパーにより、地震の揺れを最大45%低減。',
+          priority: 1,
+        },
+        {
+          id: '2',
+          category: '断熱・気密',
+          title: 'HEAT20 G2グレードの高断熱・高気密設計',
+          description:
+            'UA値0.46以下、C値0.5以下を実現。北海道基準の断熱性能により、夏涼しく冬暖かい快適な住環境を一年中提供します。',
+          priority: 2,
+        },
+        {
+          id: '3',
+          category: '空気質',
+          title: '清潔空気システム',
+          description:
+            '高性能フィルターでPM2.5、花粉を99.8%カット。常に新鮮で清潔な空気を供給し、アレルギー対策にも効果的です。',
+          priority: 3,
+        },
+        {
+          id: '4',
+          category: '空調計画',
+          title: '24時間全熱交換換気システム',
+          description:
+            '第一種換気システムで熱ロスを最小限に抑え、省エネと快適性を両立。湿度調整機能で結露も防止します。',
+          priority: 4,
+        },
+        {
+          id: '5',
+          category: '耐久性',
+          title: '長期優良住宅認定・100年住宅',
+          description:
+            '劣化対策等級3、維持管理対策等級3を取得。構造躯体は100年以上の耐久性を実現し、メンテナンスコストも大幅削減。',
+          priority: 5,
+        },
+        {
+          id: '6',
+          category: 'デザイン性',
+          title: '洗練された外観と機能美の融合',
+          description:
+            '建築家とのコラボレーションにより、街並みに調和しながらも個性的な外観デザインを実現。',
+          priority: 6,
+        },
+        {
+          id: '7',
+          category: '施工品質',
+          title: '自社大工による匠の技術',
+          description:
+            '経験豊富な自社大工による丁寧な施工。第三者機関による10回検査と、施工中の見える化により、最高品質を保証します。',
+          priority: 7,
+        },
+        {
+          id: '8',
+          category: '保証・アフターサービス',
+          title: '業界最長クラスの安心保証',
+          description:
+            '構造躯体35年保証、防水20年保証、シロアリ10年保証。24時間365日の緊急対応と、50年間の定期点検プログラム。',
+          priority: 8,
+        },
+        {
+          id: '9',
+          category: '省エネ性',
+          title: 'ZEH基準を超える省エネ性能',
+          description:
+            '太陽光発電5.5kW標準搭載、HEMS導入により光熱費を50%以上削減。売電収入と合わせて実質光熱費ゼロも実現可能です。',
+          priority: 9,
+        },
+        {
+          id: '10',
+          category: '最新テクノロジー（IoT）',
+          title: 'スマートホーム標準装備',
+          description:
+            'Google Home/Alexa対応、スマートロック、見守りカメラ、遠隔家電操作など、最新のIoT技術で快適で安全な暮らしをサポート。',
+          priority: 10,
+        },
       ];
     }
 
@@ -306,11 +421,12 @@ export default function PresentationFlowPage() {
   // オートプレイ機能 - 全画面時は間隔を調整
   useEffect(() => {
     if (autoPlay) {
-      const interval = setInterval(() => {
-        setCurrentSlideIndex(prev =>
-          prev < totalSlides - 1 ? prev + 1 : 0
-        );
-      }, isFullscreen ? 15000 : 10000); // 全画面時は15秒、通常時は10秒
+      const interval = setInterval(
+        () => {
+          setCurrentSlideIndex((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
+        },
+        isFullscreen ? 15000 : 10000
+      ); // 全画面時は15秒、通常時は10秒
       setAutoPlayInterval(interval);
     } else if (autoPlayInterval) {
       clearInterval(autoPlayInterval);
@@ -335,7 +451,7 @@ export default function PresentationFlowPage() {
         router.push(`/project/${projectId}/edit`);
       } else if (e.ctrlKey && e.key === 'p') {
         e.preventDefault();
-        handlePrintAllSlides();
+        handleSaveAsPDF();
       }
     };
 
@@ -348,10 +464,7 @@ export default function PresentationFlowPage() {
       case 1:
         return (
           <PresentationContainer fullscreen>
-            <Presentation1View
-              projectId={projectId}
-              currentFileIndex={currentSlide.slideIndex}
-            />
+            <Presentation1View projectId={projectId} currentFileIndex={currentSlide.slideIndex} />
           </PresentationContainer>
         );
       case 2:
@@ -377,7 +490,11 @@ export default function PresentationFlowPage() {
           </PresentationContainer>
         );
       case 5:
-        return <SolarSimulatorConclusionFirst projectId={projectId} />;
+        return (
+          <PresentationContainer fullscreen>
+            <SolarSimulatorConclusionFirst projectId={projectId} />
+          </PresentationContainer>
+        );
       default:
         return <div>Invalid presentation</div>;
     }
@@ -389,25 +506,34 @@ export default function PresentationFlowPage() {
       2: 'bg-green-500',
       3: 'bg-purple-500',
       4: 'bg-orange-500',
-      5: 'bg-red-500'
+      5: 'bg-red-500',
     };
     return colors[presentation as keyof typeof colors] || 'bg-gray-500';
   };
 
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 bg-black z-[9999]' : 'min-h-screen bg-gray-900'} text-white relative overflow-hidden`} style={isFullscreen ? {
-      width: '100vw',
-      height: '100vh',
-      margin: 0,
-      padding: 0,
-      border: 'none',
-      outline: 'none',
-      top: 0,
-      left: 0,
-      position: 'fixed'
-    } : {}}>
+    <div
+      className={`${isFullscreen ? 'fixed inset-0 bg-black z-[9999]' : 'min-h-screen bg-gray-900'} text-white relative overflow-hidden`}
+      style={
+        isFullscreen
+          ? {
+              width: '100vw',
+              height: '100vh',
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              outline: 'none',
+              top: 0,
+              left: 0,
+              position: 'fixed',
+            }
+          : {}
+      }
+    >
       {/* ヘッダー */}
-      <div className={`${isFullscreen ? 'hidden' : 'fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur border-b border-gray-700'}`}>
+      <div
+        className={`${isFullscreen ? 'hidden' : 'fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur border-b border-gray-700'}`}
+      >
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -497,11 +623,11 @@ export default function PresentationFlowPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handlePrintAllSlides}
+            onClick={handleSaveAsPDF}
             className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
           >
-            <Printer className="h-4 w-4 mr-2" />
-            全スライド印刷
+            <Save className="h-4 w-4 mr-2" />
+            保存
           </Button>
           <Button
             variant="outline"
@@ -522,37 +648,59 @@ export default function PresentationFlowPage() {
       )}
 
       {/* メインコンテンツ */}
-      <div id="current-slide-content" className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'} slide-container`} style={isFullscreen ? {
-        width: '100vw',
-        height: '100vh',
-        margin: 0,
-        padding: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      } : {}}>
-        <div className={`${isFullscreen ? '' : 'container mx-auto px-4'}`} style={isFullscreen ? {
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: 0,
-          padding: 0
-        } : {}}>
+      <div
+        id="current-slide-content"
+        className={`${isFullscreen ? 'fixed inset-0' : 'pt-32 pb-24'} slide-container`}
+        style={
+          isFullscreen
+            ? {
+                width: '100vw',
+                height: '100vh',
+                margin: 0,
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }
+            : {}
+        }
+      >
+        <div
+          className={`${isFullscreen ? '' : 'container mx-auto px-4'}`}
+          style={
+            isFullscreen
+              ? {
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: 0,
+                  padding: 0,
+                }
+              : {}
+          }
+        >
           {/* スライドタイトル - プレゼン時は非表示 */}
 
           {/* スライドコンテンツ - A3横サイズ (420mm × 297mm = 1.414:1) */}
-          <div className="relative w-full" style={isFullscreen ? {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%'
-          } : {
-            maxWidth: '1190px',
-            margin: '0 auto'
-          }}>
+          <div
+            className="relative w-full"
+            style={
+              isFullscreen
+                ? {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '100%',
+                  }
+                : {
+                    maxWidth: '1190px',
+                    margin: '0 auto',
+                  }
+            }
+          >
             {/* 全画面時のナビゲーション矢印 - 左 */}
             {isFullscreen && (
               <button
@@ -576,23 +724,31 @@ export default function PresentationFlowPage() {
             )}
 
             {/* プレゼンテーションコンテンツ */}
-            <div className={`${isFullscreen ? 'bg-transparent' : 'bg-white rounded-lg shadow-2xl'} relative`} style={isFullscreen ? {
-              width: 'auto',
-              height: 'auto'
-            } : {
-              width: '100%',
-              aspectRatio: '1.414 / 1',
-              margin: '0 auto'
-            }}>
+            <div
+              className={`${isFullscreen ? 'bg-transparent' : 'bg-white rounded-lg shadow-2xl'} relative`}
+              style={
+                isFullscreen
+                  ? {
+                      width: 'auto',
+                      height: 'auto',
+                    }
+                  : {
+                      width: '100%',
+                      aspectRatio: '1.414 / 1',
+                      margin: '0 auto',
+                    }
+              }
+            >
               {renderCurrentSlide()}
             </div>
           </div>
         </div>
       </div>
 
-
       {/* フッター情報バー */}
-      <div className={`${isFullscreen ? 'hidden' : 'fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur px-6 py-3'}`}>
+      <div
+        className={`${isFullscreen ? 'hidden' : 'fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur px-6 py-3'}`}
+      >
         {/* スライドインジケーター */}
         <div className="flex items-center justify-center gap-2">
           {slides.map((slide, index) => (
@@ -611,14 +767,17 @@ export default function PresentationFlowPage() {
 
         {/* プレゼンテーション別プログレスバー */}
         <div className="mt-3 flex gap-1">
-          {[1, 2, 3, 4, 5].map(presNum => {
-            const presSlides = slides.filter(s => s.presentation === presNum);
-            const presStartIndex = slides.findIndex(s => s.presentation === presNum);
+          {[1, 2, 3, 4, 5].map((presNum) => {
+            const presSlides = slides.filter((s) => s.presentation === presNum);
+            const presStartIndex = slides.findIndex((s) => s.presentation === presNum);
             const presEndIndex = presStartIndex + presSlides.length - 1;
-            const isActive = currentSlideIndex >= presStartIndex && currentSlideIndex <= presEndIndex;
+            const isActive =
+              currentSlideIndex >= presStartIndex && currentSlideIndex <= presEndIndex;
             const progress = isActive
               ? ((currentSlideIndex - presStartIndex + 1) / presSlides.length) * 100
-              : currentSlideIndex > presEndIndex ? 100 : 0;
+              : currentSlideIndex > presEndIndex
+                ? 100
+                : 0;
 
             return (
               <div key={presNum} className="flex-1 h-2 bg-gray-600 rounded-full overflow-hidden">
@@ -636,7 +795,6 @@ export default function PresentationFlowPage() {
           ← → キー: スライド移動 | スペースキー: 次へ | Escキー: 編集に戻る
         </div>
       </div>
-
     </div>
   );
 }

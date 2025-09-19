@@ -159,7 +159,7 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
       </div>
 
       {/* メインコンテンツ - A3横レイアウト最適化 */}
-      <div className="relative px-8 py-6 h-[calc(100%-80px)] overflow-hidden">
+      <div className="relative px-8 py-6" style={{ height: 'auto', overflow: 'visible' }}>
         {/* 見出し：資金計画概要 */}
         <div className="text-center mb-6">
           <h1

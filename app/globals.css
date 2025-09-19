@@ -4,6 +4,12 @@
 @import "../styles/print.css";
 @import "../styles/presentation-fix.css";
 
+/* A3ページの固定サイズ維持 */
+.presentation-wrapper .a3-page-simple {
+  width: 100%;
+  height: 100%;
+}
+
 /* プレゼン画面のツールバーボタンを完全削除 */
 .btn-print, .btn-pdf, .btn-actual-size, .btn-fit,
 button[aria-label="印刷"], button[aria-label="PDF出力"],

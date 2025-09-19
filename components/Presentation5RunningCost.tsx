@@ -141,7 +141,7 @@ const Presentation5RunningCost: React.FC = () => {
         }`}
       >
         {/* メインコンテンツ - A3横レイアウト最適化 */}
-        <div className="relative px-8 py-6 h-[calc(100%-100px)] overflow-hidden">
+        <div className="relative px-8 py-6" style={{ height: 'auto', overflow: 'visible' }}>
           {/* 表：システム構成と投資効果 */}
           <div className="grid grid-cols-12 gap-6 mb-6">
             {/* 左列：システム仕様（4列分） */}
