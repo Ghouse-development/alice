@@ -111,68 +111,8 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
   return (
     <A3Page title="資金計画" subtitle="住宅建築における総費用とローン計画">
-      {/* 背景パターン */}
-      <div className="absolute inset-0">
-        <div
-          className={`absolute inset-0 ${
-            isDark
-              ? 'bg-gradient-to-br from-black via-gray-950 to-black'
-              : 'bg-gradient-to-br from-gray-50 via-white to-gray-50'
-          }`}
-        />
-        {isDark && (
-          <div className="absolute inset-0 opacity-10">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `
-                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(196,30,58,0.03) 50px, rgba(196,30,58,0.03) 51px),
-                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(184,134,11,0.02) 50px, rgba(184,134,11,0.02) 51px)
-              `,
-              }}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* ヘッダー - Presentation2と統一 */}
-      <div
-        className={`relative border-b ${isDark ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30' : 'bg-gradient-to-r from-white via-gray-50 to-white border-gray-200'}`}
-      >
-        <div className="px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-12">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-[0.4em] text-red-600 uppercase">
-                  G-HOUSE
-                </span>
-              </div>
-              <div className="h-12 w-px bg-gradient-to-b from-transparent via-red-600/50 to-transparent" />
-              <span
-                className={`text-[11px] font-bold tracking-[0.2em] uppercase border-b-2 border-red-600 pb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}
-              >
-                資金計画
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* メインコンテンツ - A3横レイアウト最適化 */}
-      <div className="relative px-8 py-6" style={{ height: 'auto', overflow: 'visible' }}>
-        {/* 見出し：資金計画概要 */}
-        <div className="text-center mb-6">
-          <h1
-            className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}
-            style={{ color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626' }}
-          >
-            資金計画
-          </h1>
-          <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-            住宅建築における総費用とローン計画
-          </p>
-        </div>
-
+      <div className="h-full flex flex-col" style={{ padding: '20px 40px' }}>
         {/* 表：費用構成（2列レイアウト） */}
         <div className="grid grid-cols-2 gap-8 mb-6">
           {/* 左列：費用構成 */}
@@ -415,24 +355,6 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
               </div>
               <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>年間返済額</p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CROWN フッター */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <div
-          className={`px-3 py-1 border-t ${
-            isDark
-              ? 'bg-gradient-to-r from-black via-gray-900 to-black border-red-900/30'
-              : 'bg-gradient-to-r from-gray-100 via-white to-gray-100 border-gray-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className={`h-3 w-px ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
-            </div>
-            <div className="flex items-center gap-2"></div>
           </div>
         </div>
       </div>

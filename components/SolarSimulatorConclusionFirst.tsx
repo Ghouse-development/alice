@@ -5,8 +5,6 @@ import { useStore } from '@/lib/store';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,31 +12,59 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { ChevronDown, ChevronUp, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { Crown, Plus, Trash2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import A3Page from './A3Page';
 
 // Types
+interface MaintenanceEvent {
+  year: number;
+  amount: number;
+}
+
 interface Settings {
-  panel_count: number;
-  panel_watt: number;
-  panel_price: number;
-  yield_per_kw: number;
-  self_use_rate_pv: number;
-  self_use_rate_batt: number;
-  buy_price: number;
-  sell_y1_4: number;
-  sell_y5_10: number;
-  sell_after11: number;
-  degrade: number;
-  pc_cycle: number;
-  pc_cost: number;
-  batt_init: number;
-  batt_cycle: number;
-  batt_cost: number;
-  monthly_normal: number;
-  monthly_high: number;
+  // パネル設定
+  panels: number;
+  panelWattPerUnit: number;
+  yieldPerKw: number;
+
+  // 自家消費率
+  selfUseRatePv: number;
+  selfUseRatePvBatt: number;
+
+  // 買取単価設定
+  sellY1_4: number;
+  sellY5_10: number;
+  sellAfter11: number;
+
+  // 基準光熱費（年額）
+  generalAnnualCost: number;
+  gHouseSpec: 'G2' | 'G3';
+  gHouseAnnualCost: number;
+
+  // 電力単価
+  gridPrice: number;
+  inflationRate: number;
+
+  // 劣化率
+  pvDegradation: number;
+  batteryDegradation: number;
+
+  // メンテナンスイベント
+  pvMaintenanceEvents: MaintenanceEvent[];
+  batteryMaintenanceEvents: MaintenanceEvent[];
+
+  // 初期費用設定
+  pvBaseCost: number;
+  pvPerKwCost: number;
+  batteryCost: number;
+
   years: number;
 }
 
@@ -46,695 +72,792 @@ interface YearData {
   year: number;
   generation: number;
   selfConsumptionPv: number;
-  selfConsumptionBatt: number;
-  sellPv: number;
-  sellBatt: number;
+  selfConsumptionPvBatt: number;
+  exportPv: number;
+  exportPvBatt: number;
+  sellRevenuePv: number;
+  sellRevenuePvBatt: number;
   savingPv: number;
-  savingBatt: number;
-  sellIncomePv: number;
-  sellIncomeBatt: number;
+  savingPvBatt: number;
   maintenancePv: number;
-  maintenanceBatt: number;
-  cfPv: number;
-  cfBatt: number;
+  maintenancePvBatt: number;
+  annualCfPv: number;
+  annualCfPvBatt: number;
   cumulativeCfPv: number;
-  cumulativeCfBatt: number;
+  cumulativeCfPvBatt: number;
+  gridPrice: number;
+  generalCost: number;
+  gHouseCost: number;
+  gHouseOnlyCost: number;
+  gHousePvCost: number;
+  gHousePvBattCost: number;
 }
 
-// Scenario colors (統一配色)
-const SCENARIO_COLORS = {
-  normal: '#9CA3AF', // Gray 400
-  highPerf: '#16A34A', // Green 600
-  pv: '#2563EB', // Blue 600
-  pvBatt: '#7C3AED', // Violet 600
+// G2/G3の基準値
+const specBaseValues = {
+  G2: 200000,
+  G3: 180000,
 };
 
-// Regional yields
-const REGIONAL_YIELDS: Record<string, number> = {
-  osaka: 1200,
-  tokyo: 1150,
-  nagoya: 1180,
-  sapporo: 1050,
+// デフォルト設定
+const defaultSettings: Settings = {
+  panels: 15,
+  panelWattPerUnit: 0.46,
+  yieldPerKw: 1200,
+  selfUseRatePv: 0.35,
+  selfUseRatePvBatt: 0.6,
+  sellY1_4: 24,
+  sellY5_10: 8.3,
+  sellAfter11: 7,
+  generalAnnualCost: 240000,
+  gHouseSpec: 'G2',
+  gHouseAnnualCost: specBaseValues.G2,
+  gridPrice: 27,
+  inflationRate: 0.02,
+  pvDegradation: 0.005,
+  batteryDegradation: 0.015,
+  pvMaintenanceEvents: [{ year: 10, amount: 50000 }],
+  batteryMaintenanceEvents: [
+    { year: 10, amount: 100000 },
+    { year: 20, amount: 100000 },
+  ],
+  pvBaseCost: 1000000,
+  pvPerKwCost: 90000,
+  batteryCost: 1500000,
+  years: 30,
 };
 
-// Format number with 3-digit separator
+// 金額フォーマット
 const formatNumber = (num: number): string => {
   return Math.round(num).toLocaleString('ja-JP');
 };
 
-// Calculate timeline
+const formatCurrency = (num: number): string => {
+  return `¥${formatNumber(num)}`;
+};
+
+// 計算ロジック
 function calculateTimeline(settings: Settings): YearData[] {
   const timeline: YearData[] = [];
-  const kW = (settings.panel_count * settings.panel_watt) / 1000;
-  const pvInitCost = settings.panel_count * settings.panel_price;
+  const kW = settings.panels * settings.panelWattPerUnit;
 
-  let cumulativeCfPv = -pvInitCost;
-  let cumulativeCfBatt = -(pvInitCost + settings.batt_init);
+  // 初期費用（消費税込み）
+  const pvCapex = (settings.pvBaseCost + settings.pvPerKwCost * kW) * 1.1;
+  const batteryCapex = settings.batteryCost * 1.1;
+
+  let cumulativeCfPv = -pvCapex;
+  let cumulativeCfPvBatt = -(pvCapex + batteryCapex);
 
   for (let year = 1; year <= settings.years; year++) {
-    // Generation with degradation
-    const degradeFactor = Math.pow(1 - settings.degrade, year - 1);
-    const generation = kW * settings.yield_per_kw * degradeFactor;
+    // PV劣化を考慮した発電量
+    const pvDegradeFactor = Math.pow(1 - settings.pvDegradation, year - 1);
+    const generation = kW * settings.yieldPerKw * pvDegradeFactor;
 
-    // PV scenario
-    const selfConsumptionPv = generation * settings.self_use_rate_pv;
-    const sellPv = generation - selfConsumptionPv;
+    // 自家消費と売電（PVのみ）
+    const selfConsumptionPv = generation * settings.selfUseRatePv;
+    const exportPv = generation - selfConsumptionPv;
+
+    // 自家消費と売電（PV+蓄電池）
+    const batteryEfficiencyFactor = Math.pow(1 - settings.batteryDegradation, year - 1);
+    const selfConsumptionPvBatt = generation * settings.selfUseRatePvBatt * batteryEfficiencyFactor;
+    const exportPvBatt = generation - selfConsumptionPvBatt;
+
+    // 売電単価
     const sellPrice =
-      year <= 4 ? settings.sell_y1_4 : year <= 10 ? settings.sell_y5_10 : settings.sell_after11;
-    const savingPv = selfConsumptionPv * settings.buy_price;
-    const sellIncomePv = sellPv * sellPrice;
+      year <= 4 ? settings.sellY1_4 : year <= 10 ? settings.sellY5_10 : settings.sellAfter11;
 
-    // Battery scenario
-    const selfConsumptionBatt = generation * settings.self_use_rate_batt;
-    const sellBatt = generation - selfConsumptionBatt;
-    const savingBatt = selfConsumptionBatt * settings.buy_price;
-    const sellIncomeBatt = sellBatt * sellPrice;
+    // インフレを考慮した電力単価
+    const gridPrice = settings.gridPrice * Math.pow(1 + settings.inflationRate, year - 1);
 
-    // Maintenance
-    const maintenancePv = year % settings.pc_cycle === 0 ? settings.pc_cost : 0;
-    const maintenanceBatt =
-      maintenancePv + (year % settings.batt_cycle === 0 && year > 0 ? settings.batt_cost : 0);
+    // 売電収入
+    const sellRevenuePv = exportPv * sellPrice;
+    const sellRevenuePvBatt = exportPvBatt * sellPrice;
 
-    // Cash flows
-    const cfPv = savingPv + sellIncomePv - maintenancePv;
-    const cfBatt = savingBatt + sellIncomeBatt - maintenanceBatt;
+    // 自家消費による節約額
+    const savingPv = selfConsumptionPv * gridPrice;
+    const savingPvBatt = selfConsumptionPvBatt * gridPrice;
 
-    cumulativeCfPv += cfPv;
-    cumulativeCfBatt += cfBatt;
+    // メンテナンスコスト（イベント年のみ）
+    const pvMaintenance = settings.pvMaintenanceEvents
+      .filter((e) => e.year === year)
+      .reduce((sum, e) => sum + e.amount, 0);
+    const batteryMaintenance = settings.batteryMaintenanceEvents
+      .filter((e) => e.year === year)
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    // 年次キャッシュフロー
+    const annualCfPv = savingPv + sellRevenuePv - pvMaintenance;
+    const annualCfPvBatt = savingPvBatt + sellRevenuePvBatt - pvMaintenance - batteryMaintenance;
+
+    // 累積キャッシュフロー
+    cumulativeCfPv += annualCfPv;
+    cumulativeCfPvBatt += annualCfPvBatt;
+
+    // インフレを考慮した基準光熱費
+    const generalCost = settings.generalAnnualCost * Math.pow(1 + settings.inflationRate, year - 1);
+    const gHouseCost = settings.gHouseAnnualCost * Math.pow(1 + settings.inflationRate, year - 1);
+
+    // 各シナリオの実質年間光熱費
+    const gHouseOnlyCost = gHouseCost;
+    const gHousePvCost = gHouseCost - savingPv - sellRevenuePv + pvMaintenance;
+    const gHousePvBattCost =
+      gHouseCost - savingPvBatt - sellRevenuePvBatt + pvMaintenance + batteryMaintenance;
 
     timeline.push({
       year,
       generation,
       selfConsumptionPv,
-      selfConsumptionBatt,
-      sellPv,
-      sellBatt,
+      selfConsumptionPvBatt,
+      exportPv,
+      exportPvBatt,
+      sellRevenuePv,
+      sellRevenuePvBatt,
       savingPv,
-      savingBatt,
-      sellIncomePv,
-      sellIncomeBatt,
-      maintenancePv,
-      maintenanceBatt,
-      cfPv,
-      cfBatt,
+      savingPvBatt,
+      maintenancePv: pvMaintenance,
+      maintenancePvBatt: pvMaintenance + batteryMaintenance,
+      annualCfPv,
+      annualCfPvBatt,
       cumulativeCfPv,
-      cumulativeCfBatt,
+      cumulativeCfPvBatt,
+      gridPrice,
+      generalCost,
+      gHouseCost,
+      gHouseOnlyCost,
+      gHousePvCost,
+      gHousePvBattCost,
     });
   }
 
   return timeline;
 }
 
-// Main component
+// メインコンポーネント
 export default function SolarSimulatorConclusionFirst({ projectId }: { projectId?: string }) {
   const { theme } = useStore();
-  const isDark = theme === 'dark';
 
-  // Settings state
-  const [settings, setSettings] = useState<Settings>({
-    panel_count: 15,
-    panel_watt: 460,
-    panel_price: 70000,
-    yield_per_kw: 1200,
-    self_use_rate_pv: 0.35,
-    self_use_rate_batt: 0.6,
-    buy_price: 27,
-    sell_y1_4: 24,
-    sell_y5_10: 8.3,
-    sell_after11: 8,
-    degrade: 0.005,
-    pc_cycle: 15,
-    pc_cost: 300000,
-    batt_init: 1650000,
-    batt_cycle: 15,
-    batt_cost: 1000000,
-    monthly_normal: 18000,
-    monthly_high: 12000,
-    years: 30,
-  });
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  const [region, setRegion] = useState('osaka');
-  const [chartTab, setChartTab] = useState<'annual' | 'cumulative'>('cumulative');
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [useBattery, setUseBattery] = useState(false);
-
-  // Calculate data
+  // タイムライン計算
   const timeline = useMemo(() => calculateTimeline(settings), [settings]);
-  const totalKw = (settings.panel_count * settings.panel_watt) / 1000;
 
-  // Key metrics
-  const metrics = useMemo(() => {
-    const year1 = timeline[0];
-    const year10 = timeline[9];
-    const year15 = timeline[14];
-    const year20 = timeline[19];
-
-    const paybackPv = timeline.findIndex((d) => d.cumulativeCfPv > 0) + 1;
-    const paybackBatt = timeline.findIndex((d) => d.cumulativeCfBatt > 0) + 1;
-
-    return {
-      firstYearBenefit: year1?.cfPv || 0,
-      firstYearBenefitBatt: year1?.cfBatt || 0,
-      cumulative10: year10?.cumulativeCfPv || 0,
-      cumulative15: year15?.cumulativeCfPv || 0,
-      cumulative20: year20?.cumulativeCfPv || 0,
-      cumulative10Batt: year10?.cumulativeCfBatt || 0,
-      cumulative15Batt: year15?.cumulativeCfBatt || 0,
-      cumulative20Batt: year20?.cumulativeCfBatt || 0,
-      paybackPv: paybackPv > 0 ? paybackPv : null,
-      paybackBatt: paybackBatt > 0 ? paybackBatt : null,
-    };
-  }, [timeline]);
-
-  // Summary rows
-  const summaryRows = useMemo(() => {
-    return [0, 9, 14, 19, 29].map((i) => timeline[i]).filter(Boolean);
-  }, [timeline]);
-
-  // Update functions
-  const updateSetting = useCallback((key: keyof Settings, value: number) => {
+  // 設定更新
+  const updateSetting = useCallback((key: keyof Settings, value: number | string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleRegionChange = useCallback(
-    (newRegion: string) => {
-      setRegion(newRegion);
-      updateSetting('yield_per_kw', REGIONAL_YIELDS[newRegion] || 1200);
+  // G2/G3切り替え
+  const handleSpecChange = (spec: 'G2' | 'G3') => {
+    setSettings((prev) => ({
+      ...prev,
+      gHouseSpec: spec,
+      gHouseAnnualCost: specBaseValues[spec],
+    }));
+  };
+
+  // メンテナンスイベント管理
+  const addMaintenanceEvent = (type: 'pv' | 'battery') => {
+    const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
+    setSettings((prev) => ({
+      ...prev,
+      [key]: [...prev[key], { year: 15, amount: 50000 }],
+    }));
+  };
+
+  const removeMaintenanceEvent = (type: 'pv' | 'battery', index: number) => {
+    const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
+    setSettings((prev) => ({
+      ...prev,
+      [key]: prev[key].filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateMaintenanceEvent = (
+    type: 'pv' | 'battery',
+    index: number,
+    field: 'year' | 'amount',
+    value: number
+  ) => {
+    const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
+    setSettings((prev) => ({
+      ...prev,
+      [key]: prev[key].map((event, i) => (i === index ? { ...event, [field]: value } : event)),
+    }));
+  };
+
+  // kW計算
+  const totalKw = settings.panels * settings.panelWattPerUnit;
+
+  // 初期費用計算
+  const pvInitialCost = (settings.pvBaseCost + settings.pvPerKwCost * totalKw) * 1.1;
+  const batteryInitialCost = settings.batteryCost * 1.1;
+
+  // 30年累計値
+  const lastYear = timeline[timeline.length - 1] || {};
+
+  // 30年累計光熱費
+  const totalGeneralCost = timeline.reduce((sum, year) => sum + year.generalCost, 0);
+  const totalGHouseOnlyCost = timeline.reduce((sum, year) => sum + year.gHouseOnlyCost, 0);
+  const totalGHousePvCost =
+    timeline.reduce((sum, year) => sum + year.gHousePvCost, 0) + pvInitialCost;
+  const totalGHousePvBattCost =
+    timeline.reduce((sum, year) => sum + year.gHousePvBattCost, 0) +
+    pvInitialCost +
+    batteryInitialCost;
+
+  // 基準（Gハウスの家設備なし）に対するメリット計算
+  const benefitPv = totalGHouseOnlyCost - totalGHousePvCost;
+  const benefitPvBatt = totalGHouseOnlyCost - totalGHousePvBattCost;
+
+  // 最もお得なシナリオを判定
+  const scenarios = [
+    { key: 'gHouseOnly', label: 'Gハウスの家（設備なし）', benefit: 0, total: totalGHouseOnlyCost },
+    {
+      key: 'gHousePv',
+      label: 'Gハウスの家＋太陽光発電',
+      benefit: benefitPv,
+      total: totalGHousePvCost,
     },
-    [updateSetting]
+    {
+      key: 'gHousePvBatt',
+      label: 'Gハウスの家＋太陽光発電＋蓄電池',
+      benefit: benefitPvBatt,
+      total: totalGHousePvBattCost,
+    },
+  ];
+
+  const bestScenario = scenarios.reduce((best, current) =>
+    current.benefit > best.benefit ? current : best
   );
-
-  // Export functions
-  const exportToPDF = useCallback(async () => {
-    const element = document.getElementById('solar-simulator-main');
-    if (!element) return;
-
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#fff',
-      logging: false,
-    });
-
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a3',
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, 420, 297);
-
-    const date = new Date();
-    const filename = `PV_A3_${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}.pdf`;
-    pdf.save(filename);
-  }, []);
-
-  const exportToCSV = useCallback(() => {
-    const headers = [
-      '年',
-      '発電量(kWh)',
-      '自家消費(kWh)',
-      '売電(kWh)',
-      '節約額',
-      '売電収入',
-      'メンテ費',
-      '年CF',
-      '累積CF',
-    ];
-    const rows = timeline.map((d) => [
-      d.year,
-      Math.round(d.generation),
-      Math.round(useBattery ? d.selfConsumptionBatt : d.selfConsumptionPv),
-      Math.round(useBattery ? d.sellBatt : d.sellPv),
-      Math.round(useBattery ? d.savingBatt : d.savingPv),
-      Math.round(useBattery ? d.sellIncomeBatt : d.sellIncomePv),
-      useBattery ? d.maintenanceBatt : d.maintenancePv,
-      Math.round(useBattery ? d.cfBatt : d.cfPv),
-      Math.round(useBattery ? d.cumulativeCfBatt : d.cumulativeCfPv),
-    ]);
-
-    const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `solar_simulation_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  }, [timeline, useBattery]);
 
   return (
     <A3Page title="光熱費シミュレーション" subtitle="太陽光発電・蓄電池導入効果">
-      <div className="h-full flex flex-col">
-        {/* メインコンテンツ */}
-        <main id="solar-simulator-main" className="flex-1 bg-white overflow-auto">
-          <div className="h-full max-w-[1600px] mx-auto px-6 py-5 grid gap-6">
-            {/* Layout Grid */}
-            <div className="grid grid-cols-[minmax(280px,360px)_1fr_minmax(280px,360px)] grid-rows-[auto_1fr] gap-6">
-              {/* A: Conclusion Header (3-column span) */}
-              <div className="col-span-3">
-                <div className="grid grid-cols-3 gap-4">
-                  {/* Card 1: First Year Benefit */}
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">今年のメリット</div>
-                    <div
-                      className="text-4xl font-bold tabular-nums"
-                      style={{ color: useBattery ? SCENARIO_COLORS.pvBatt : SCENARIO_COLORS.pv }}
-                    >
-                      ¥
-                      {formatNumber(
-                        useBattery ? metrics.firstYearBenefitBatt : metrics.firstYearBenefit
-                      )}
-                      <span className="text-base font-normal text-gray-500">/年</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">節約 + 売電 − メンテ</div>
-                  </div>
-
-                  {/* Card 2: Cumulative */}
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">累計メリット</div>
-                    <div className="flex gap-3 justify-center">
-                      {[
-                        {
-                          label: '10年',
-                          value: useBattery ? metrics.cumulative10Batt : metrics.cumulative10,
-                        },
-                        {
-                          label: '15年',
-                          value: useBattery ? metrics.cumulative15Batt : metrics.cumulative15,
-                        },
-                        {
-                          label: '20年',
-                          value: useBattery ? metrics.cumulative20Batt : metrics.cumulative20,
-                        },
-                      ].map((item) => (
-                        <div key={item.label} className="text-center">
-                          <div className="bg-gray-100 rounded-full px-3 py-1 text-xs text-gray-600 mb-1">
-                            {item.label}
-                          </div>
-                          <div className="text-lg font-bold">¥{formatNumber(item.value)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Card 3: Payback */}
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">単純回収年</div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">PV</span>
-                        <span className="text-2xl font-bold" style={{ color: SCENARIO_COLORS.pv }}>
-                          {metrics.paybackPv ? `${metrics.paybackPv}年` : '—'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">PV+蓄電池</span>
-                        <span
-                          className="text-2xl font-bold"
-                          style={{ color: SCENARIO_COLORS.pvBatt }}
-                        >
-                          {metrics.paybackBatt ? `${metrics.paybackBatt}年` : '—'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2 text-right">
-                      条件：{region} / {totalKw.toFixed(1)}kW
-                    </div>
-                  </div>
+      <div id="solar-simulator-main" className="h-full flex flex-col bg-white p-4 text-gray-900">
+        {/* 上段：4仕様比較カード */}
+        <div className="grid grid-cols-4 gap-4 mb-4">
+          {/* 一般的な家 */}
+          <div className="border rounded-lg p-4 bg-gray-50 relative">
+            <h3 className="font-bold text-base mb-3 text-gray-900">一般的な家</h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-700">年間光熱費（今年）</span>
+                <div className="font-bold text-lg text-gray-900">
+                  {formatCurrency(settings.generalAnnualCost)}
                 </div>
               </div>
+              <div>
+                <span className="text-gray-700">30年累計光熱費</span>
+                <div className="font-bold text-gray-900">{formatCurrency(totalGeneralCost)}</div>
+              </div>
+              <div className="border-t pt-2 mt-4">
+                <span className="text-gray-700">初期費用</span>
+                <div className="font-bold text-gray-900">¥0</div>
+              </div>
+              <div className="text-xs text-gray-500 mt-4">※光熱費は年2%で上昇想定</div>
+            </div>
+          </div>
 
-              {/* D: Settings Panel (left column) */}
-              <div className="bg-gray-50 rounded-xl p-5 shadow-sm">
-                <h2 className="text-base font-semibold mb-4">設定パネル</h2>
+          {/* Gハウスの家（設備なし） */}
+          <div
+            className={`border rounded-lg p-4 bg-green-50 relative ${bestScenario.key === 'gHouseOnly' ? 'ring-2 ring-amber-300' : ''}`}
+          >
+            {bestScenario.key === 'gHouseOnly' && (
+              <div className="absolute -top-2 -right-2 bg-amber-400 rounded-full p-1">
+                <Crown className="h-4 w-4 text-white" />
+              </div>
+            )}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-base text-gray-900">
+                Gハウスの家
+                <br />（{settings.gHouseSpec}仕様）
+              </h3>
+              <Select value={settings.gHouseSpec} onValueChange={handleSpecChange}>
+                <SelectTrigger className="w-16 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="G2">G2</SelectItem>
+                  <SelectItem value="G3">G3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-700">年間光熱費（今年）</span>
+                <div className="font-bold text-lg text-gray-900">
+                  {formatCurrency(settings.gHouseAnnualCost)}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-700">30年累計光熱費</span>
+                <div className="font-bold text-gray-900">{formatCurrency(totalGHouseOnlyCost)}</div>
+              </div>
+              <div className="border-t pt-2 mt-4">
+                <span className="text-gray-700">初期費用</span>
+                <div className="font-bold text-gray-900">¥0</div>
+              </div>
+              <div className="text-sm font-bold text-green-600 mt-3">
+                一般比：年間{formatCurrency(settings.generalAnnualCost - settings.gHouseAnnualCost)}
+                削減
+              </div>
+              <div className="text-xs text-gray-500">※高断熱による省エネ効果</div>
+            </div>
+          </div>
 
-                {/* Main Settings (Always Visible) */}
-                <div className="space-y-4 mb-4">
-                  <div>
-                    <label className="text-sm text-gray-600">パネル枚数</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={settings.panel_count}
-                        onChange={(e) => updateSetting('panel_count', Number(e.target.value))}
-                        className="w-full px-3 py-2 border rounded-lg"
-                        min="1"
-                        max="50"
-                        inputMode="numeric"
-                      />
-                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        計 {totalKw.toFixed(1)}kW
-                      </span>
-                    </div>
+          {/* Gハウスの家 + 太陽光発電 */}
+          <div
+            className={`border rounded-lg p-4 bg-blue-50 relative ${bestScenario.key === 'gHousePv' ? 'ring-2 ring-amber-300' : ''}`}
+          >
+            {bestScenario.key === 'gHousePv' && (
+              <div className="absolute -top-2 -right-2 bg-amber-400 rounded-full p-1">
+                <Crown className="h-4 w-4 text-white" />
+              </div>
+            )}
+            <h3 className="font-bold text-base mb-3 text-gray-900">
+              Gハウスの家
+              <br />
+              ＋太陽光発電
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-700">年間メリット（今年）</span>
+                <div className="font-bold text-lg text-gray-900">
+                  {formatCurrency(timeline[0]?.annualCfPv || 0)}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-700">初期費用</span>
+                <div className="font-bold text-gray-900">{formatCurrency(pvInitialCost)}</div>
+                <div className="text-xs text-gray-500">PV {totalKw.toFixed(1)}kW（消費税込）</div>
+              </div>
+              <div>
+                <span className="text-gray-700">メンテナンス</span>
+                {settings.pvMaintenanceEvents.map((event, i) => (
+                  <div key={i} className="text-xs text-gray-700">
+                    {event.year}年目に{formatCurrency(event.amount)} → 月々
+                    {formatCurrency(Math.round(event.amount / 12))}
                   </div>
+                ))}
+              </div>
+              <div className="border-t pt-2 mt-3">
+                <span className="text-gray-700">30年累計費用</span>
+                <div className="font-bold text-gray-900">{formatCurrency(totalGHousePvCost)}</div>
+              </div>
+              <div className="text-xs text-gray-500">
+                ※PV劣化率{settings.pvDegradation * 100}%/年
+              </div>
+            </div>
+          </div>
 
-                  <div>
-                    <label className="text-sm text-gray-600">買電単価 (円/kWh)</label>
+          {/* Gハウスの家 + 太陽光 + 蓄電池 */}
+          <div
+            className={`border rounded-lg p-4 bg-purple-50 relative ${bestScenario.key === 'gHousePvBatt' ? 'ring-2 ring-amber-300' : ''}`}
+          >
+            {bestScenario.key === 'gHousePvBatt' && (
+              <div className="absolute -top-2 -right-2 bg-amber-400 rounded-full p-1">
+                <Crown className="h-4 w-4 text-white" />
+              </div>
+            )}
+            <h3 className="font-bold text-base mb-3 text-gray-900">
+              Gハウスの家＋太陽光
+              <br />
+              ＋蓄電池
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-700">年間メリット（今年）</span>
+                <div className="font-bold text-lg text-gray-900">
+                  {formatCurrency(timeline[0]?.annualCfPvBatt || 0)}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-700">初期費用</span>
+                <div className="font-bold text-gray-900">
+                  {formatCurrency(pvInitialCost + batteryInitialCost)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  PV {totalKw.toFixed(1)}kW + 蓄電池（消費税込）
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-700">メンテナンス</span>
+                {[...settings.pvMaintenanceEvents, ...settings.batteryMaintenanceEvents]
+                  .sort((a, b) => a.year - b.year)
+                  .map((event, i) => (
+                    <div key={i} className="text-xs text-gray-700">
+                      {event.year}年目に{formatCurrency(event.amount)} → 月々
+                      {formatCurrency(Math.round(event.amount / 12))}
+                    </div>
+                  ))}
+              </div>
+              <div className="border-t pt-2 mt-3">
+                <span className="text-gray-700">30年累計費用</span>
+                <div className="font-bold text-gray-900">
+                  {formatCurrency(totalGHousePvBattCost)}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                ※蓄電池劣化率{settings.batteryDegradation * 100}%/年
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 比較サマリー帯 */}
+        {bestScenario.benefit > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mb-4">
+            <div className="text-center font-bold text-gray-900">
+              最もお得：{bestScenario.label}（30年累計メリット：
+              {formatCurrency(bestScenario.benefit)}／月あたり平均：
+              {formatCurrency(Math.round(bestScenario.benefit / 30 / 12))}）
+            </div>
+          </div>
+        )}
+
+        {/* 下段：3カラムレイアウト */}
+        <div className="grid grid-cols-3 gap-4 flex-1">
+          {/* 左：前提条件パネル */}
+          <div className="border rounded-lg bg-gray-50 flex flex-col">
+            <div className="px-4 pt-4 pb-2">
+              <h3 className="font-bold text-base text-gray-900">前提条件</h3>
+            </div>
+
+            <div className="flex-1 px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                {/* パネル設定 */}
+                <div className="min-w-0">
+                  <label className="block text-gray-700 mb-1">パネル枚数</label>
+                  <div className="flex items-center gap-2">
                     <input
                       type="number"
-                      value={settings.buy_price}
-                      onChange={(e) => updateSetting('buy_price', Number(e.target.value))}
-                      className="w-full px-3 py-2 border rounded-lg"
-                      min="20"
-                      max="40"
-                      inputMode="numeric"
+                      value={settings.panels}
+                      onChange={(e) => updateSetting('panels', Number(e.target.value))}
+                      className="w-16 px-2 py-1 border rounded text-gray-900"
                     />
+                    <span className="text-gray-700 text-xs">= {totalKw.toFixed(1)}kW</span>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="text-sm text-gray-600">自家消費率</label>
-                    <div className="flex gap-2 mt-1">
-                      <button
-                        onClick={() => setUseBattery(false)}
-                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          !useBattery
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700'
-                        }`}
-                      >
-                        PV (35%)
-                      </button>
-                      <button
-                        onClick={() => setUseBattery(true)}
-                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          useBattery
-                            ? 'bg-violet-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700'
-                        }`}
-                      >
-                        PV+蓄電池 (60%)
-                      </button>
+                {/* 買取単価 */}
+                <div className="min-w-0">
+                  <label className="block text-gray-700 mb-1">買取単価(円/kWh)</label>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-12">1-4年:</span>
+                      <input
+                        type="number"
+                        value={settings.sellY1_4}
+                        onChange={(e) => updateSetting('sellY1_4', Number(e.target.value))}
+                        className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-12">5-10年:</span>
+                      <input
+                        type="number"
+                        value={settings.sellY5_10}
+                        onChange={(e) => updateSetting('sellY5_10', Number(e.target.value))}
+                        className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-12">11年~:</span>
+                      <input
+                        type="number"
+                        value={settings.sellAfter11}
+                        onChange={(e) => updateSetting('sellAfter11', Number(e.target.value))}
+                        className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* Detailed Settings (Collapsible) */}
-                <div className="border-t pt-4">
-                  <button
-                    onClick={() => setDetailsOpen(!detailsOpen)}
-                    className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    <span>詳細設定</span>
-                    {detailsOpen ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </button>
+                {/* 自家消費率 */}
+                <div className="min-w-0">
+                  <label className="block text-gray-700 mb-1">自家消費率(%)</label>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-16">PVのみ:</span>
+                      <input
+                        type="number"
+                        value={settings.selfUseRatePv * 100}
+                        onChange={(e) =>
+                          updateSetting('selfUseRatePv', Number(e.target.value) / 100)
+                        }
+                        className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                      <span className="text-xs text-gray-700">%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-16">PV+蓄電:</span>
+                      <input
+                        type="number"
+                        value={settings.selfUseRatePvBatt * 100}
+                        onChange={(e) =>
+                          updateSetting('selfUseRatePvBatt', Number(e.target.value) / 100)
+                        }
+                        className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                      <span className="text-xs text-gray-700">%</span>
+                    </div>
+                  </div>
+                </div>
 
-                  {detailsOpen && (
-                    <div className="mt-4 space-y-3 text-sm">
-                      <div>
-                        <label className="text-xs text-gray-600">地域</label>
-                        <select
-                          value={region}
-                          onChange={(e) => handleRegionChange(e.target.value)}
-                          className="w-full px-2 py-1 border rounded text-sm"
-                        >
-                          <option value="osaka">大阪 (1200)</option>
-                          <option value="tokyo">東京 (1150)</option>
-                          <option value="nagoya">名古屋 (1180)</option>
-                          <option value="sapporo">札幌 (1050)</option>
-                        </select>
-                      </div>
+                {/* 基準光熱費 */}
+                <div className="min-w-0">
+                  <label className="block text-gray-700 mb-1">年間光熱費</label>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-12">一般:</span>
+                      <input
+                        type="number"
+                        value={settings.generalAnnualCost}
+                        onChange={(e) => updateSetting('generalAnnualCost', Number(e.target.value))}
+                        className="w-20 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 w-12">{settings.gHouseSpec}:</span>
+                      <input
+                        type="number"
+                        value={settings.gHouseAnnualCost}
+                        onChange={(e) => updateSetting('gHouseAnnualCost', Number(e.target.value))}
+                        className="w-20 px-1 py-0.5 border rounded text-xs text-gray-900"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-xs text-gray-600">W/枚</label>
-                          <input
-                            type="number"
-                            value={settings.panel_watt}
-                            onChange={(e) => updateSetting('panel_watt', Number(e.target.value))}
-                            className="w-full px-2 py-1 border rounded text-sm"
-                            inputMode="numeric"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-600">単価/枚</label>
-                          <input
-                            type="number"
-                            value={settings.panel_price}
-                            onChange={(e) => updateSetting('panel_price', Number(e.target.value))}
-                            className="w-full px-2 py-1 border rounded text-sm"
-                            inputMode="numeric"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <label className="text-xs text-gray-600">売電1-4年</label>
-                          <input
-                            type="number"
-                            value={settings.sell_y1_4}
-                            onChange={(e) => updateSetting('sell_y1_4', Number(e.target.value))}
-                            className="w-full px-2 py-1 border rounded text-sm"
-                            inputMode="numeric"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-600">5-10年</label>
-                          <input
-                            type="number"
-                            value={settings.sell_y5_10}
-                            onChange={(e) => updateSetting('sell_y5_10', Number(e.target.value))}
-                            className="w-full px-2 py-1 border rounded text-sm"
-                            inputMode="numeric"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-600">11年〜</label>
-                          <input
-                            type="number"
-                            value={settings.sell_after11}
-                            onChange={(e) => updateSetting('sell_after11', Number(e.target.value))}
-                            className="w-full px-2 py-1 border rounded text-sm"
-                            inputMode="numeric"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-gray-600">劣化率 (%/年)</label>
+                {/* PVメンテナンス */}
+                <div className="col-span-2 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-gray-700">PVメンテナンス</label>
+                    <button
+                      onClick={() => addMaintenanceEvent('pv')}
+                      className="p-1 hover:bg-gray-200 rounded"
+                    >
+                      <Plus className="h-3 w-3 text-gray-700" />
+                    </button>
+                  </div>
+                  <div className="space-y-1 max-h-20 overflow-y-auto">
+                    {settings.pvMaintenanceEvents.map((event, i) => (
+                      <div key={i} className="flex items-center gap-1">
                         <input
                           type="number"
-                          value={settings.degrade * 100}
-                          onChange={(e) => updateSetting('degrade', Number(e.target.value) / 100)}
-                          className="w-full px-2 py-1 border rounded text-sm"
-                          min="0"
-                          max="2"
-                          step="0.1"
-                          inputMode="decimal"
+                          value={event.year}
+                          onChange={(e) =>
+                            updateMaintenanceEvent('pv', i, 'year', Number(e.target.value))
+                          }
+                          className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                          min="1"
+                          max="30"
                         />
+                        <span className="text-xs text-gray-700">年目</span>
+                        <input
+                          type="number"
+                          value={event.amount}
+                          onChange={(e) =>
+                            updateMaintenanceEvent('pv', i, 'amount', Number(e.target.value))
+                          }
+                          className="w-16 px-1 py-0.5 border rounded text-xs text-gray-900"
+                        />
+                        <span className="text-xs text-gray-700">円</span>
+                        <button
+                          onClick={() => removeMaintenanceEvent('pv', i)}
+                          className="p-0.5 hover:bg-gray-200 rounded"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-500" />
+                        </button>
                       </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Export Buttons */}
-                <div className="flex gap-2 mt-6">
-                  <button
-                    onClick={exportToPDF}
-                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    PDF
-                  </button>
-                  <button
-                    onClick={exportToCSV}
-                    className="flex-1 bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    CSV
-                  </button>
-                </div>
-              </div>
-
-              {/* B: Comparison Charts (center) */}
-              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base font-semibold">比較グラフ</h2>
-                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() => setChartTab('annual')}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                        chartTab === 'annual'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      年間CF
-                    </button>
-                    <button
-                      onClick={() => setChartTab('cumulative')}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                        chartTab === 'cumulative'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      累積CF
-                    </button>
+                    ))}
                   </div>
                 </div>
 
-                <div className="h-[calc(100%-60px)]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    {chartTab === 'annual' ? (
-                      <BarChart data={timeline} margin={{ top: 5, right: 5, left: 5, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis dataKey="year" fontSize={11} tick={{ fill: '#6B7280' }} />
-                        <YAxis
-                          fontSize={11}
-                          tick={{ fill: '#6B7280' }}
-                          tickFormatter={(v) => `${(v / 10000).toFixed(0)}万`}
+                {/* 蓄電池メンテナンス */}
+                <div className="col-span-2 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-gray-700">蓄電池メンテナンス</label>
+                    <button
+                      onClick={() => addMaintenanceEvent('battery')}
+                      className="p-1 hover:bg-gray-200 rounded"
+                    >
+                      <Plus className="h-3 w-3 text-gray-700" />
+                    </button>
+                  </div>
+                  <div className="space-y-1 max-h-20 overflow-y-auto">
+                    {settings.batteryMaintenanceEvents.map((event, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={event.year}
+                          onChange={(e) =>
+                            updateMaintenanceEvent('battery', i, 'year', Number(e.target.value))
+                          }
+                          className="w-12 px-1 py-0.5 border rounded text-xs text-gray-900"
+                          min="1"
+                          max="30"
                         />
-                        <Tooltip
-                          formatter={(v: number) => `¥${formatNumber(v)}`}
-                          contentStyle={{ fontSize: 12 }}
+                        <span className="text-xs text-gray-700">年目</span>
+                        <input
+                          type="number"
+                          value={event.amount}
+                          onChange={(e) =>
+                            updateMaintenanceEvent('battery', i, 'amount', Number(e.target.value))
+                          }
+                          className="w-16 px-1 py-0.5 border rounded text-xs text-gray-900"
                         />
-                        <Bar
-                          dataKey={useBattery ? 'cfBatt' : 'cfPv'}
-                          fill={useBattery ? SCENARIO_COLORS.pvBatt : SCENARIO_COLORS.pv}
-                          name={useBattery ? 'PV+蓄電池' : 'PV'}
-                        />
-                      </BarChart>
-                    ) : (
-                      <LineChart data={timeline} margin={{ top: 5, right: 5, left: 5, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis dataKey="year" fontSize={11} tick={{ fill: '#6B7280' }} />
-                        <YAxis
-                          fontSize={11}
-                          tick={{ fill: '#6B7280' }}
-                          tickFormatter={(v) => `${(v / 100000).toFixed(0)}十万`}
-                        />
-                        <Tooltip
-                          formatter={(v: number) => `¥${formatNumber(v)}`}
-                          contentStyle={{ fontSize: 12 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="cumulativeCfPv"
-                          stroke={SCENARIO_COLORS.pv}
-                          name="PV"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="cumulativeCfBatt"
-                          stroke={SCENARIO_COLORS.pvBatt}
-                          name="PV+蓄電池"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                        <Legend
-                          wrapperStyle={{
-                            position: 'relative',
-                            marginTop: '10px',
-                            fontSize: 12,
-                          }}
-                        />
-                      </LineChart>
-                    )}
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* C: Annual Summary Table (right column) */}
-              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base font-semibold">年次サマリ</h2>
-                  <button
-                    onClick={exportToCSV}
-                    className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                  >
-                    <Download className="w-3 h-3" />
-                    全30年CSV
-                  </button>
-                </div>
-
-                <div className="overflow-hidden">
-                  <table className="table block">
-                    <thead>
-                      <tr className="border-b text-gray-600">
-                        <th className="py-2 text-left">年</th>
-                        <th className="py-2 text-right">発電量</th>
-                        <th className="py-2 text-right">節約額</th>
-                        <th className="py-2 text-right">売電</th>
-                        <th className="py-2 text-right">メンテ</th>
-                        <th className="py-2 text-right">年CF</th>
-                        <th className="py-2 text-right">累積</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {summaryRows.map((row) => {
-                        const data = useBattery
-                          ? {
-                              saving: row.savingBatt,
-                              sellIncome: row.sellIncomeBatt,
-                              maintenance: row.maintenanceBatt,
-                              cf: row.cfBatt,
-                              cumulative: row.cumulativeCfBatt,
-                            }
-                          : {
-                              saving: row.savingPv,
-                              sellIncome: row.sellIncomePv,
-                              maintenance: row.maintenancePv,
-                              cf: row.cfPv,
-                              cumulative: row.cumulativeCfPv,
-                            };
-
-                        return (
-                          <tr key={row.year} className="border-b">
-                            <td className="py-2">{row.year}</td>
-                            <td className="py-2 text-right tabular-nums">
-                              {formatNumber(row.generation)}
-                            </td>
-                            <td className="py-2 text-right tabular-nums">
-                              ¥{formatNumber(data.saving)}
-                            </td>
-                            <td className="py-2 text-right tabular-nums">
-                              ¥{formatNumber(data.sellIncome)}
-                            </td>
-                            <td className="py-2 text-right tabular-nums text-red-600">
-                              {data.maintenance > 0 ? `▲¥${formatNumber(data.maintenance)}` : '—'}
-                            </td>
-                            <td className="py-2 text-right tabular-nums font-medium">
-                              ¥{formatNumber(data.cf)}
-                            </td>
-                            <td className="py-2 text-right tabular-nums font-bold">
-                              ¥{formatNumber(data.cumulative)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-4 pt-4 border-t text-xs text-gray-600">
-                  <div className="space-y-1">
-                    <div>
-                      売電: 1-4年={settings.sell_y1_4}円 5-10年={settings.sell_y5_10}円 11年〜=
-                      {settings.sell_after11}円
-                    </div>
-                    <div>劣化率: {(settings.degrade * 100).toFixed(1)}%/年</div>
-                    <div>
-                      パワコン: {settings.pc_cycle}年毎 {formatNumber(settings.pc_cost)}円
-                    </div>
-                    {useBattery && (
-                      <div>
-                        蓄電池: 初期{formatNumber(settings.batt_init)}円 更新{settings.batt_cycle}
-                        年毎
+                        <span className="text-xs text-gray-700">円</span>
+                        <button
+                          onClick={() => removeMaintenanceEvent('battery', i)}
+                          className="p-0.5 hover:bg-gray-200 rounded"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-500" />
+                        </button>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
+
+            <div className="px-4 pb-3 pt-2 border-t">
+              <div className="text-xs text-gray-500">
+                <div>電力単価: {settings.gridPrice}円/kWh</div>
+                <div>インフレ率: {settings.inflationRate * 100}%（固定）</div>
+                <div>
+                  PV劣化: {settings.pvDegradation * 100}%/年, 蓄電池劣化:{' '}
+                  {settings.batteryDegradation * 100}%/年
+                </div>
+              </div>
+            </div>
           </div>
-        </main>
+
+          {/* 中：30年累積CFグラフ */}
+          <div className="border rounded-lg p-4">
+            <h3 className="font-bold text-base mb-3 text-gray-900">30年累積キャッシュフロー</h3>
+            <ResponsiveContainer width="100%" height="90%">
+              <LineChart data={timeline}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                <XAxis dataKey="year" tick={{ fill: '#374151' }} stroke="#9ca3af" />
+                <YAxis
+                  tickFormatter={(value) => `${(value / 10000).toFixed(0)}万`}
+                  tick={{ fill: '#374151' }}
+                  stroke="#9ca3af"
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCurrency(value)}
+                  labelFormatter={(label) => `${label}年目`}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e5e5' }}
+                  labelStyle={{ color: '#374151' }}
+                />
+                <Legend wrapperStyle={{ color: '#374151' }} />
+                <Line
+                  type="monotone"
+                  dataKey="cumulativeCfPv"
+                  stroke="#2563EB"
+                  name="Gハウスの家+太陽光"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="cumulativeCfPvBatt"
+                  stroke="#7C3AED"
+                  name="Gハウスの家+太陽光+蓄電池"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* 右：30年年次表 */}
+          <div className="border rounded-lg overflow-hidden">
+            <div className="px-4 pt-4 pb-2 bg-white">
+              <h3 className="font-bold text-base text-gray-900">30年年次表</h3>
+            </div>
+            <div className="px-2 pb-2">
+              <table className="w-full text-[11px] table-fixed">
+                <thead>
+                  <tr className="border-b text-gray-700">
+                    <th className="text-left px-1 py-1 w-8">年</th>
+                    <th className="text-right px-1 py-1 w-12">発電量</th>
+                    <th className="text-right px-1 py-1 w-12">
+                      自家
+                      <br />
+                      消費
+                    </th>
+                    <th className="text-right px-1 py-1 w-10">売電</th>
+                    <th className="text-right px-1 py-1 w-12">
+                      買取
+                      <br />
+                      金額
+                    </th>
+                    <th className="text-right px-1 py-1 w-12">節約額</th>
+                    <th className="text-right px-1 py-1 w-12">メンテ</th>
+                    <th className="text-right px-1 py-1 w-12">年次CF</th>
+                    <th className="text-right px-1 py-1 w-14">累積</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeline.map((row) => (
+                    <tr key={row.year} className="border-b hover:bg-gray-50 leading-tight">
+                      <td className="px-1 py-0.5 text-gray-900">{row.year}</td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {Math.round(row.generation)}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {Math.round(row.selfConsumptionPvBatt)}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {Math.round(row.exportPvBatt)}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {formatNumber(Math.round(row.sellRevenuePvBatt))}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {formatNumber(Math.round(row.savingPvBatt))}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {row.maintenancePvBatt > 0 ? formatNumber(row.maintenancePvBatt) : '-'}
+                      </td>
+                      <td className="text-right px-1 py-0.5 text-gray-900 truncate">
+                        {formatNumber(Math.round(row.annualCfPvBatt))}
+                      </td>
+                      <td className="text-right px-1 py-0.5 font-bold text-gray-900 truncate">
+                        {formatNumber(Math.round(row.cumulativeCfPvBatt))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          @media print {
+            body {
+              font-size: 10px;
+            }
+            .text-xs {
+              font-size: 9px;
+            }
+            .text-sm {
+              font-size: 10px;
+            }
+            .text-base {
+              font-size: 11px;
+            }
+            .text-lg {
+              font-size: 12px;
+            }
+            @page {
+              size: A3 landscape;
+              margin: 10mm;
+            }
+          }
+        `}</style>
       </div>
     </A3Page>
   );

@@ -438,6 +438,25 @@ export default function PresentationFlowPage() {
     };
   }, [autoPlay, totalSlides, autoPlayInterval, isFullscreen]);
 
+  // 全画面モードの検出
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   // キーボードナビゲーション
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -448,6 +467,9 @@ export default function PresentationFlowPage() {
         e.preventDefault();
         prevSlide();
       } else if (e.key === 'Escape') {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
         router.push(`/project/${projectId}/edit`);
       } else if (e.ctrlKey && e.key === 'p') {
         e.preventDefault();
