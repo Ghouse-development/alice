@@ -1,671 +1,749 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { useStore } from '@/lib/store';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { Crown, Plus, Trash2 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  ChartOptions,
+} from 'chart.js';
+import { Sun, Battery, Home, TrendingUp } from 'lucide-react';
 import A3Page from './A3Page';
 
-// Types
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+// メンテナンスイベント型
 interface MaintenanceEvent {
   year: number;
-  amount: number;
+  cost: number;
 }
 
-interface Settings {
-  // 家族構成
-  familySize: 1 | 2 | 3 | 4 | 5;
-  dualIncome: boolean;
-
-  // パネル設定
-  panels: number;
-  panelWattPerUnit: number;
-  yieldPerKw: number;
-
-  // 自家消費率
-  selfUseRatePv: number;
-  selfUseRatePvBatt: number;
-
-  // 買取単価設定
-  sellY1_4: number;
-  sellY5_10: number;
-  sellAfter11: number;
-
-  // 基準光熱費（年額）
-  generalAnnualCost: number;
-  gHouseSpec: 'G2' | 'G3';
+// 前提条件型
+interface Prerequisites {
+  familySize: number;
+  isDualIncome: boolean;
+  electricityUsage: number;
+  standardAnnualCost: number;
   gHouseAnnualCost: number;
-
-  // 電力単価
+  isG3: boolean;
+  panelCount: number;
+  panelCapacity: number;
+  selfConsumptionRatePV: number;
+  selfConsumptionRateBattery: number;
   gridPrice: number;
+  sellPriceYear1to4: number;
+  sellPriceYear5to10: number;
+  sellPriceYear11plus: number;
   inflationRate: number;
-
-  // 劣化率
-  pvDegradation: number;
-  batteryDegradation: number;
-
-  // メンテナンスイベント
-  pvMaintenanceEvents: MaintenanceEvent[];
-  batteryMaintenanceEvents: MaintenanceEvent[];
-
-  // 初期費用設定
-  pvBaseCost: number;
-  pvPerKwCost: number;
-  batteryCost: number;
-
-  years: number;
+  pvDegradationRate: number;
+  batteryDegradationRate: number;
+  maintenancePV: MaintenanceEvent[];
+  maintenanceBattery: MaintenanceEvent[];
 }
 
-interface YearData {
-  year: number;
-  // 累積総コスト（プラス表示）
-  generalCumulative: number;
-  gHouseCumulative: number;
-  gHousePvCumulative: number;
-  gHousePvBattCumulative: number;
-
-  // 詳細データ
-  generation: number;
-  selfConsumptionPvBatt: number;
-  exportPvBatt: number;
-  sellRevenuePvBatt: number;
-  savingPvBatt: number;
-  maintenancePvBatt: number;
-  annualCfPvBatt: number;
-}
-
-// 家族人数による年間電力使用量（kWh）
-const familyElectricUsage = {
-  1: 2000,
-  2: 3000,
-  3: 4000,
-  4: 4500,
-  5: 5000,
+// フォーマッタ
+const formatJPY = (value: number): string => {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 };
 
-// 初期光熱費を計算
-const calculateInitialCosts = (
-  familySize: 1 | 2 | 3 | 4 | 5,
-  dualIncome: boolean,
-  gridPrice: number
-) => {
-  let usage = familyElectricUsage[familySize];
-  if (dualIncome) {
-    usage *= 0.9; // 共働きで10%削減
-  }
-
-  const general = Math.round(usage * gridPrice);
-  const g2 = Math.max(general - 40000, 100000); // G2は4万円削減
-  const g3 = Math.max(g2 - 20000, 80000); // G3はさらに2万円削減
-
-  return { general, g2, g3 };
-};
-
-// デフォルト設定
-const getDefaultSettings = (): Settings => {
-  const initialCosts = calculateInitialCosts(4, false, 30);
-  return {
+export default function SolarSimulatorConclusionFirst() {
+  // 前提条件の状態管理
+  const [prerequisites, setPrerequisites] = useState<Prerequisites>({
     familySize: 4,
-    dualIncome: false,
-    panels: 15,
-    panelWattPerUnit: 0.46,
-    yieldPerKw: 1200,
-    selfUseRatePv: 0.35,
-    selfUseRatePvBatt: 0.6,
-    sellY1_4: 24,
-    sellY5_10: 8.3,
-    sellAfter11: 7,
-    generalAnnualCost: initialCosts.general,
-    gHouseSpec: 'G2',
-    gHouseAnnualCost: initialCosts.g2,
-    gridPrice: 30,
-    inflationRate: 0.02,
-    pvDegradation: 0.005,
-    batteryDegradation: 0.015,
-    pvMaintenanceEvents: [
-      { year: 10, amount: 50000 }, // 点検・清掃
-      { year: 15, amount: 200000 }, // パワコン交換
-      { year: 25, amount: 200000 }, // パワコン交換
+    isDualIncome: false,
+    electricityUsage: 4500,
+    standardAnnualCost: 121500,
+    gHouseAnnualCost: 81500,
+    isG3: false,
+    panelCount: 20,
+    panelCapacity: 9.2,
+    selfConsumptionRatePV: 35,
+    selfConsumptionRateBattery: 60,
+    gridPrice: 27,
+    sellPriceYear1to4: 24,
+    sellPriceYear5to10: 8.3,
+    sellPriceYear11plus: 7,
+    inflationRate: 2,
+    pvDegradationRate: 0.5,
+    batteryDegradationRate: 1.5,
+    maintenancePV: [
+      { year: 10, cost: 50000 },
+      { year: 15, cost: 200000 },
+      { year: 25, cost: 200000 },
     ],
-    batteryMaintenanceEvents: [
-      { year: 10, amount: 100000 }, // 点検・容量劣化対策
-      { year: 20, amount: 100000 }, // 点検・容量劣化対策
+    maintenanceBattery: [
+      { year: 10, cost: 100000 },
+      { year: 20, cost: 100000 },
     ],
-    pvBaseCost: 1000000,
-    pvPerKwCost: 90000,
-    batteryCost: 1500000,
-    years: 30,
-  };
-};
+  });
 
-// 金額フォーマット
-const formatNumber = (num: number): string => {
-  return Math.round(Math.abs(num)).toLocaleString('ja-JP');
-};
+  // 家族人数による初期値設定
+  useEffect(() => {
+    const usageMap: { [key: number]: number } = {
+      1: 2000,
+      2: 3000,
+      3: 4000,
+      4: 4500,
+      5: 5000,
+    };
+    const baseUsage = usageMap[prerequisites.familySize] || 4500;
+    const usage = prerequisites.isDualIncome ? baseUsage * 0.9 : baseUsage;
+    const standardCost = Math.round(usage * prerequisites.gridPrice);
+    const gCost = Math.round(standardCost - 40000);
+    const g3Cost = prerequisites.isG3 ? gCost - 20000 : gCost;
 
-const formatCurrency = (num: number): string => {
-  return `¥${formatNumber(num)}`;
-};
-
-// 計算ロジック
-function calculateTimeline(settings: Settings): YearData[] {
-  const timeline: YearData[] = [];
-  const kW = settings.panels * settings.panelWattPerUnit;
-
-  // 初期費用（消費税込み）
-  const pvCapex = (settings.pvBaseCost + settings.pvPerKwCost * kW) * 1.1;
-  const batteryCapex = settings.batteryCost * 1.1;
-
-  // 累積総コストの初期値（プラス表示）
-  let generalCumulative = 0;
-  let gHouseCumulative = 0;
-  let gHousePvCumulative = pvCapex; // 初期投資
-  let gHousePvBattCumulative = pvCapex + batteryCapex; // 初期投資
-
-  for (let year = 1; year <= settings.years; year++) {
-    // インフレを考慮した年間光熱費
-    const generalCost = settings.generalAnnualCost * Math.pow(1 + settings.inflationRate, year - 1);
-    const gHouseCost = settings.gHouseAnnualCost * Math.pow(1 + settings.inflationRate, year - 1);
-
-    // 累積総コスト（プラス表示）
-    generalCumulative += generalCost;
-    gHouseCumulative += gHouseCost;
-
-    // PV劣化を考慮した発電量
-    const pvDegradeFactor = Math.pow(1 - settings.pvDegradation, year - 1);
-    const generation = kW * settings.yieldPerKw * pvDegradeFactor;
-
-    // 自家消費と売電（PV+蓄電池）
-    const batteryEfficiencyFactor = Math.pow(1 - settings.batteryDegradation, year - 1);
-    const selfConsumptionPvBatt = generation * settings.selfUseRatePvBatt * batteryEfficiencyFactor;
-    const exportPvBatt = generation - selfConsumptionPvBatt;
-
-    // 売電単価
-    const sellPrice =
-      year <= 4 ? settings.sellY1_4 : year <= 10 ? settings.sellY5_10 : settings.sellAfter11;
-
-    const sellRevenuePvBatt = exportPvBatt * sellPrice;
-    const savingPvBatt = selfConsumptionPvBatt * settings.gridPrice;
-
-    // メンテナンス費用
-    const pvMaintenance = settings.pvMaintenanceEvents
-      .filter((e) => e.year === year)
-      .reduce((sum, e) => sum + e.amount, 0);
-    const batteryMaintenance = settings.batteryMaintenanceEvents
-      .filter((e) => e.year === year)
-      .reduce((sum, e) => sum + e.amount, 0);
-    const maintenancePvBatt = pvMaintenance + batteryMaintenance;
-
-    // 年間CF（基準光熱費 - 節約額 - 売電収入 + メンテ）
-    const annualCfPvBatt = gHouseCost - savingPvBatt - sellRevenuePvBatt + maintenancePvBatt;
-
-    // 累積総コストに加算
-    gHousePvCumulative += gHouseCost - savingPvBatt - sellRevenuePvBatt + pvMaintenance;
-    gHousePvBattCumulative += annualCfPvBatt;
-
-    timeline.push({
-      year,
-      generalCumulative,
-      gHouseCumulative,
-      gHousePvCumulative,
-      gHousePvBattCumulative,
-      generation,
-      selfConsumptionPvBatt,
-      exportPvBatt,
-      sellRevenuePvBatt,
-      savingPvBatt,
-      maintenancePvBatt,
-      annualCfPvBatt,
-    });
-  }
-
-  return timeline;
-}
-
-export default function SolarSimulatorConclusionFirst({ projectId }: { projectId: string }) {
-  const { currentProject, theme } = useStore();
-  const [settings, setSettings] = useState<Settings>(getDefaultSettings());
-
-  // 家族構成が変更されたら光熱費を自動更新
-  const handleFamilySizeChange = (size: 1 | 2 | 3 | 4 | 5) => {
-    const costs = calculateInitialCosts(size, settings.dualIncome, settings.gridPrice);
-    setSettings({
-      ...settings,
-      familySize: size,
-      generalAnnualCost: costs.general,
-      gHouseAnnualCost: settings.gHouseSpec === 'G2' ? costs.g2 : costs.g3,
-    });
-  };
-
-  const handleDualIncomeChange = (dualIncome: boolean) => {
-    const costs = calculateInitialCosts(settings.familySize, dualIncome, settings.gridPrice);
-    setSettings({
-      ...settings,
-      dualIncome,
-      generalAnnualCost: costs.general,
-      gHouseAnnualCost: settings.gHouseSpec === 'G2' ? costs.g2 : costs.g3,
-    });
-  };
-
-  const handleGHouseSpecChange = (spec: 'G2' | 'G3') => {
-    const costs = calculateInitialCosts(
-      settings.familySize,
-      settings.dualIncome,
-      settings.gridPrice
-    );
-    setSettings({
-      ...settings,
-      gHouseSpec: spec,
-      gHouseAnnualCost: spec === 'G2' ? costs.g2 : costs.g3,
-    });
-  };
-
-  // メンテナンスイベントの操作
-  const addMaintenanceEvent = useCallback(
-    (type: 'pv' | 'battery') => {
-      const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
-      const current = settings[key];
-      const newEvent: MaintenanceEvent = {
-        year: current.length > 0 ? current[current.length - 1].year + 5 : 10,
-        amount: 100000,
-      };
-      setSettings({ ...settings, [key]: [...current, newEvent] });
-    },
-    [settings]
-  );
-
-  const removeMaintenanceEvent = useCallback(
-    (type: 'pv' | 'battery', index: number) => {
-      const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
-      const current = settings[key];
-      setSettings({ ...settings, [key]: current.filter((_, i) => i !== index) });
-    },
-    [settings]
-  );
-
-  const updateMaintenanceEvent = useCallback(
-    (type: 'pv' | 'battery', index: number, field: 'year' | 'amount', value: number) => {
-      const key = type === 'pv' ? 'pvMaintenanceEvents' : 'batteryMaintenanceEvents';
-      const current = [...settings[key]];
-      current[index] = { ...current[index], [field]: value };
-      setSettings({ ...settings, [key]: current });
-    },
-    [settings]
-  );
-
-  const timeline = useMemo(() => calculateTimeline(settings), [settings]);
-
-  const yearlyData = timeline[29] || timeline[timeline.length - 1];
-  const kW = settings.panels * settings.panelWattPerUnit;
-  const pvCapex = (settings.pvBaseCost + settings.pvPerKwCost * kW) * 1.1;
-  const batteryCapex = settings.batteryCost * 1.1;
-
-  // グラフデータ（万円単位）
-  const chartData = useMemo(() => {
-    return timeline.map((d) => ({
-      year: d.year,
-      一般的な家: Math.round(d.generalCumulative / 10000),
-      Gハウスの家: Math.round(d.gHouseCumulative / 10000),
-      'Gハウスの家＋太陽光発電': Math.round(d.gHousePvCumulative / 10000),
-      'Gハウスの家＋太陽光＋蓄電池': Math.round(d.gHousePvBattCumulative / 10000),
+    setPrerequisites((prev) => ({
+      ...prev,
+      electricityUsage: usage,
+      standardAnnualCost: standardCost,
+      gHouseAnnualCost: g3Cost,
     }));
-  }, [timeline]);
+  }, [prerequisites.familySize, prerequisites.isDualIncome, prerequisites.isG3]);
 
-  // 表示する年次を選択（1-10年は毎年、それ以降は5年ごと）
-  const displayYears = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30];
-  const tableData = timeline.filter((d) => displayYears.includes(d.year));
+  // パネル枚数変更時の容量自動計算
+  const updatePanelCount = useCallback((count: number) => {
+    setPrerequisites((prev) => ({
+      ...prev,
+      panelCount: count,
+      panelCapacity: count * 0.46,
+    }));
+  }, []);
 
-  const isDark = theme === 'dark';
+  // 初期費用の計算
+  const initialCosts = useMemo(() => {
+    const pvCost = Math.round((1000000 + 90000 * prerequisites.panelCapacity) * 1.1);
+    const batteryCost = Math.round(1500000 * 1.1);
+    return {
+      pv: pvCost,
+      battery: batteryCost,
+    };
+  }, [prerequisites.panelCapacity]);
+
+  // 30年間のシミュレーション計算
+  const simulation = useMemo(() => {
+    const years = 30;
+    const results = {
+      standard: [] as number[],
+      gHouse: [] as number[],
+      gHousePV: [] as number[],
+      gHousePVBattery: [] as number[],
+      yearlyData: [] as any[],
+    };
+
+    // 累積総コストの配列を初期化
+    let cumulativeStandard = 0;
+    let cumulativeGHouse = 0;
+    let cumulativeGHousePV = initialCosts.pv;
+    let cumulativeGHousePVBattery = initialCosts.pv + initialCosts.battery;
+
+    for (let year = 1; year <= years; year++) {
+      // 電力価格（インフレ考慮）
+      const gridPrice =
+        prerequisites.gridPrice * Math.pow(1 + prerequisites.inflationRate / 100, year - 1);
+
+      // 売電価格
+      let sellPrice = 0;
+      if (year <= 4) sellPrice = prerequisites.sellPriceYear1to4;
+      else if (year <= 10) sellPrice = prerequisites.sellPriceYear5to10;
+      else sellPrice = prerequisites.sellPriceYear11plus;
+
+      // 年間発電量（劣化考慮）
+      const annualGeneration =
+        prerequisites.panelCapacity *
+        1200 *
+        Math.pow(1 - prerequisites.pvDegradationRate / 100, year - 1);
+
+      // 自家消費と売電の計算（PVのみ）
+      const selfConsumptionPV = annualGeneration * (prerequisites.selfConsumptionRatePV / 100);
+      const exportPV = annualGeneration - selfConsumptionPV;
+      const savingsPV = selfConsumptionPV * gridPrice;
+      const sellIncomePV = exportPV * sellPrice;
+
+      // 自家消費と売電の計算（PV+蓄電池）
+      const selfConsumptionBattery =
+        annualGeneration *
+        (prerequisites.selfConsumptionRateBattery / 100) *
+        Math.pow(1 - prerequisites.batteryDegradationRate / 100, year - 1);
+      const exportBattery = annualGeneration - selfConsumptionBattery;
+      const savingsBattery = selfConsumptionBattery * gridPrice;
+      const sellIncomeBattery = exportBattery * sellPrice;
+
+      // メンテナンス費用
+      const pvMaintenance = prerequisites.maintenancePV
+        .filter((m) => m.year === year)
+        .reduce((sum, m) => sum + m.cost, 0);
+      const batteryMaintenance = prerequisites.maintenanceBattery
+        .filter((m) => m.year === year)
+        .reduce((sum, m) => sum + m.cost, 0);
+
+      // 年間光熱費（基準）
+      const standardAnnual =
+        prerequisites.standardAnnualCost *
+        Math.pow(1 + prerequisites.inflationRate / 100, year - 1);
+      const gHouseAnnual =
+        prerequisites.gHouseAnnualCost * Math.pow(1 + prerequisites.inflationRate / 100, year - 1);
+
+      // 年次コスト計算
+      const standardYearlyCost = standardAnnual;
+      const gHouseYearlyCost = gHouseAnnual;
+      const gHousePVYearlyCost = gHouseAnnual - savingsPV - sellIncomePV + pvMaintenance;
+      const gHousePVBatteryYearlyCost =
+        gHouseAnnual - savingsBattery - sellIncomeBattery + pvMaintenance + batteryMaintenance;
+
+      // 累積総コスト更新
+      cumulativeStandard += standardYearlyCost;
+      cumulativeGHouse += gHouseYearlyCost;
+      cumulativeGHousePV += gHousePVYearlyCost;
+      cumulativeGHousePVBattery += gHousePVBatteryYearlyCost;
+
+      // 結果を保存
+      results.standard.push(cumulativeStandard);
+      results.gHouse.push(cumulativeGHouse);
+      results.gHousePV.push(cumulativeGHousePV);
+      results.gHousePVBattery.push(cumulativeGHousePVBattery);
+
+      // 年次表用データ（表示対象年のみ）
+      if (year <= 10 || year === 15 || year === 20 || year === 25 || year === 30) {
+        results.yearlyData.push({
+          year,
+          generation: Math.round(annualGeneration),
+          selfConsumption: Math.round(selfConsumptionBattery),
+          export: Math.round(exportBattery),
+          sellIncome: Math.round(sellIncomeBattery),
+          savings: Math.round(savingsBattery),
+          maintenance: pvMaintenance + batteryMaintenance,
+          yearlyCost: Math.round(gHousePVBatteryYearlyCost),
+          cumulativeCost: Math.round(cumulativeGHousePVBattery),
+        });
+      }
+    }
+
+    return results;
+  }, [prerequisites, initialCosts]);
+
+  // 最もお得なオプションの判定
+  const bestOption = useMemo(() => {
+    const finalCosts = {
+      standard: simulation.standard[29] || 0,
+      gHouse: simulation.gHouse[29] || 0,
+      gHousePV: simulation.gHousePV[29] || 0,
+      gHousePVBattery: simulation.gHousePVBattery[29] || 0,
+    };
+
+    const minCost = Math.min(...Object.values(finalCosts));
+    const options = [
+      { name: '一般的な家', cost: finalCosts.standard },
+      {
+        name: prerequisites.isG3 ? 'Gハウスの家（G3仕様）' : 'Gハウスの家（G2仕様）',
+        cost: finalCosts.gHouse,
+      },
+      { name: 'Gハウスの家＋太陽光発電', cost: finalCosts.gHousePV },
+      { name: 'Gハウスの家＋太陽光＋蓄電池', cost: finalCosts.gHousePVBattery },
+    ];
+
+    const best = options.find((opt) => opt.cost === minCost);
+    return {
+      name: best?.name || '',
+      totalCost: minCost,
+      monthlyAverage: Math.round(minCost / 30 / 12),
+    };
+  }, [simulation, prerequisites.isG3]);
+
+  // グラフ設定
+  const chartData = {
+    labels: Array.from({ length: 30 }, (_, i) => `${i + 1}年目`),
+    datasets: [
+      {
+        label: '一般的な家',
+        data: simulation.standard,
+        borderColor: '#EF4444',
+        backgroundColor: '#EF4444',
+        tension: 0.1,
+      },
+      {
+        label: prerequisites.isG3 ? 'Gハウスの家（G3仕様）' : 'Gハウスの家（G2仕様）',
+        data: simulation.gHouse,
+        borderColor: '#3B82F6',
+        backgroundColor: '#3B82F6',
+        tension: 0.1,
+      },
+      {
+        label: 'Gハウスの家＋太陽光発電',
+        data: simulation.gHousePV,
+        borderColor: '#F59E0B',
+        backgroundColor: '#F59E0B',
+        tension: 0.1,
+      },
+      {
+        label: 'Gハウスの家＋太陽光＋蓄電池',
+        data: simulation.gHousePVBattery,
+        borderColor: '#10B981',
+        backgroundColor: '#10B981',
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#111827',
+          font: { size: 11 },
+        },
+      },
+      title: {
+        display: true,
+        text: '30年間累計総コスト比較',
+        color: '#111827',
+        font: { size: 14, weight: 'bold' },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `${context.dataset.label}: ${formatJPY(context.parsed.y)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#6B7280',
+          font: { size: 10 },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        min: 0,
+        title: {
+          display: true,
+          text: '30年間累計総コスト（万円）',
+          color: '#111827',
+          font: { size: 12 },
+        },
+        ticks: {
+          color: '#111827',
+          font: { size: 11 },
+          callback: function (value) {
+            return (Number(value) / 10000).toFixed(0);
+          },
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+  };
+
+  // カード用の年間光熱費（今年）を計算
+  const currentYearCosts = {
+    standard: prerequisites.standardAnnualCost,
+    gHouse: prerequisites.gHouseAnnualCost,
+    gHousePV: Math.round(
+      prerequisites.gHouseAnnualCost -
+        ((prerequisites.panelCapacity * 1200 * prerequisites.selfConsumptionRatePV) / 100) *
+          prerequisites.gridPrice -
+        ((prerequisites.panelCapacity * 1200 * (100 - prerequisites.selfConsumptionRatePV)) / 100) *
+          prerequisites.sellPriceYear1to4
+    ),
+    gHousePVBattery: Math.round(
+      prerequisites.gHouseAnnualCost -
+        ((prerequisites.panelCapacity * 1200 * prerequisites.selfConsumptionRateBattery) / 100) *
+          prerequisites.gridPrice -
+        ((prerequisites.panelCapacity * 1200 * (100 - prerequisites.selfConsumptionRateBattery)) /
+          100) *
+          prerequisites.sellPriceYear1to4
+    ),
+  };
 
   return (
-    <A3Page title="光熱費シミュレーション" subtitle="30年間の総コストシミュレーション">
+    <A3Page title="光熱費シミュレーション" subtitle="30年間の総コストで比較する最適な選択">
       <div className="h-full flex flex-col" style={{ padding: '20px 40px' }}>
-        {/* 上段：4つの比較カード */}
+        {/* 上段：4カード */}
         <div className="grid grid-cols-4 gap-4 mb-4">
           {/* カード1: 一般的な家 */}
-          <div className="bg-white border rounded-lg shadow-sm">
-            <div className="pb-2 px-4 pt-4">
-              <h3 className="whitespace-nowrap truncate text-base font-semibold text-gray-900 leading-6">
-                一般的な家
-              </h3>
-            </div>
-            <div className="space-y-2 px-4 pb-4">
-              <div className="text-sm text-gray-600">年間光熱費（今年）</div>
-              <div className="text-[22px] font-bold tabular-nums">
-                {formatCurrency(settings.generalAnnualCost)}
+          <div className="bg-white rounded-lg border border-gray-300 p-4">
+            <h3 className="whitespace-nowrap truncate text-base font-semibold leading-6 text-gray-900 mb-3">
+              一般的な家
+            </h3>
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-600">年間光熱費（今年）</p>
+                <p className="text-[18px] font-bold text-gray-900 tabular-nums">
+                  {formatJPY(currentYearCosts.standard)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">30年間累計総コスト</div>
-              <div className="text-[28px] font-extrabold tabular-nums text-gray-900">
-                {formatCurrency(yearlyData?.generalCumulative || 0)}
+              <div>
+                <p className="text-xs text-gray-600">30年間累計総コスト</p>
+                <p className="text-[28px] font-extrabold text-red-600 tabular-nums">
+                  {formatJPY(simulation.standard[29] || 0)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">初期費用</div>
-              <div className="text-sm text-gray-800">¥0</div>
+              <div>
+                <p className="text-xs text-gray-600">初期費用</p>
+                <p className="text-sm font-medium text-gray-900 tabular-nums">¥0</p>
+              </div>
             </div>
           </div>
 
           {/* カード2: Gハウスの家 */}
-          <div className="bg-white border rounded-lg shadow-sm">
-            <div className="pb-2 px-4 pt-4">
-              <h3 className="whitespace-nowrap truncate text-base font-semibold text-gray-900 leading-6">
-                Gハウスの家（{settings.gHouseSpec}仕様）
+          <div className="bg-white rounded-lg border border-gray-300 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="whitespace-nowrap truncate text-base font-semibold leading-6 text-gray-900">
+                Gハウスの家（{prerequisites.isG3 ? 'G3' : 'G2'}仕様）
               </h3>
+              <select
+                className="text-xs border border-gray-300 rounded px-2 py-1"
+                value={prerequisites.isG3 ? 'G3' : 'G2'}
+                onChange={(e) => {
+                  setPrerequisites((prev) => ({
+                    ...prev,
+                    isG3: e.target.value === 'G3',
+                  }));
+                }}
+              >
+                <option value="G2">G2</option>
+                <option value="G3">G3</option>
+              </select>
             </div>
-            <div className="space-y-2 px-4 pb-4">
-              <div className="text-sm text-gray-600">年間光熱費（今年）</div>
-              <div className="text-[22px] font-bold tabular-nums">
-                {formatCurrency(settings.gHouseAnnualCost)}
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-600">年間光熱費（今年）</p>
+                <p className="text-[18px] font-bold text-gray-900 tabular-nums">
+                  {formatJPY(currentYearCosts.gHouse)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">30年間累計総コスト</div>
-              <div className="text-[28px] font-extrabold tabular-nums text-gray-900">
-                {formatCurrency(yearlyData?.gHouseCumulative || 0)}
+              <div>
+                <p className="text-xs text-gray-600">30年間累計総コスト</p>
+                <p className="text-[28px] font-extrabold text-blue-600 tabular-nums">
+                  {formatJPY(simulation.gHouse[29] || 0)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">初期費用</div>
-              <div className="text-sm text-gray-800">¥0</div>
+              <div>
+                <p className="text-xs text-gray-600">初期費用</p>
+                <p className="text-sm font-medium text-gray-900 tabular-nums">¥0</p>
+              </div>
             </div>
           </div>
 
-          {/* カード3: Gハウス＋太陽光発電 */}
-          <div className="bg-white border rounded-lg shadow-sm">
-            <div className="pb-2 px-4 pt-4">
-              <h3 className="whitespace-nowrap truncate text-base font-semibold text-gray-900 leading-6">
-                Gハウスの家＋太陽光発電
-              </h3>
-            </div>
-            <div className="space-y-2 px-4 pb-4">
-              <div className="text-sm text-gray-600">年間光熱費（今年）</div>
-              <div className="text-[22px] font-bold tabular-nums">
-                {formatCurrency(
-                  Math.max(0, settings.gHouseAnnualCost - timeline[0]?.savingPvBatt || 0)
-                )}
+          {/* カード3: Gハウス＋太陽光 */}
+          <div className="bg-white rounded-lg border border-gray-300 p-4">
+            <h3 className="whitespace-nowrap truncate text-base font-semibold leading-6 text-gray-900 mb-3 flex items-center gap-2">
+              Gハウスの家＋太陽光発電
+              <Sun className="h-4 w-4 text-yellow-500" />
+            </h3>
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-600">年間光熱費（今年）</p>
+                <p className="text-[18px] font-bold text-gray-900 tabular-nums">
+                  {formatJPY(currentYearCosts.gHousePV)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">30年間累計総コスト</div>
-              <div className="text-[28px] font-extrabold tabular-nums text-gray-900">
-                {formatCurrency(yearlyData?.gHousePvCumulative || 0)}
+              <div>
+                <p className="text-xs text-gray-600">30年間累計総コスト</p>
+                <p className="text-[28px] font-extrabold text-orange-600 tabular-nums">
+                  {formatJPY(simulation.gHousePV[29] || 0)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">初期費用</div>
-              <div className="text-sm text-gray-800">
-                PV {kW.toFixed(1)}kW（税込） … {formatCurrency(pvCapex)}
+              <div>
+                <p className="text-xs text-gray-600">初期費用</p>
+                <p className="text-sm font-medium text-gray-900 tabular-nums">
+                  PV: {formatJPY(initialCosts.pv)}
+                </p>
               </div>
             </div>
           </div>
 
           {/* カード4: Gハウス＋太陽光＋蓄電池 */}
-          <div className="bg-white border rounded-lg shadow-sm">
-            <div className="pb-2 px-4 pt-4">
-              <h3 className="whitespace-nowrap truncate text-base font-semibold text-gray-900 leading-6">
-                Gハウスの家＋太陽光＋蓄電池
-              </h3>
-            </div>
-            <div className="space-y-2 px-4 pb-4">
-              <div className="text-sm text-gray-600">年間光熱費（今年）</div>
-              <div className="text-[22px] font-bold tabular-nums">
-                {formatCurrency(
-                  Math.max(0, settings.gHouseAnnualCost - timeline[0]?.savingPvBatt || 0)
-                )}
+          <div className="bg-white rounded-lg border border-gray-300 p-4">
+            <h3 className="whitespace-nowrap truncate text-base font-semibold leading-6 text-gray-900 mb-3 flex items-center gap-2">
+              Gハウスの家＋太陽光＋蓄電池
+              <Battery className="h-4 w-4 text-green-500" />
+            </h3>
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-600">年間光熱費（今年）</p>
+                <p className="text-[18px] font-bold text-gray-900 tabular-nums">
+                  {formatJPY(currentYearCosts.gHousePVBattery)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">30年間累計総コスト</div>
-              <div className="text-[28px] font-extrabold tabular-nums text-gray-900">
-                {formatCurrency(yearlyData?.gHousePvBattCumulative || 0)}
+              <div>
+                <p className="text-xs text-gray-600">30年間累計総コスト</p>
+                <p className="text-[28px] font-extrabold text-green-600 tabular-nums">
+                  {formatJPY(simulation.gHousePVBattery[29] || 0)}
+                </p>
               </div>
-
-              <div className="text-sm text-gray-600 mt-2">初期費用</div>
-              <div className="text-sm text-gray-800">
-                <div>
-                  PV {kW.toFixed(1)}kW … {formatCurrency(pvCapex)}
+              <div>
+                <p className="text-xs text-gray-600">初期費用</p>
+                <div className="text-sm font-medium text-gray-900 tabular-nums">
+                  <div>PV: {formatJPY(initialCosts.pv)}</div>
+                  <div>蓄電池: {formatJPY(initialCosts.battery)}</div>
                 </div>
-                <div>蓄電池 … {formatCurrency(batteryCapex)}</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* 中段：グラフと前提条件 */}
-        <div className="flex gap-4 mb-4 flex-1">
-          {/* 左：グラフ */}
-          <div className="flex-1 bg-white border rounded-lg p-4">
-            <h3 className="text-base font-bold mb-2">30年間累計総コスト推移</h3>
-            <ResponsiveContainer width="100%" height="90%">
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="year"
-                  label={{ value: '年', position: 'insideBottomRight', offset: -10 }}
-                />
-                <YAxis
-                  label={{
-                    value: '30年間累計総コスト（万円）',
-                    angle: -90,
-                    position: 'insideLeft',
-                  }}
-                  domain={[0, 'dataMax']}
-                />
-                <Tooltip formatter={(value) => `${value}万円`} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="一般的な家"
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Gハウスの家"
-                  stroke="#82ca9d"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Gハウスの家＋太陽光発電"
-                  stroke="#ffc658"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Gハウスの家＋太陽光＋蓄電池"
-                  stroke="#ff7c7c"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+        <div className="grid grid-cols-3 gap-4 mb-4" style={{ height: '300px' }}>
+          {/* グラフ（左2/3） */}
+          <div className="col-span-2 bg-white rounded-lg border border-gray-300 p-4">
+            <Line data={chartData} options={chartOptions} />
           </div>
 
-          {/* 右：前提条件パネル */}
-          <div className="w-80 bg-gray-50 border rounded-lg p-4">
-            <h3 className="text-base font-bold mb-3">前提条件</h3>
-
-            {/* 家族構成 */}
+          {/* 前提条件（右1/3） */}
+          <div className="bg-white rounded-lg border border-gray-300 p-3">
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">前提条件</h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <label className="text-xs leading-5">家族人数</label>
-              <Select
-                value={settings.familySize.toString()}
-                onValueChange={(v) => handleFamilySizeChange(parseInt(v) as 1 | 2 | 3 | 4 | 5)}
-              >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1人</SelectItem>
-                  <SelectItem value="2">2人</SelectItem>
-                  <SelectItem value="3">3人</SelectItem>
-                  <SelectItem value="4">4人</SelectItem>
-                  <SelectItem value="5">5人</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* 家族人数 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">家族人数</label>
+                <select
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2"
+                  value={prerequisites.familySize}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({ ...prev, familySize: Number(e.target.value) }))
+                  }
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n}人
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <label className="text-xs leading-5">共働き</label>
-              <Select
-                value={settings.dualIncome ? 'yes' : 'no'}
-                onValueChange={(v) => handleDualIncomeChange(v === 'yes')}
-              >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">いいえ</SelectItem>
-                  <SelectItem value="yes">はい（-10%）</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* 共働き */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">共働き</label>
+                <select
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2"
+                  value={prerequisites.isDualIncome ? 'yes' : 'no'}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({
+                      ...prev,
+                      isDualIncome: e.target.value === 'yes',
+                    }))
+                  }
+                >
+                  <option value="no">なし</option>
+                  <option value="yes">あり</option>
+                </select>
+              </div>
 
-              <label className="text-xs leading-5">Gハウス仕様</label>
-              <Select
-                value={settings.gHouseSpec}
-                onValueChange={(v) => handleGHouseSpecChange(v as 'G2' | 'G3')}
-              >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="G2">G2</SelectItem>
-                  <SelectItem value="G3">G3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {/* 年間光熱費（一般） */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">年間光熱費（一般）</label>
+                <input
+                  type="number"
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2 tabular-nums"
+                  value={prerequisites.standardAnnualCost}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({
+                      ...prev,
+                      standardAnnualCost: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
 
-            {/* 太陽光パネル */}
-            <div className="mt-2 text-xs font-semibold">太陽光パネル</div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <label className="text-xs leading-5">パネル枚数</label>
-              <input
-                type="number"
-                value={settings.panels}
-                onChange={(e) =>
-                  setSettings({ ...settings, panels: parseInt(e.target.value) || 0 })
-                }
-                className="h-8 text-sm px-2 border rounded"
-              />
+              {/* 年間光熱費（G） */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">年間光熱費（G）</label>
+                <input
+                  type="number"
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2 tabular-nums"
+                  value={prerequisites.gHouseAnnualCost}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({
+                      ...prev,
+                      gHouseAnnualCost: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
 
-              <label className="text-xs leading-5">1枚あたり(kW)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={settings.panelWattPerUnit}
-                onChange={(e) =>
-                  setSettings({ ...settings, panelWattPerUnit: parseFloat(e.target.value) || 0 })
-                }
-                className="h-8 text-sm px-2 border rounded"
-              />
-            </div>
+              {/* パネル枚数 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">パネル枚数</label>
+                <input
+                  type="number"
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2 tabular-nums"
+                  value={prerequisites.panelCount}
+                  onChange={(e) => updatePanelCount(Number(e.target.value))}
+                />
+              </div>
 
-            {/* メンテナンス */}
-            <div className="mt-2 text-xs font-semibold">メンテナンス（PV）</div>
-            <div className="space-y-1">
-              {settings.pvMaintenanceEvents.map((event, idx) => (
-                <div key={idx} className="flex gap-1 items-center">
-                  <input
-                    type="number"
-                    value={event.year}
-                    onChange={(e) =>
-                      updateMaintenanceEvent('pv', idx, 'year', parseInt(e.target.value) || 0)
-                    }
-                    className="w-12 h-6 text-xs px-1 border rounded"
-                  />
-                  <span className="text-xs">年目</span>
-                  <input
-                    type="number"
-                    value={event.amount}
-                    onChange={(e) =>
-                      updateMaintenanceEvent('pv', idx, 'amount', parseInt(e.target.value) || 0)
-                    }
-                    className="w-20 h-6 text-xs px-1 border rounded"
-                  />
-                  <button onClick={() => removeMaintenanceEvent('pv', idx)} className="p-1">
-                    <Trash2 className="h-3 w-3 text-red-500" />
-                  </button>
+              {/* パネル容量 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">容量</label>
+                <div className="h-8 text-sm bg-gray-100 rounded px-2 flex items-center tabular-nums">
+                  {prerequisites.panelCapacity.toFixed(2)}kW
                 </div>
-              ))}
-              <button
-                onClick={() => addMaintenanceEvent('pv')}
-                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-              >
-                <Plus className="h-3 w-3" />
-                追加
-              </button>
-            </div>
+              </div>
 
-            <div className="mt-2 text-xs text-gray-500 break-words">
-              ※インフレ率2%/年、発電量1kW=1200kWh/年、劣化率0.5%/年
+              {/* 自家消費率PV */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">自家消費率(PV)</label>
+                <input
+                  type="number"
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2 tabular-nums"
+                  value={prerequisites.selfConsumptionRatePV}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({
+                      ...prev,
+                      selfConsumptionRatePV: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+
+              {/* 自家消費率蓄電池 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">自家消費率(蓄電)</label>
+                <input
+                  type="number"
+                  className="w-full h-8 text-sm border border-gray-300 rounded px-2 tabular-nums"
+                  value={prerequisites.selfConsumptionRateBattery}
+                  onChange={(e) =>
+                    setPrerequisites((prev) => ({
+                      ...prev,
+                      selfConsumptionRateBattery: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+
+              {/* 電力単価 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">電力単価</label>
+                <div className="h-8 text-sm bg-gray-100 rounded px-2 flex items-center tabular-nums">
+                  {prerequisites.gridPrice}円/kWh
+                </div>
+              </div>
+
+              {/* インフレ率 */}
+              <div>
+                <label className="text-xs leading-5 text-gray-600">インフレ率</label>
+                <div className="h-8 text-sm bg-gray-100 rounded px-2 flex items-center tabular-nums">
+                  {prerequisites.inflationRate}%/年
+                </div>
+              </div>
+
+              {/* メンテナンス情報 */}
+              <div className="col-span-2">
+                <p className="text-xs text-gray-600 mt-1">
+                  メンテ：PV 10年¥50k/15年¥200k/25年¥200k
+                </p>
+                <p className="text-xs text-gray-600">蓄電池 10年¥100k/20年¥100k</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 下段：30年年次表（圧縮版） */}
-        <div className="bg-white border rounded-lg p-3 overflow-auto">
-          <h3 className="text-sm font-bold mb-2">年次詳細（選択年のみ表示）</h3>
-          <table className="table-fixed w-full text-[12px]">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left px-2 py-1">年</th>
-                <th className="text-right px-2 py-1">発電量(kWh)</th>
-                <th className="text-right px-2 py-1">自家消費</th>
-                <th className="text-right px-2 py-1">売電量</th>
-                <th className="text-right px-2 py-1">売電収入</th>
-                <th className="text-right px-2 py-1">節約額</th>
-                <th className="text-right px-2 py-1">メンテ費</th>
-                <th className="text-right px-2 py-1">年間CF</th>
-                <th className="text-right px-2 py-1">累計総コスト</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row) => (
-                <tr key={row.year} className="border-b leading-tight">
-                  <td className="px-2 py-0.5">{row.year}</td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {Math.round(row.generation)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {Math.round(row.selfConsumptionPvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {Math.round(row.exportPvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {formatCurrency(row.sellRevenuePvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {formatCurrency(row.savingPvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {formatCurrency(row.maintenancePvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums">
-                    {formatCurrency(row.annualCfPvBatt)}
-                  </td>
-                  <td className="text-right px-2 py-0.5 tabular-nums font-semibold">
-                    {formatCurrency(row.gHousePvBattCumulative)}
-                  </td>
+        {/* 下段：年次表 */}
+        <div className="bg-white rounded-lg border border-gray-300 p-3 mb-3">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">
+            30年間年次シミュレーション（抜粋）
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="table-fixed w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-300">
+                  <th className="py-1 text-left text-gray-700">年</th>
+                  <th className="py-1 text-right text-gray-700">発電量</th>
+                  <th className="py-1 text-right text-gray-700">自家消費</th>
+                  <th className="py-1 text-right text-gray-700">売電</th>
+                  <th className="py-1 text-right text-gray-700">売電収入</th>
+                  <th className="py-1 text-right text-gray-700">節約額</th>
+                  <th className="py-1 text-right text-gray-700">メンテ</th>
+                  <th className="py-1 text-right text-gray-700">年次コスト</th>
+                  <th className="py-1 text-right text-gray-700">累計総コスト</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {simulation.yearlyData.map((row, idx) => (
+                  <tr key={idx} className="border-b border-gray-200">
+                    <td className="py-0.5 text-gray-900">{row.year}</td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {row.generation}kWh
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {row.selfConsumption}kWh
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {row.export}kWh
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {formatJPY(row.sellIncome)}
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {formatJPY(row.savings)}
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {row.maintenance > 0 ? formatJPY(row.maintenance) : '-'}
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums text-gray-900">
+                      {formatJPY(row.yearlyCost)}
+                    </td>
+                    <td className="py-0.5 text-right tabular-nums font-bold text-gray-900">
+                      {formatJPY(row.cumulativeCost)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 結論帯 */}
+        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <TrendingUp className="h-8 w-8" />
+              <div>
+                <p className="text-lg font-bold">最もお得：{bestOption.name}</p>
+                <p className="text-sm">
+                  30年総コスト最小：{formatJPY(bestOption.totalCost)} / 月あたり平均：
+                  {formatJPY(bestOption.monthlyAverage)}
+                </p>
+              </div>
+            </div>
+            <button className="text-sm underline hover:no-underline">根拠を見る</button>
+          </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A3 landscape;
+            margin: 0;
+          }
+          .table {
+            font-size: 10px;
+          }
+        }
+      `}</style>
     </A3Page>
   );
 }
