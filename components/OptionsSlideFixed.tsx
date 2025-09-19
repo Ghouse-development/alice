@@ -2,10 +2,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Pencil } from 'lucide-react';
 import A3Page from '@/components/A3Page';
 
+// Types
 interface OptionItem {
   id: string;
   label: string;
@@ -13,38 +12,83 @@ interface OptionItem {
   checked: boolean;
 }
 
-interface InteriorItem {
-  id: string;
-  label: string;
-  price: number;
-  checked: boolean;
-}
-
-// ユニークIDを生成
-const generateId = () => `opt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-// 配列の長さを保証する関数
-function ensureLength<T extends { id: string; label: string; price: number; checked: boolean }>(
-  arr: T[],
-  len: number,
-  createDefault: () => T
-): T[] {
-  const result = [...arr];
-  while (result.length < len) {
-    result.push(createDefault());
+// 項目数を保証する関数（必達）
+function ensureLength(list: OptionItem[] | undefined, n: number): OptionItem[] {
+  const a = [...(list ?? [])];
+  while (a.length < n) {
+    a.push({
+      id: `opt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      label: '',
+      price: 0,
+      checked: false,
+    });
   }
-  return result.slice(0, len);
+  return a.slice(0, n);
 }
 
-// 初期データ - 外装オプション（既存）
-const initialExteriorOptions: OptionItem[] = [
+// 金額フォーマット
+const formatJPY = (n: number) =>
+  n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 });
+
+// 統一画像コンポーネント（A/B/Cで必ず共通使用）
+const ImgFrame = ({ src, alt }: { src?: string; alt: string }) => (
+  <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 overflow-hidden">
+    {src ? (
+      <img src={src} alt={alt} className="w-full h-full object-cover" />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center text-gray-400">{alt}</div>
+    )}
+  </div>
+);
+
+// オプション行コンポーネント（A/B/Dで共通使用）
+function OptionRow({
+  item,
+  onToggle,
+  onLabel,
+  onPrice,
+}: {
+  item: OptionItem;
+  onToggle: (id: string) => void;
+  onLabel: (id: string, v: string) => void;
+  onPrice: (id: string, v: number) => void;
+}) {
+  return (
+    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1.5 min-h-[44px]">
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          className="h-5 w-5"
+          checked={item.checked}
+          onChange={() => onToggle(item.id)}
+        />
+        <input
+          value={item.label}
+          onChange={(e) => onLabel(item.id, e.target.value)}
+          className="w-full border rounded px-2 py-1 text-sm"
+          placeholder="オプション名"
+        />
+      </label>
+      <input
+        type="number"
+        value={item.price || ''}
+        onChange={(e) => onPrice(item.id, Number(e.target.value) || 0)}
+        className="w-24 text-right border rounded px-2 py-1 text-sm tabular-nums"
+        placeholder="0"
+      />
+    </div>
+  );
+}
+
+// 初期データ - 既存外観オプション
+const initialExteriorBase = [
   { id: 'ext1-1', label: '外壁タイル張り', price: 680000, checked: false },
   { id: 'ext1-2', label: '玄関電子錠', price: 120000, checked: false },
   { id: 'ext1-3', label: '宅配ボックス', price: 85000, checked: false },
   { id: 'ext1-4', label: 'カーポート', price: 450000, checked: false },
 ];
 
-const initialExterior2Options: OptionItem[] = [
+const initialExterior2Base = [
   { id: 'ext2-1', label: '太陽光パネル', price: 1200000, checked: false },
   { id: 'ext2-2', label: '蓄電池システム', price: 1650000, checked: false },
   { id: 'ext2-3', label: '防犯カメラ', price: 220000, checked: false },
@@ -52,7 +96,7 @@ const initialExterior2Options: OptionItem[] = [
 ];
 
 // 初期データ - 内装オプション（15項目）
-const initialInteriorOptions: InteriorItem[] = [
+const initialInteriorBase = [
   { id: 'int-1', label: '床暖房（LDK）', price: 450000, checked: false },
   { id: 'int-2', label: '無垢フローリング', price: 380000, checked: false },
   { id: 'int-3', label: 'システムキッチン', price: 650000, checked: false },
@@ -70,232 +114,98 @@ const initialInteriorOptions: InteriorItem[] = [
   { id: 'int-15', label: '間接照明', price: 240000, checked: false },
 ];
 
-// 金額フォーマット
-const formatJPY = (price: number): string => {
-  return `¥${price.toLocaleString()}`;
-};
-
-// 統一画像コンポーネント
-const ImgFrame = ({ src, alt }: { src?: string; alt: string }) => (
-  <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
-    {src ? (
-      <img src={src} alt={alt} className="w-full h-full object-cover" />
-    ) : (
-      <span className="text-gray-500 text-sm">{alt}</span>
-    )}
-  </div>
-);
-
-// 追加オプション行コンポーネント
-function ExtraOptionRow({
-  item,
-  onToggle,
-  onLabelChange,
-  onPriceChange,
-}: {
-  item: OptionItem;
-  onToggle: (id: string) => void;
-  onLabelChange: (id: string, label: string) => void;
-  onPriceChange: (id: string, price: number) => void;
-}) {
-  return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1.5">
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          className="h-5 w-5"
-          checked={item.checked}
-          onChange={() => onToggle(item.id)}
-        />
-        <input
-          value={item.label}
-          onChange={(e) => onLabelChange(item.id, e.target.value)}
-          placeholder="オプション名"
-          className="w-full border rounded px-2 py-1 text-sm"
-        />
-      </label>
-      <input
-        type="number"
-        value={item.price || ''}
-        onChange={(e) => onPriceChange(item.id, parseInt(e.target.value) || 0)}
-        placeholder="0"
-        className="w-24 text-right border rounded px-2 py-1 text-sm tabular-nums"
-      />
-    </div>
-  );
-}
-
-// 内装オプション行コンポーネント
-function InteriorOptionRow({
-  item,
-  onToggle,
-  onLabelChange,
-  onPriceChange,
-}: {
-  item: InteriorItem;
-  onToggle: (id: string) => void;
-  onLabelChange: (id: string, label: string) => void;
-  onPriceChange: (id: string, price: number) => void;
-}) {
-  return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-2 py-1">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          className="h-4 w-4"
-          checked={item.checked}
-          onChange={() => onToggle(item.id)}
-        />
-        <input
-          value={item.label}
-          onChange={(e) => onLabelChange(item.id, e.target.value)}
-          placeholder="オプション名"
-          className="w-full border rounded px-2 py-0.5 text-xs"
-        />
-      </label>
-      <input
-        type="number"
-        value={item.price || ''}
-        onChange={(e) => onPriceChange(item.id, parseInt(e.target.value) || 0)}
-        placeholder="0"
-        className="w-20 text-right border rounded px-1 py-0.5 text-xs tabular-nums"
-      />
-    </div>
-  );
-}
-
 export default function OptionsSlideFixed({ projectId }: { projectId: string }) {
-  // 基本オプション
-  const [exteriorOptions, setExteriorOptions] = useState<OptionItem[]>(initialExteriorOptions);
-  const [exterior2Options, setExterior2Options] = useState<OptionItem[]>(initialExterior2Options);
-
-  // 追加オプション（必ず4行）
-  const [exteriorExtraOptions, setExteriorExtraOptions] = useState<OptionItem[]>(() =>
-    ensureLength([], 4, () => ({ id: generateId(), label: '', price: 0, checked: false }))
-  );
-  const [exterior2ExtraOptions, setExterior2ExtraOptions] = useState<OptionItem[]>(() =>
-    ensureLength([], 4, () => ({ id: generateId(), label: '', price: 0, checked: false }))
+  // 外観パターン① - 既存オプション
+  const [exteriorBase, setExteriorBase] = useState<OptionItem[]>(initialExteriorBase);
+  // 外観パターン① - 追加4項目（必達）
+  const [exteriorExtra, setExteriorExtra] = useState<OptionItem[]>(() =>
+    ensureLength(undefined, 4)
   );
 
-  // 内装オプション（必ず15行）
-  const [interiorOptions, setInteriorOptions] = useState<InteriorItem[]>(() =>
-    ensureLength(initialInteriorOptions, 15, () => ({
-      id: generateId(),
-      label: '',
-      price: 0,
-      checked: false,
-    }))
+  // 外観パターン② - 既存オプション
+  const [exterior2Base, setExterior2Base] = useState<OptionItem[]>(initialExterior2Base);
+  // 外観パターン② - 追加4項目（必達）
+  const [exterior2Extra, setExterior2Extra] = useState<OptionItem[]>(() =>
+    ensureLength(undefined, 4)
   );
 
+  // 内装オプション - 15項目（必達）
+  const [interiorItems, setInteriorItems] = useState<OptionItem[]>(() =>
+    ensureLength(initialInteriorBase, 15)
+  );
+
+  // ローン設定
   const loanSettings = {
     annualRatePercent: 0.8,
     years: 35,
   };
 
+  // 初期化時に項目数を保証
+  useEffect(() => {
+    setExteriorExtra(ensureLength(exteriorExtra, 4));
+    setExterior2Extra(ensureLength(exterior2Extra, 4));
+    setInteriorItems(ensureLength(interiorItems, 15));
+  }, []);
+
   // トグル関数
-  const toggleExteriorOption = (id: string) => {
-    setExteriorOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, checked: !opt.checked } : opt))
-    );
-  };
-
-  const toggleExterior2Option = (id: string) => {
-    setExterior2Options((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, checked: !opt.checked } : opt))
-    );
-  };
-
-  const toggleExteriorExtraOption = (id: string) => {
-    setExteriorExtraOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, checked: !opt.checked } : opt))
-    );
-  };
-
-  const toggleExterior2ExtraOption = (id: string) => {
-    setExterior2ExtraOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, checked: !opt.checked } : opt))
-    );
-  };
-
-  const toggleInteriorOption = (id: string) => {
-    setInteriorOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, checked: !opt.checked } : opt))
-    );
+  const toggleItem = (
+    items: OptionItem[],
+    setItems: React.Dispatch<React.SetStateAction<OptionItem[]>>,
+    id: string
+  ) => {
+    setItems(items.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
   };
 
   // ラベル更新関数
-  const updateExteriorExtraLabel = (id: string, label: string) => {
-    setExteriorExtraOptions((prev) => prev.map((opt) => (opt.id === id ? { ...opt, label } : opt)));
-  };
-
-  const updateExterior2ExtraLabel = (id: string, label: string) => {
-    setExterior2ExtraOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, label } : opt))
-    );
-  };
-
-  const updateInteriorLabel = (id: string, label: string) => {
-    setInteriorOptions((prev) => prev.map((opt) => (opt.id === id ? { ...opt, label } : opt)));
+  const updateLabel = (
+    items: OptionItem[],
+    setItems: React.Dispatch<React.SetStateAction<OptionItem[]>>,
+    id: string,
+    label: string
+  ) => {
+    setItems(items.map((item) => (item.id === id ? { ...item, label } : item)));
   };
 
   // 価格更新関数
-  const updateExteriorExtraPrice = (id: string, price: number) => {
-    setExteriorExtraOptions((prev) => prev.map((opt) => (opt.id === id ? { ...opt, price } : opt)));
-  };
-
-  const updateExterior2ExtraPrice = (id: string, price: number) => {
-    setExterior2ExtraOptions((prev) =>
-      prev.map((opt) => (opt.id === id ? { ...opt, price } : opt))
-    );
-  };
-
-  const updateInteriorPrice = (id: string, price: number) => {
-    setInteriorOptions((prev) => prev.map((opt) => (opt.id === id ? { ...opt, price } : opt)));
+  const updatePrice = (
+    items: OptionItem[],
+    setItems: React.Dispatch<React.SetStateAction<OptionItem[]>>,
+    id: string,
+    price: number
+  ) => {
+    setItems(items.map((item) => (item.id === id ? { ...item, price } : item)));
   };
 
   // 小計計算
   const subtotals = useMemo(() => {
-    const exterior1Base = exteriorOptions
-      .filter((opt) => opt.checked)
-      .reduce((sum, opt) => sum + opt.price, 0);
-    const exterior1Extra = exteriorExtraOptions
+    const exterior1 =
+      exteriorBase.filter((opt) => opt.checked).reduce((sum, opt) => sum + opt.price, 0) +
+      exteriorExtra
+        .filter((opt) => opt.checked && opt.label)
+        .reduce((sum, opt) => sum + opt.price, 0);
+
+    const exterior2 =
+      exterior2Base.filter((opt) => opt.checked).reduce((sum, opt) => sum + opt.price, 0) +
+      exterior2Extra
+        .filter((opt) => opt.checked && opt.label)
+        .reduce((sum, opt) => sum + opt.price, 0);
+
+    const interior = interiorItems
       .filter((opt) => opt.checked && opt.label)
       .reduce((sum, opt) => sum + opt.price, 0);
 
-    const exterior2Base = exterior2Options
-      .filter((opt) => opt.checked)
-      .reduce((sum, opt) => sum + opt.price, 0);
-    const exterior2Extra = exterior2ExtraOptions
-      .filter((opt) => opt.checked && opt.label)
-      .reduce((sum, opt) => sum + opt.price, 0);
-
-    const interior = interiorOptions
-      .filter((opt) => opt.checked)
-      .reduce((sum, opt) => sum + opt.price, 0);
-
-    return {
-      exterior1: exterior1Base + exterior1Extra,
-      exterior2: exterior2Base + exterior2Extra,
-      interior,
-    };
-  }, [
-    exteriorOptions,
-    exteriorExtraOptions,
-    exterior2Options,
-    exterior2ExtraOptions,
-    interiorOptions,
-  ]);
+    return { exterior1, exterior2, interior };
+  }, [exteriorBase, exteriorExtra, exterior2Base, exterior2Extra, interiorItems]);
 
   const pattern1Total = subtotals.exterior1 + subtotals.interior;
   const pattern2Total = subtotals.exterior2 + subtotals.interior;
 
+  // 月額計算
   const calculateMonthlyPayment = (total: number): number => {
-    const rate = loanSettings.annualRatePercent / 100 / 12;
-    const months = loanSettings.years * 12;
     if (total === 0) return 0;
-    return Math.round(
-      (total * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1)
-    );
+    const r = loanSettings.annualRatePercent / 100 / 12;
+    const n = loanSettings.years * 12;
+    return Math.round((total * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
   };
 
   return (
@@ -304,203 +214,222 @@ export default function OptionsSlideFixed({ projectId }: { projectId: string }) 
       subtitle="オプション金額を設定し、予算取りを行います"
       showFooter={false}
     >
-      {/* 12列グリッドレイアウト */}
+      {/* 固定12列グリッドレイアウト */}
       <div className="grid grid-cols-12 gap-4 h-full p-4">
-        {/* 1段目 */}
         {/* A: 外観パターン① - 4列 */}
-        <Card className="col-span-4 flex flex-col min-h-0 overflow-hidden rounded-lg border">
-          <CardHeader className="shrink-0 bg-red-50 px-4 py-2">
+        <Card className="col-span-4 flex flex-col h-full min-h-0 rounded-2xl border p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-red-50 rounded-t-2xl">
             <h3 className="text-sm font-semibold text-red-700">A: 外観パターン①</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col p-4 overflow-hidden min-h-0">
+          <div className="flex-1 min-h-0 overflow-auto">
             {/* 画像 */}
-            <div className="shrink-0 mb-3">
+            <div className="mb-4">
               <ImgFrame alt="外観イメージ①" />
             </div>
 
             {/* 既存オプション */}
-            <div className="space-y-1 mb-2 shrink-0">
-              {exteriorOptions.map((opt) => (
-                <div key={opt.id} className="grid grid-cols-[1fr_auto] items-center gap-x-2 py-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs">
-                    <Checkbox
+            <div className="space-y-1 mb-3">
+              {exteriorBase.map((opt) => (
+                <div
+                  key={opt.id}
+                  className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1 min-h-[32px]"
+                >
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
                       checked={opt.checked}
-                      onCheckedChange={() => toggleExteriorOption(opt.id)}
-                      className="h-3.5 w-3.5"
+                      onChange={() => toggleItem(exteriorBase, setExteriorBase, opt.id)}
                     />
-                    <span className="truncate">{opt.label}</span>
+                    <span className="text-sm">{opt.label}</span>
                   </label>
-                  <span className="text-xs tabular-nums text-right">
+                  <span className="text-sm tabular-nums text-right">
                     +{(opt.price / 10000).toFixed(0)}万
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* 追加入力行（必ず4行） */}
-            <div className="border-t pt-2 space-y-1 flex-1 overflow-auto min-h-0">
-              <div className="text-xs font-semibold text-gray-600">追加オプション（4項目）</div>
-              {exteriorExtraOptions.map((opt) => (
-                <ExtraOptionRow
+            {/* 追加4項目（必達） */}
+            <div className="border-t pt-3">
+              <div className="text-xs font-semibold text-gray-600 mb-2">
+                追加オプション（4項目）
+              </div>
+              {exteriorExtra.map((opt) => (
+                <OptionRow
                   key={opt.id}
                   item={opt}
-                  onToggle={toggleExteriorExtraOption}
-                  onLabelChange={updateExteriorExtraLabel}
-                  onPriceChange={updateExteriorExtraPrice}
+                  onToggle={(id) => toggleItem(exteriorExtra, setExteriorExtra, id)}
+                  onLabel={(id, v) => updateLabel(exteriorExtra, setExteriorExtra, id, v)}
+                  onPrice={(id, v) => updatePrice(exteriorExtra, setExteriorExtra, id, v)}
                 />
               ))}
             </div>
-          </CardContent>
-          <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
-              小計: {formatJPY(subtotals.exterior1)}
+          </div>
+          <div className="shrink-0 border-t pt-3 mt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-700">小計</span>
+              <span className="text-sm font-semibold tabular-nums text-right">
+                {formatJPY(subtotals.exterior1)}
+              </span>
             </div>
           </div>
         </Card>
 
         {/* B: 外観パターン② - 4列 */}
-        <Card className="col-span-4 flex flex-col min-h-0 overflow-hidden rounded-lg border">
-          <CardHeader className="shrink-0 bg-blue-50 px-4 py-2">
+        <Card className="col-span-4 flex flex-col h-full min-h-0 rounded-2xl border p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-blue-50 rounded-t-2xl">
             <h3 className="text-sm font-semibold text-blue-700">B: 外観パターン②</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col p-4 overflow-hidden min-h-0">
+          <div className="flex-1 min-h-0 overflow-auto">
             {/* 画像 */}
-            <div className="shrink-0 mb-3">
+            <div className="mb-4">
               <ImgFrame alt="外観イメージ②" />
             </div>
 
             {/* 既存オプション */}
-            <div className="space-y-1 mb-2 shrink-0">
-              {exterior2Options.map((opt) => (
-                <div key={opt.id} className="grid grid-cols-[1fr_auto] items-center gap-x-2 py-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs">
-                    <Checkbox
+            <div className="space-y-1 mb-3">
+              {exterior2Base.map((opt) => (
+                <div
+                  key={opt.id}
+                  className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-1 min-h-[32px]"
+                >
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
                       checked={opt.checked}
-                      onCheckedChange={() => toggleExterior2Option(opt.id)}
-                      className="h-3.5 w-3.5"
+                      onChange={() => toggleItem(exterior2Base, setExterior2Base, opt.id)}
                     />
-                    <span className="truncate">{opt.label}</span>
+                    <span className="text-sm">{opt.label}</span>
                   </label>
-                  <span className="text-xs tabular-nums text-right">
+                  <span className="text-sm tabular-nums text-right">
                     +{(opt.price / 10000).toFixed(0)}万
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* 追加入力行（必ず4行） */}
-            <div className="border-t pt-2 space-y-1 flex-1 overflow-auto min-h-0">
-              <div className="text-xs font-semibold text-gray-600">追加オプション（4項目）</div>
-              {exterior2ExtraOptions.map((opt) => (
-                <ExtraOptionRow
+            {/* 追加4項目（必達） */}
+            <div className="border-t pt-3">
+              <div className="text-xs font-semibold text-gray-600 mb-2">
+                追加オプション（4項目）
+              </div>
+              {exterior2Extra.map((opt) => (
+                <OptionRow
                   key={opt.id}
                   item={opt}
-                  onToggle={toggleExterior2ExtraOption}
-                  onLabelChange={updateExterior2ExtraLabel}
-                  onPriceChange={updateExterior2ExtraPrice}
+                  onToggle={(id) => toggleItem(exterior2Extra, setExterior2Extra, id)}
+                  onLabel={(id, v) => updateLabel(exterior2Extra, setExterior2Extra, id, v)}
+                  onPrice={(id, v) => updatePrice(exterior2Extra, setExterior2Extra, id, v)}
                 />
               ))}
             </div>
-          </CardContent>
-          <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
-              小計: {formatJPY(subtotals.exterior2)}
+          </div>
+          <div className="shrink-0 border-t pt-3 mt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-700">小計</span>
+              <span className="text-sm font-semibold tabular-nums text-right">
+                {formatJPY(subtotals.exterior2)}
+              </span>
             </div>
           </div>
         </Card>
 
-        {/* C: 内観イメージ - 4列、2行分（大型化） */}
-        <Card className="col-span-4 row-span-2 flex flex-col min-h-0 overflow-hidden rounded-lg border">
-          <CardHeader className="shrink-0 bg-green-50 px-4 py-2">
+        {/* C: 内観イメージ - 4列、2行分（row-span-2で大型化） */}
+        <Card className="col-span-4 row-span-2 flex flex-col h-full min-h-0 rounded-2xl border p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-green-50 rounded-t-2xl">
             <h3 className="text-sm font-semibold text-green-700">C: 内観イメージ</h3>
           </CardHeader>
-          <CardContent className="flex-1 p-4 overflow-hidden">
-            {/* 4つの画像をA/Bと同じImgFrameで表示 */}
+          <div className="flex-1 min-h-0 p-2">
+            {/* 2×2グリッドで4枚、各枚がA/Bと同サイズ */}
             <div className="grid grid-cols-2 gap-3 h-full">
               <ImgFrame alt="内観イメージ①" />
               <ImgFrame alt="内観イメージ②" />
               <ImgFrame alt="内観イメージ③" />
               <ImgFrame alt="内観イメージ④" />
             </div>
-          </CardContent>
+          </div>
         </Card>
 
-        {/* 2段目 */}
-        {/* D: 内装オプション - 8列 */}
-        <Card className="col-span-8 flex flex-col min-h-0 overflow-hidden rounded-lg border">
-          <CardHeader className="shrink-0 bg-purple-50 px-4 py-2">
+        {/* D: 内装オプション - 8列（最も広い） */}
+        <Card className="col-span-8 flex flex-col h-full min-h-0 rounded-2xl border p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-purple-50 rounded-t-2xl">
             <h3 className="text-sm font-semibold text-purple-700">D: 内装オプション（15項目）</h3>
           </CardHeader>
-          <CardContent className="flex-1 p-4 overflow-auto min-h-0">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {interiorOptions.map((opt) => (
-                <InteriorOptionRow
+          <div className="flex-1 min-h-0 overflow-auto">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {interiorItems.map((opt) => (
+                <OptionRow
                   key={opt.id}
                   item={opt}
-                  onToggle={toggleInteriorOption}
-                  onLabelChange={updateInteriorLabel}
-                  onPriceChange={updateInteriorPrice}
+                  onToggle={(id) => toggleItem(interiorItems, setInteriorItems, id)}
+                  onLabel={(id, v) => updateLabel(interiorItems, setInteriorItems, id, v)}
+                  onPrice={(id, v) => updatePrice(interiorItems, setInteriorItems, id, v)}
                 />
               ))}
             </div>
-          </CardContent>
-          <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
-              内装合計: {formatJPY(subtotals.interior)}
+          </div>
+          <div className="shrink-0 border-t pt-3 mt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-700">内装合計</span>
+              <span className="text-sm font-semibold tabular-nums text-right">
+                {formatJPY(subtotals.interior)}
+              </span>
             </div>
           </div>
         </Card>
 
-        {/* E: 外観パターン①＋内装 - 2列 */}
-        <Card className="col-span-2 flex flex-col min-h-0 overflow-hidden rounded-lg border border-amber-400">
-          <CardHeader className="shrink-0 bg-amber-100 px-4 py-2">
-            <h3 className="text-xs font-bold text-amber-700">E: 外観①＋内装</h3>
+        {/* E: 外観①＋内装 - 2列（狭幅） */}
+        <Card className="col-span-2 flex flex-col h-full min-h-0 rounded-2xl border border-amber-400 p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-amber-50 rounded-t-2xl">
+            <h3 className="text-sm font-semibold text-amber-700">E: 外観①＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 p-4 flex flex-col justify-center">
-            <div className="space-y-2">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="space-y-4">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
-                <div className="text-lg font-bold text-amber-700 tabular-nums">
+                <div className="text-2xl font-bold text-amber-700 tabular-nums">
                   {formatJPY(pattern1Total)}
                 </div>
               </div>
-              <div className="border-t pt-2">
-                <div className="text-xs text-gray-600">月額(目安)</div>
-                <div className="text-base font-bold text-amber-700 tabular-nums">
+              <div className="border-t pt-4">
+                <div className="text-xs text-gray-600">月額（目安）</div>
+                <div className="text-xl font-bold text-amber-700 tabular-nums">
                   {formatJPY(calculateMonthlyPayment(pattern1Total))}
                 </div>
                 <div className="text-[10px] text-gray-500 mt-1">
-                  金利{loanSettings.annualRatePercent}%／{loanSettings.years}年
+                  金利{loanSettings.annualRatePercent}%・{loanSettings.years}年返済
                 </div>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
 
-        {/* F: 外観パターン②＋内装 - 2列 */}
-        <Card className="col-span-2 flex flex-col min-h-0 overflow-hidden rounded-lg border border-cyan-400">
-          <CardHeader className="shrink-0 bg-cyan-100 px-4 py-2">
-            <h3 className="text-xs font-bold text-cyan-700">F: 外観②＋内装</h3>
+        {/* F: 外観②＋内装 - 2列（狭幅） */}
+        <Card className="col-span-2 flex flex-col h-full min-h-0 rounded-2xl border border-cyan-400 p-4">
+          <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-cyan-50 rounded-t-2xl">
+            <h3 className="text-sm font-semibold text-cyan-700">F: 外観②＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 p-4 flex flex-col justify-center">
-            <div className="space-y-2">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="space-y-4">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
-                <div className="text-lg font-bold text-cyan-700 tabular-nums">
+                <div className="text-2xl font-bold text-cyan-700 tabular-nums">
                   {formatJPY(pattern2Total)}
                 </div>
               </div>
-              <div className="border-t pt-2">
-                <div className="text-xs text-gray-600">月額(目安)</div>
-                <div className="text-base font-bold text-cyan-700 tabular-nums">
+              <div className="border-t pt-4">
+                <div className="text-xs text-gray-600">月額（目安）</div>
+                <div className="text-xl font-bold text-cyan-700 tabular-nums">
                   {formatJPY(calculateMonthlyPayment(pattern2Total))}
                 </div>
                 <div className="text-[10px] text-gray-500 mt-1">
-                  金利{loanSettings.annualRatePercent}%／{loanSettings.years}年
+                  金利{loanSettings.annualRatePercent}%・{loanSettings.years}年返済
                 </div>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </A3Page>
