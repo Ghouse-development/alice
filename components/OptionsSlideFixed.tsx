@@ -114,7 +114,7 @@ const initialInteriorBase = [
   { id: 'int-15', label: '間接照明', price: 240000, checked: false },
 ];
 
-export default function OptionsSlideFixed({ projectId }: { projectId: string }) {
+function OptionsSlideFixed({ projectId }: { projectId: string }) {
   // 外観パターン① - 既存オプション
   const [exteriorBase, setExteriorBase] = useState<OptionItem[]>(initialExteriorBase);
   // 外観パターン① - 追加4項目（必達）
@@ -214,8 +214,9 @@ export default function OptionsSlideFixed({ projectId }: { projectId: string }) 
       subtitle="オプション金額を設定し、予算取りを行います"
       showFooter={false}
     >
-      {/* 固定12列グリッドレイアウト */}
-      <div className="grid grid-cols-12 gap-4 h-full p-4">
+      {/* 2段レイアウト：grid grid-cols-12 gap-4 */}
+      <div className="grid grid-cols-12 gap-4 h-full p-4 grid-rows-2">
+        {/* 1段目（上段）：A/B/C */}
         {/* A: 外観パターン① - 4列 */}
         <Card className="col-span-4 flex flex-col h-full min-h-0 rounded-2xl border p-4">
           <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-red-50 rounded-t-2xl">
@@ -336,26 +337,27 @@ export default function OptionsSlideFixed({ projectId }: { projectId: string }) 
           </div>
         </Card>
 
-        {/* C: 内観イメージ - 4列、2行分（row-span-2で大型化） */}
-        <Card className="col-span-4 row-span-2 flex flex-col h-full min-h-0 rounded-2xl border p-4">
+        {/* C: 内観イメージ - 4列 */}
+        <Card className="col-span-4 flex flex-col h-full min-h-0 rounded-2xl border p-4">
           <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-green-50 rounded-t-2xl">
             <h3 className="text-sm font-semibold text-green-700">C: 内観イメージ</h3>
           </CardHeader>
           <div className="flex-1 min-h-0 p-2">
             {/* 2×2グリッドで4枚、各枚がA/Bと同サイズ */}
             <div className="grid grid-cols-2 gap-3 h-full">
-              <ImgFrame alt="内観イメージ①" />
-              <ImgFrame alt="内観イメージ②" />
-              <ImgFrame alt="内観イメージ③" />
-              <ImgFrame alt="内観イメージ④" />
+              <ImgFrame alt="リビング" />
+              <ImgFrame alt="キッチン" />
+              <ImgFrame alt="浴室" />
+              <ImgFrame alt="寝室" />
             </div>
           </div>
         </Card>
 
+        {/* 2段目（下段）：D/E/F */}
         {/* D: 内装オプション - 8列（最も広い） */}
         <Card className="col-span-8 flex flex-col h-full min-h-0 rounded-2xl border p-4">
           <CardHeader className="shrink-0 px-4 py-2 -m-4 mb-4 bg-purple-50 rounded-t-2xl">
-            <h3 className="text-sm font-semibold text-purple-700">D: 内装オプション（15項目）</h3>
+            <h3 className="text-sm font-semibold text-purple-700">D: 内装オプション</h3>
           </CardHeader>
           <div className="flex-1 min-h-0 overflow-auto">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -432,6 +434,18 @@ export default function OptionsSlideFixed({ projectId }: { projectId: string }) 
           </div>
         </Card>
       </div>
+
+      <style jsx global>{`
+        @media print {
+          .overflow-auto {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+          }
+        }
+      `}</style>
     </A3Page>
   );
 }
+
+export default OptionsSlideFixed;
