@@ -73,6 +73,17 @@ const formatJPY = (price: number): string => {
   return `¥${price.toLocaleString()}`;
 };
 
+// 共通画像コンポーネント（A/B/Cで共通使用）
+const ImgFrame = ({ src, alt, label }: { src?: string; alt?: string; label?: string }) => (
+  <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
+    {src ? (
+      <img src={src} alt={alt || ''} className="w-full h-full object-cover" />
+    ) : (
+      <span className="text-gray-500 text-sm">{label || alt || '画像'}</span>
+    )}
+  </div>
+);
+
 // 追加オプション行コンポーネント
 function AdditionalOptionRow({
   item,
@@ -361,19 +372,19 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
   return (
     <A3Page
       title="オプション選択"
-      subtitle={customerName ? `${customerName}様` : ''}
+      subtitle="オプション金額を設定し、予算取りを行います"
       showFooter={false}
     >
-      <div className="grid grid-cols-12 grid-rows-6 gap-3 h-full p-4">
+      <div className="grid grid-cols-12 grid-rows-6 gap-4 h-full p-4">
         {/* A: 外観パターン① - 4 columns, 3 rows */}
         <Card className="col-span-4 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border">
           <CardHeader className="shrink-0 bg-red-50 px-4 py-2">
             <h3 className="text-base font-bold text-red-700">A: 外観パターン①</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col px-4 py-2 overflow-hidden min-h-0">
+          <CardContent className="flex-1 flex flex-col p-4 overflow-hidden min-h-0">
             {/* 画像 - 4:3 */}
-            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
-              外観イメージ①
+            <div className="mb-2 shrink-0">
+              <ImgFrame label="外観イメージ①" />
             </div>
 
             {/* 既存オプション */}
@@ -397,9 +408,9 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
                 ))}
             </div>
 
-            {/* 追加入力行 */}
+            {/* 追加入力行 - 必ず4行 */}
             <div className="border-t pt-1 space-y-1 flex-1 overflow-auto min-h-0">
-              <div className="text-xs font-semibold text-gray-600">追加オプション</div>
+              <div className="text-xs font-semibold text-gray-600">追加オプション（4項目）</div>
               {additionalExt1Options.map((opt) => (
                 <AdditionalOptionRow
                   key={opt.id}
@@ -416,7 +427,7 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
           </CardContent>
           <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-base font-semibold text-red-700 text-right tabular-nums">
+            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
               小計: {formatJPY(subtotals.exterior1)}
             </div>
           </div>
@@ -427,10 +438,10 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
           <CardHeader className="shrink-0 bg-blue-50 px-4 py-2">
             <h3 className="text-base font-bold text-blue-700">B: 外観パターン②</h3>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col px-4 py-2 overflow-hidden min-h-0">
+          <CardContent className="flex-1 flex flex-col p-4 overflow-hidden min-h-0">
             {/* 画像 - 4:3 */}
-            <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
-              外観イメージ②
+            <div className="mb-2 shrink-0">
+              <ImgFrame label="外観イメージ②" />
             </div>
 
             {/* 既存オプション */}
@@ -454,9 +465,9 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
                 ))}
             </div>
 
-            {/* 追加入力行 */}
+            {/* 追加入力行 - 必ず4行 */}
             <div className="border-t pt-1 space-y-1 flex-1 overflow-auto min-h-0">
-              <div className="text-xs font-semibold text-gray-600">追加オプション</div>
+              <div className="text-xs font-semibold text-gray-600">追加オプション（4項目）</div>
               {additionalExt2Options.map((opt) => (
                 <AdditionalOptionRow
                   key={opt.id}
@@ -473,7 +484,7 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
           </CardContent>
           <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-base font-semibold text-blue-700 text-right tabular-nums">
+            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
               小計: {formatJPY(subtotals.exterior2)}
             </div>
           </div>
@@ -484,25 +495,13 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
           <CardHeader className="shrink-0 bg-green-50 px-4 py-2">
             <h3 className="text-base font-bold text-green-700">C: 内観イメージ</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-2 overflow-hidden">
-            {/* 画像を外観と同じサイズ（1枚分）で表示 - グリッドを調整 */}
-            <div className="h-full flex flex-col">
-              {/* メイン画像 - 外観と同じサイズ */}
-              <div className="w-full aspect-[4/3] rounded-lg bg-gray-100 mb-2 flex items-center justify-center text-gray-500 text-sm shrink-0 object-cover">
-                内観イメージ①
-              </div>
-              {/* 残りのスペースに3つの小画像を横並び */}
-              <div className="flex-1 grid grid-cols-3 gap-2">
-                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                  内観②
-                </div>
-                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                  内観③
-                </div>
-                <div className="w-full h-full rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                  内観④
-                </div>
-              </div>
+          <CardContent className="flex-1 p-4 overflow-hidden">
+            {/* 4つの画像をA/Bと同じImgFrameで表示 */}
+            <div className="grid grid-cols-2 gap-3 h-full">
+              <ImgFrame label="内観イメージ①" />
+              <ImgFrame label="内観イメージ②" />
+              <ImgFrame label="内観イメージ③" />
+              <ImgFrame label="内観イメージ④" />
             </div>
           </CardContent>
         </Card>
@@ -521,7 +520,7 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
               />
             </button>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-2 overflow-auto min-h-0">
+          <CardContent className="flex-1 p-4 overflow-auto min-h-0">
             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
               {interiorOptions.map((opt) => (
                 <InteriorOptionRow
@@ -535,18 +534,18 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
             </div>
           </CardContent>
           <div className="shrink-0 border-t px-4 py-2 bg-gray-50">
-            <div className="text-base font-semibold text-purple-700 text-right tabular-nums">
+            <div className="text-sm font-semibold text-gray-700 text-right tabular-nums">
               内装合計: {formatJPY(subtotals.interior)}
             </div>
           </div>
         </Card>
 
-        {/* E: 外観パターン① ＋ 内装 - 2 columns, 3 rows (縮小) */}
-        <Card className="col-span-2 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-amber-400">
+        {/* E: 外観パターン① ＋ 内装 - 2.5 columns, 3 rows (やや狭く) */}
+        <Card className="col-start-9 col-end-11 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-amber-400">
           <CardHeader className="shrink-0 bg-amber-100 px-4 py-2">
             <h3 className="text-sm font-bold text-amber-700">E: 外観①＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-2 flex flex-col justify-center">
+          <CardContent className="flex-1 p-4 flex flex-col justify-center">
             <div className="space-y-2">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
@@ -567,12 +566,12 @@ export default function OptionsSlideFixed({ projectId }: OptionsSlideFixedProps)
           </CardContent>
         </Card>
 
-        {/* F: 外観パターン② ＋ 内装 - 2 columns, 3 rows (縮小) */}
-        <Card className="col-span-2 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-cyan-400">
+        {/* F: 外観パターン② ＋ 内装 - 2.5 columns, 3 rows (やや狭く) */}
+        <Card className="col-start-11 col-end-13 row-span-3 flex flex-col min-h-0 overflow-hidden rounded-lg border border-cyan-400">
           <CardHeader className="shrink-0 bg-cyan-100 px-4 py-2">
             <h3 className="text-sm font-bold text-cyan-700">F: 外観②＋内装</h3>
           </CardHeader>
-          <CardContent className="flex-1 px-4 py-2 flex flex-col justify-center">
+          <CardContent className="flex-1 p-4 flex flex-col justify-center">
             <div className="space-y-2">
               <div>
                 <div className="text-xs text-gray-600">合計額</div>
