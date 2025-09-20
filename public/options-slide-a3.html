@@ -1,251 +1,872 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>オプション - A3横印刷</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @page {
-      size: A3 landscape;
-      margin: 12mm;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オプション選択 - G-HOUSE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      .container-a3 {
-        width: 100%;
-        max-width: none;
-        padding: 0;
-      }
-    }
+        body {
+            width: 1190px;
+            height: 842px;
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
 
-    /* 重なり防止の強制ルール */
-    * {
-      position: static !important;
-      z-index: auto !important;
-    }
+        /* ヘッダー - 元のサイズを厳守 */
+        .header {
+            height: 80px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            border-bottom: 2px solid #e0e0e0;
+        }
 
-    /* 数値の右揃え */
-    .price-align {
-      font-variant-numeric: tabular-nums;
-    }
+        .logo {
+            color: #d32f2f;
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-    /* カスタムフォント */
-    body {
-      font-family: 'Noto Sans JP', system-ui, sans-serif;
-    }
-  </style>
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-left: 15px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-left: 40px;
+        }
+
+        /* メインコンテナ */
+        .main-container {
+            width: 1190px;
+            height: 762px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 上段のレイアウト - 高さを増やす */
+        .top-row {
+            display: flex;
+            gap: 10px;
+            height: 420px;
+        }
+
+        /* 上段左側（A,B） */
+        .top-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 外観パターンボックス（A,B） */
+        .pattern-box-exterior {
+            width: 280px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 内観イメージボックス（C） */
+        .pattern-box-interior {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pattern-header {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pattern-a { background: #ffebee; color: #d32f2f; }
+        .pattern-b { background: #e3f2fd; color: #1976d2; }
+        .pattern-c { background: #e8f5e9; color: #388e3c; }
+        .pattern-d { background: #f3e5f5; color: #7b1fa2; }
+
+        /* 統合編集ボタン - 右下に配置 */
+        .master-edit-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .master-edit-btn:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: scale(1.1);
+        }
+
+        .master-edit-btn.active {
+            background: #e3f2fd;
+        }
+
+        /* 外観画像エリア - 1.5:1比率 (幅260px × 高さ173.33px) */
+        .image-area {
+            width: 260px;
+            height: 173.33px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin: 0 auto 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* 内観イメージ用の画像グリッド */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 260px);
+            grid-template-rows: repeat(2, 173.33px);
+            gap: 10px;
+            width: 530px;
+            height: 356.66px;
+            margin: 0 auto 10px auto;
+        }
+
+        .image-grid-item {
+            width: 260px;
+            height: 173.33px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* オプションリスト */
+        .option-list {
+            flex: 1;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 2px 0;
+            font-size: 11px;
+            position: relative;
+        }
+
+        .option-item input[type="checkbox"] {
+            margin-right: 6px;
+        }
+
+        .option-text {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-name {
+            flex: 1;
+        }
+
+        .option-price {
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 編集モード */
+        .edit-inputs {
+            display: none;
+            flex: 1;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .edit-mode .option-item .option-text {
+            display: none;
+        }
+
+        .edit-mode .option-item .edit-inputs {
+            display: flex;
+        }
+
+        .edit-inputs input[type="text"] {
+            flex: 1;
+            padding: 1px 4px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .edit-inputs input[type="number"] {
+            width: 60px;
+            padding: 1px 4px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 10px;
+            text-align: right;
+        }
+
+        /* 小計 - 右詰め */
+        .subtotal {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        .subtotal-label {
+            color: #666;
+        }
+
+        .subtotal-amount {
+            font-weight: bold;
+            color: #333;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        /* 下段のレイアウト */
+        .bottom-row {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            height: 322px;
+        }
+
+        /* 内装オプション（D） */
+        .bottom-section {
+            width: 720px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .interior-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px 12px;
+            flex: 1;
+            margin-top: 8px;
+        }
+
+        /* 内装合計 - 右詰め */
+        .interior-total {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* 合計カード（E, F） */
+        .total-cards {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .total-card {
+            flex: 1;
+            width: 220px;
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .total-header {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-e { background: #fff8e1; color: #f57c00; }
+        .total-f { background: #e0f7fa; color: #0097a7; }
+
+        .total-item {
+            margin-bottom: 15px;
+        }
+
+        .total-label {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .total-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            text-align: right;
+        }
+
+        .rate-info {
+            color: #999;
+            font-size: 9px;
+            margin-top: 4px;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rate-edit {
+            display: none;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .edit-mode .rate-info .rate-text {
+            display: none;
+        }
+
+        .edit-mode .rate-info .rate-edit {
+            display: flex;
+        }
+
+        .rate-edit input {
+            width: 35px;
+            padding: 1px 2px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            font-size: 9px;
+            text-align: center;
+        }
+
+        /* 画像アップロードエリア */
+        .image-upload {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .edit-image-mode .image-area .image-upload,
+        .edit-image-mode .image-grid-item .image-upload {
+            display: block;
+        }
+
+        .image-upload input[type="file"] {
+            font-size: 10px;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .image-area, .image-grid-item {
+            position: relative;
+        }
+
+        .add-option-btn {
+            margin-top: 6px;
+            padding: 3px 6px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            font-size: 9px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.2s;
+        }
+
+        .add-option-btn:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .remove-btn {
+            margin-left: 4px;
+            padding: 1px 4px;
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            border-radius: 3px;
+            font-size: 9px;
+            cursor: pointer;
+            color: #c62828;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-  <div class="container-a3 w-[1400px] mx-auto p-6">
-    <!-- ヘッダー -->
-    <header class="mb-6">
-      <h1 class="text-[28px] font-bold text-center mb-3">オプション</h1>
-      <div class="flex justify-between items-center">
-        <div class="text-[18px] font-semibold text-gray-700 border-b-2 border-red-500 pb-1">外装オプション</div>
-        <div class="text-[18px] font-semibold text-gray-700 border-b-2 border-red-500 pb-1">内装オプション</div>
-      </div>
-    </header>
-
-    <!-- 上段グリッド（3カラム） -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-      <!-- 外観パターン① -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
-        <h2 class="text-[18px] font-semibold text-red-600 border-b-2 border-red-600 pb-2 mb-4">
-          外観パターン①
-        </h2>
-
-        <!-- 画像領域（55%以上） -->
-        <div class="h-[280px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-          <span class="text-gray-500 text-xl font-medium">外観イメージ①</span>
-        </div>
-
-        <!-- チェックリスト -->
-        <div class="flex-1 space-y-2 text-[12.5px] leading-tight">
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥100,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥150,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥200,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥250,000</span>
-          </label>
-        </div>
-
-        <!-- 小計 -->
-        <div class="mt-4 p-3 bg-red-50 rounded-lg text-center">
-          <span class="text-[14px] font-semibold text-red-600">小計 ¥0</span>
-        </div>
-      </div>
-
-      <!-- 外観パターン② -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
-        <h2 class="text-[18px] font-semibold text-blue-600 border-b-2 border-blue-600 pb-2 mb-4">
-          外観パターン②
-        </h2>
-
-        <!-- 画像領域（55%以上） -->
-        <div class="h-[280px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-          <span class="text-gray-500 text-xl font-medium">外観イメージ②</span>
-        </div>
-
-        <!-- チェックリスト -->
-        <div class="flex-1 space-y-2 text-[12.5px] leading-tight">
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥120,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥180,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥220,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥280,000</span>
-          </label>
-        </div>
-
-        <!-- 小計 -->
-        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-center">
-          <span class="text-[14px] font-semibold text-blue-600">小計 ¥0</span>
-        </div>
-      </div>
-
-      <!-- 内装オプション -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 min-h-[520px] flex flex-col">
-        <h2 class="text-[18px] font-semibold text-gray-700 border-b-2 border-gray-400 pb-2 mb-4">
-          内装オプション
-        </h2>
-
-        <!-- タブ -->
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">リビング</div>
-          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">ダイニング</div>
-          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">キッチン</div>
-          <div class="p-2 bg-gray-100 rounded text-center text-[11px]">和室</div>
-        </div>
-
-        <!-- 画像領域（最大） -->
-        <div class="h-[320px] bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-          <span class="text-gray-500 text-xl font-medium">内装イメージ</span>
-        </div>
-
-        <!-- チェックリスト（スクロール可能） -->
-        <div class="flex-1 overflow-y-auto max-h-[120px] space-y-1 text-[11px] leading-tight pr-2">
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥50,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥80,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥100,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥120,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥150,000</span>
-          </label>
-          <label class="flex items-start">
-            <input type="checkbox" class="mt-0.5 mr-2 scale-75">
-            <span class="flex-1">てすとてすと</span>
-            <span class="price-align ml-2">¥180,000</span>
-          </label>
-        </div>
-
-        <!-- 小計 -->
-        <div class="mt-4 p-3 bg-gray-100 rounded-lg text-center">
-          <span class="text-[14px] font-semibold text-gray-700">内装オプション合計 ¥0</span>
-        </div>
-      </div>
+<body>
+    <div class="header">
+        <span class="logo">G-HOUSE</span>
+        <span class="subtitle">プレゼンテーション</span>
+        <h1 class="title">オプション選択</h1>
     </div>
 
-    <!-- 下段：合計金額セクション -->
-    <div class="border-t-2 border-gray-300 pt-6">
-      <h3 class="text-[22px] font-bold text-center mb-6">
-        <span class="border-b-2 border-red-600 pb-1 px-8">オプション合計金額</span>
-      </h3>
+    <div class="main-container">
+        <!-- 上段 -->
+        <div class="top-row">
+            <div class="top-left">
+                <!-- A: 外観パターン① -->
+                <div class="pattern-box-exterior">
+                    <div class="pattern-header pattern-a">
+                        <span>A: 外観パターン①</span>
+                    </div>
+                    <div class="image-area" id="image-a">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">外観イメージ①</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-a')">
+                        </div>
+                    </div>
+                    <div class="option-list" id="option-list-a">
+                        <!-- オプション項目 -->
+                    </div>
+                    <button class="add-option-btn" onclick="addOption('option-list-a')">+ 追加</button>
+                    <div class="subtotal">
+                        <span class="subtotal-label">小計:</span>
+                        <span class="subtotal-amount" id="subtotal-a">¥0</span>
+                    </div>
+                </div>
 
-      <!-- 下段グリッド（2カラム） -->
-      <div class="grid grid-cols-2 gap-4">
-        <!-- パターン① -->
-        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border-2 border-red-500 p-6 min-h-[220px]">
-          <h4 class="text-[20px] font-bold text-center text-red-600 mb-3">パターン①</h4>
-          <p class="text-[14px] text-center text-gray-600 mb-4">
-            外観パターン① ＋ 内装オプション
-          </p>
+                <!-- B: 外観パターン② -->
+                <div class="pattern-box-exterior">
+                    <div class="pattern-header pattern-b">
+                        <span>B: 外観パターン②</span>
+                    </div>
+                    <div class="image-area" id="image-b">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">外観イメージ②</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-b')">
+                        </div>
+                    </div>
+                    <div class="option-list" id="option-list-b">
+                        <!-- オプション項目 -->
+                    </div>
+                    <button class="add-option-btn" onclick="addOption('option-list-b')">+ 追加</button>
+                    <div class="subtotal">
+                        <span class="subtotal-label">小計:</span>
+                        <span class="subtotal-amount" id="subtotal-b">¥0</span>
+                    </div>
+                </div>
+            </div>
 
-          <div class="bg-white rounded-lg p-4">
-            <div class="flex justify-between items-center mb-3">
-              <span class="text-[16px]">合計金額</span>
-              <span class="text-[24px] font-bold text-red-600 price-align">¥0</span>
+            <!-- C: 内観イメージ -->
+            <div class="pattern-box-interior">
+                <div class="pattern-header pattern-c">
+                    <span>C: 内観イメージ</span>
+                </div>
+                <div class="image-grid">
+                    <div class="image-grid-item" id="image-c1">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">内観①</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-c1')">
+                        </div>
+                    </div>
+                    <div class="image-grid-item" id="image-c2">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">内観②</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-c2')">
+                        </div>
+                    </div>
+                    <div class="image-grid-item" id="image-c3">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">内観③</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-c3')">
+                        </div>
+                    </div>
+                    <div class="image-grid-item" id="image-c4">
+                        <img class="image-preview" style="display:none;">
+                        <span class="image-placeholder">内観④</span>
+                        <div class="image-upload">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'image-c4')">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-yellow-50 rounded-lg p-3">
-              <div class="flex justify-between items-center">
-                <span class="text-[14px]">月々</span>
-                <span class="text-[20px] font-bold text-yellow-700 price-align">¥0</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- パターン② -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-500 p-6 min-h-[220px]">
-          <h4 class="text-[20px] font-bold text-center text-blue-600 mb-3">パターン②</h4>
-          <p class="text-[14px] text-center text-gray-600 mb-4">
-            外観パターン② ＋ 内装オプション
-          </p>
+        <!-- 下段 -->
+        <div class="bottom-row">
+            <!-- D: 内装オプション -->
+            <div class="bottom-section">
+                <div class="pattern-header pattern-d">
+                    <span>D: 内装オプション</span>
+                </div>
+                <div class="interior-options" id="option-list-d">
+                    <!-- オプション項目 -->
+                </div>
+                <button class="add-option-btn" onclick="addOption('option-list-d')">+ 追加</button>
+                <div class="interior-total">
+                    <span class="subtotal-label">内装合計:</span>
+                    <span class="subtotal-amount" id="interior-total">¥0</span>
+                </div>
+            </div>
 
-          <div class="bg-white rounded-lg p-4">
-            <div class="flex justify-between items-center mb-3">
-              <span class="text-[16px]">合計金額</span>
-              <span class="text-[24px] font-bold text-blue-600 price-align">¥0</span>
+            <!-- E, F: 合計 -->
+            <div class="total-cards">
+                <!-- E: 外観①＋内装 -->
+                <div class="total-card" id="card-e">
+                    <div class="total-header total-e">
+                        <span>E: 外観①＋内装</span>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">合計額</div>
+                        <div class="total-value" id="total-e">¥0</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">月額(目安)</div>
+                        <div class="total-value" id="monthly-e">¥0</div>
+                        <div class="rate-info">
+                            <span class="rate-text"><span id="rate-e">0.8</span>%/<span id="years-e">35</span>年</span>
+                            <div class="rate-edit">
+                                <input type="number" class="edit-rate" value="0.8" step="0.1">%
+                                <input type="number" class="edit-years" value="35">年
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- F: 外観②＋内装 -->
+                <div class="total-card" id="card-f">
+                    <div class="total-header total-f">
+                        <span>F: 外観②＋内装</span>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">合計額</div>
+                        <div class="total-value" id="total-f">¥0</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">月額(目安)</div>
+                        <div class="total-value" id="monthly-f">¥0</div>
+                        <div class="rate-info">
+                            <span class="rate-text"><span id="rate-f">0.8</span>%/<span id="years-f">35</span>年</span>
+                            <div class="rate-edit">
+                                <input type="number" class="edit-rate" value="0.8" step="0.1">%
+                                <input type="number" class="edit-years" value="35">年
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-blue-50 rounded-lg p-3">
-              <div class="flex justify-between items-center">
-                <span class="text-[14px]">月々</span>
-                <span class="text-[20px] font-bold text-blue-700 price-align">¥0</span>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
+
+    <script>
+        // 金利と期間のデフォルト値
+        let rateE = 0.8;
+        let yearsE = 35;
+        let rateF = 0.8;
+        let yearsF = 35;
+
+        // 初期データ
+        const initialData = {
+            'option-list-a': [
+                { name: '屋根材グレードアップ', price: 50000 },
+                { name: '外壁タイル仕上げ', price: 80000 },
+                { name: '玄関ドアグレードアップ', price: 30000 },
+                { name: '窓サッシカラー変更', price: 40000 },
+                { name: '雨樋グレードアップ', price: 25000 }
+            ],
+            'option-list-b': [
+                { name: '屋根材プレミアム', price: 60000 },
+                { name: '外壁石材仕上げ', price: 100000 },
+                { name: '玄関ドアスマートキー', price: 45000 },
+                { name: 'バルコニー拡張', price: 35000 },
+                { name: '外構照明追加', price: 28000 }
+            ],
+            'option-list-d': [
+                { name: 'フローリング変更', price: 25000 },
+                { name: '壁紙グレードアップ', price: 15000 },
+                { name: 'キッチン収納追加', price: 30000 },
+                { name: '照明器具変更', price: 20000 },
+                { name: 'カーテンレール', price: 35000 },
+                { name: 'エコカラット', price: 40000 },
+                { name: '室内物干し', price: 18000 },
+                { name: 'トイレ手洗い追加', price: 22000 },
+                { name: '洗面台グレードアップ', price: 28000 },
+                { name: '浴室暖房乾燥機', price: 45000 },
+                { name: 'コンセント追加', price: 12000 },
+                { name: '床暖房（リビング）', price: 38000 },
+                { name: 'ニッチ棚追加', price: 16000 },
+                { name: '玄関収納追加', price: 24000 },
+                { name: 'バルコニー屋根', price: 32000 }
+            ]
+        };
+
+        // オプション項目を作成
+        function createOptionItem(name, price) {
+            const item = document.createElement('div');
+            item.className = 'option-item';
+            item.innerHTML = `
+                <input type="checkbox" data-price="${price}">
+                <div class="option-text">
+                    <span class="option-name">${name}</span>
+                    <span class="option-price">¥${price.toLocaleString()}</span>
+                </div>
+                <div class="edit-inputs">
+                    <input type="text" class="edit-name" value="${name}">
+                    <input type="number" class="edit-price" value="${price}">
+                </div>
+                <button class="remove-btn" onclick="removeOption(this)" style="display:none;">×</button>
+            `;
+            return item;
+        }
+
+        // 統合編集モード切り替え
+        function toggleMasterEditMode() {
+            const btn = document.querySelector('.master-edit-btn');
+            const isEditMode = btn.classList.contains('active');
+
+            if (isEditMode) {
+                // 編集モードを終了
+                btn.classList.remove('active');
+
+                // すべての編集モードを終了
+                document.querySelectorAll('.edit-mode').forEach(element => {
+                    element.classList.remove('edit-mode');
+                });
+                document.querySelector('.main-container').classList.remove('edit-image-mode');
+                document.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                document.getElementById('card-e').classList.remove('edit-mode');
+                document.getElementById('card-f').classList.remove('edit-mode');
+
+                // 値を保存
+                saveAllEdits();
+            } else {
+                // 編集モードに入る
+                btn.classList.add('active');
+
+                // すべての編集モードを有効化
+                document.getElementById('option-list-a').parentElement.classList.add('edit-mode');
+                document.getElementById('option-list-b').parentElement.classList.add('edit-mode');
+                document.getElementById('option-list-d').parentElement.classList.add('edit-mode');
+                document.querySelector('.main-container').classList.add('edit-image-mode');
+                document.getElementById('card-e').classList.add('edit-mode');
+                document.getElementById('card-f').classList.add('edit-mode');
+
+                // 削除ボタンを表示
+                document.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.style.display = 'inline-block';
+                });
+            }
+        }
+
+        // すべての編集内容を保存
+        function saveAllEdits() {
+            // オプション項目の保存
+            ['option-list-a', 'option-list-b', 'option-list-d'].forEach(listId => {
+                const list = document.getElementById(listId);
+                list.querySelectorAll('.option-item').forEach(item => {
+                    const nameInput = item.querySelector('.edit-name');
+                    const priceInput = item.querySelector('.edit-price');
+                    const nameSpan = item.querySelector('.option-name');
+                    const priceSpan = item.querySelector('.option-price');
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+
+                    if (nameInput && priceInput) {
+                        nameSpan.textContent = nameInput.value;
+                        const price = parseInt(priceInput.value) || 0;
+                        priceSpan.textContent = '¥' + price.toLocaleString();
+                        checkbox.dataset.price = price;
+                    }
+                });
+            });
+
+            // 金利の保存
+            const cardE = document.getElementById('card-e');
+            const cardF = document.getElementById('card-f');
+
+            const rateInputE = cardE.querySelector('.edit-rate');
+            const yearsInputE = cardE.querySelector('.edit-years');
+            if (rateInputE && yearsInputE) {
+                rateE = parseFloat(rateInputE.value) || 0.8;
+                yearsE = parseInt(yearsInputE.value) || 35;
+                document.getElementById('rate-e').textContent = rateE;
+                document.getElementById('years-e').textContent = yearsE;
+            }
+
+            const rateInputF = cardF.querySelector('.edit-rate');
+            const yearsInputF = cardF.querySelector('.edit-years');
+            if (rateInputF && yearsInputF) {
+                rateF = parseFloat(rateInputF.value) || 0.8;
+                yearsF = parseInt(yearsInputF.value) || 35;
+                document.getElementById('rate-f').textContent = rateF;
+                document.getElementById('years-f').textContent = yearsF;
+            }
+
+            calculateTotals();
+        }
+
+        // 画像アップロード処理
+        function handleImageUpload(event, imageId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageElement = document.getElementById(imageId);
+                    const preview = imageElement.querySelector('.image-preview');
+                    const placeholder = imageElement.querySelector('.image-placeholder');
+
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // オプション追加
+        function addOption(listId) {
+            const list = document.getElementById(listId);
+            const newItem = createOptionItem('新規オプション', 0);
+            list.appendChild(newItem);
+
+            if (list.parentElement.classList.contains('edit-mode')) {
+                newItem.querySelector('.remove-btn').style.display = 'inline-block';
+            }
+
+            attachEventListeners();
+        }
+
+        // オプション削除
+        function removeOption(btn) {
+            btn.parentElement.remove();
+            calculateTotals();
+        }
+
+        // 金額計算
+        function calculateTotals() {
+            // A パターンの小計
+            let subtotalA = 0;
+            document.querySelectorAll('#option-list-a input[type="checkbox"]:checked').forEach(checkbox => {
+                subtotalA += parseInt(checkbox.dataset.price) || 0;
+            });
+            document.getElementById('subtotal-a').textContent = '¥' + subtotalA.toLocaleString();
+
+            // B パターンの小計
+            let subtotalB = 0;
+            document.querySelectorAll('#option-list-b input[type="checkbox"]:checked').forEach(checkbox => {
+                subtotalB += parseInt(checkbox.dataset.price) || 0;
+            });
+            document.getElementById('subtotal-b').textContent = '¥' + subtotalB.toLocaleString();
+
+            // 内装オプションの合計
+            let interiorTotal = 0;
+            document.querySelectorAll('#option-list-d input[type="checkbox"]:checked').forEach(checkbox => {
+                interiorTotal += parseInt(checkbox.dataset.price) || 0;
+            });
+            document.getElementById('interior-total').textContent = '¥' + interiorTotal.toLocaleString();
+
+            // E: 外観①＋内装の合計
+            const totalE = subtotalA + interiorTotal;
+            document.getElementById('total-e').textContent = '¥' + totalE.toLocaleString();
+            // 月額計算
+            const monthlyE = calculateMonthlyPayment(totalE, rateE, yearsE);
+            document.getElementById('monthly-e').textContent = '¥' + monthlyE.toLocaleString();
+
+            // F: 外観②＋内装の合計
+            const totalF = subtotalB + interiorTotal;
+            document.getElementById('total-f').textContent = '¥' + totalF.toLocaleString();
+            const monthlyF = calculateMonthlyPayment(totalF, rateF, yearsF);
+            document.getElementById('monthly-f').textContent = '¥' + monthlyF.toLocaleString();
+        }
+
+        // 月額支払い計算
+        function calculateMonthlyPayment(principal, annualRate, years) {
+            if (principal === 0) return 0;
+            const monthlyRate = annualRate / 100 / 12;
+            const months = years * 12;
+            if (monthlyRate === 0) {
+                return Math.round(principal / months);
+            }
+            const monthly = principal * monthlyRate * Math.pow(1 + monthlyRate, months) /
+                          (Math.pow(1 + monthlyRate, months) - 1);
+            return Math.round(monthly);
+        }
+
+        // イベントリスナー設定
+        function attachEventListeners() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.removeEventListener('change', calculateTotals);
+                checkbox.addEventListener('change', calculateTotals);
+            });
+        }
+
+        // 初期化
+        function init() {
+            for (const [listId, items] of Object.entries(initialData)) {
+                const list = document.getElementById(listId);
+                items.forEach(item => {
+                    list.appendChild(createOptionItem(item.name, item.price));
+                });
+            }
+
+            attachEventListeners();
+            calculateTotals();
+        }
+
+        // ページ読み込み時に初期化
+        init();
+    </script>
+    <!-- 統合編集ボタン -->
+    <button class="master-edit-btn" onclick="toggleMasterEditMode()">✏️</button>
 </body>
 </html>

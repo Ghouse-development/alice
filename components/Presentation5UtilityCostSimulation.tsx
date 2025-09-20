@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
 import A3Page from './A3Page';
 import {
@@ -32,7 +32,6 @@ ChartJS.register(
 
 const Presentation5UtilityCostSimulation: React.FC = () => {
   const { theme } = useStore();
-  const isDark = theme === 'dark';
 
   // State for simulation parameters
   const [editMode, setEditMode] = useState(false);
@@ -163,28 +162,28 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
     labels: simulationData.years,
     datasets: [
       {
-        label: '一般的な家',
+        label: '①一般的な家',
         data: simulationData.pattern1,
         borderColor: '#666',
         backgroundColor: 'rgba(102, 102, 102, 0.1)',
         borderWidth: 2,
       },
       {
-        label: `Gハウスの家（${gHouseSpec}仕様）`,
+        label: `②Gハウスの家（${gHouseSpec}仕様）`,
         data: simulationData.pattern2,
         borderColor: '#388e3c',
         backgroundColor: 'rgba(56, 142, 60, 0.1)',
         borderWidth: 2,
       },
       {
-        label: 'Gハウスの家＋太陽光発電',
+        label: '③Gハウス＋太陽光',
         data: simulationData.pattern3,
         borderColor: '#f57c00',
         backgroundColor: 'rgba(245, 124, 0, 0.1)',
         borderWidth: 2,
       },
       {
-        label: 'Gハウスの家＋太陽光＋蓄電池',
+        label: '④Gハウス＋太陽光＋蓄電池',
         data: simulationData.pattern4,
         borderColor: '#1976d2',
         backgroundColor: 'rgba(25, 118, 210, 0.1)',
@@ -200,9 +199,9 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
       legend: {
         position: 'bottom' as const,
         labels: {
-          padding: 20,
+          padding: 15,
           font: {
-            size: 14,
+            size: 12,
           },
         },
       },
@@ -233,6 +232,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
               color: 'red',
               font: {
                 weight: 'bold',
+                size: 11,
               },
             },
           },
@@ -245,7 +245,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
           display: true,
           text: '経過年数',
           font: {
-            size: 14,
+            size: 12,
           },
         },
         grid: {
@@ -258,7 +258,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
           display: true,
           text: '累計コスト（万円）',
           font: {
-            size: 14,
+            size: 12,
           },
         },
         min: 0,
@@ -297,287 +297,594 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
 
   return (
     <A3Page title="光熱費シミュレーション" subtitle="30年間の累計コスト比較分析">
-      <div className="w-full h-full bg-gray-50 relative">
-        {/* メインコンテンツ */}
-        <div className="h-full flex flex-col gap-4 p-4">
-          {/* 上段：4つの比較カード */}
-          <div className="flex gap-3" style={{ height: '200px' }}>
-            {/* カード1：一般的な家 */}
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-4 h-4 rounded-full bg-gray-600"></div>
-                <h3 className="text-base font-bold text-gray-800">①一般的な家</h3>
+      <div
+        className="main-container"
+        style={{
+          width: '1190px',
+          height: '762px',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#f5f5f5',
+          fontFamily: "'Noto Sans JP', sans-serif",
+        }}
+      >
+        {/* 4つの比較カード */}
+        <div
+          className="cards-section"
+          style={{
+            display: 'flex',
+            height: '280px',
+            background: 'white',
+          }}
+        >
+          {/* カード1：一般的な家 */}
+          <div
+            className="cost-card"
+            style={{
+              flex: 1,
+              padding: '15px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              borderRight: '1px solid #e0e0e0',
+              height: '280px',
+            }}
+          >
+            <div
+              className="card-header card-general"
+              style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                textAlign: 'center',
+                background: '#f0f0f0',
+                color: '#666',
+              }}
+            >
+              ①一般的な家
+            </div>
+            <div className="card-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>断熱性能</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>標準</span>
               </div>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-600">
-                  <div>断熱性能：標準</div>
-                  <div>光熱費：標準</div>
-                  <div>太陽光：なし</div>
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="text-xs text-gray-500">30年累計</div>
-                  <div className="text-2xl font-bold text-gray-800">
-                    {finalCost1.toLocaleString()}万円
-                  </div>
-                </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>光熱費</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>標準</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>太陽光</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>なし</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>蓄電池</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>なし</span>
               </div>
             </div>
-
-            {/* カード2：Gハウスの家 */}
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-4 h-4 rounded-full bg-green-600"></div>
-                <h3 className="text-base font-bold text-gray-800">②Gハウスの家</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span>断熱性能：</span>
-                    {editMode ? (
-                      <select
-                        value={gHouseSpec}
-                        onChange={(e) => setGHouseSpec(e.target.value as 'G2' | 'G3')}
-                        className="border rounded px-1 py-0.5 text-sm"
-                      >
-                        <option value="G2">G2</option>
-                        <option value="G3">G3</option>
-                      </select>
-                    ) : (
-                      <span>{gHouseSpec}仕様</span>
-                    )}
-                  </div>
-                  <div>光熱費：{gHouseSpec === 'G3' ? '50%削減' : '35%削減'}</div>
-                  <div>太陽光：なし</div>
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="text-xs text-gray-500">30年累計</div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {finalCost2.toLocaleString()}万円
-                  </div>
-                  <div className="text-xs text-green-600">
-                    ▼{(finalCost1 - finalCost2).toLocaleString()}万円
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* カード3：Gハウスの家＋太陽光発電 */}
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-4 h-4 rounded-full bg-orange-600"></div>
-                <h3 className="text-base font-bold text-gray-800">③Gハウス＋太陽光</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-600">
-                  <div>断熱性能：{gHouseSpec}仕様</div>
-                  <div>太陽光：{solarCapacity}kW</div>
-                  <div>売電収入：あり</div>
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="text-xs text-gray-500">30年累計</div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {finalCost3.toLocaleString()}万円
-                  </div>
-                  <div className="text-xs text-orange-600">
-                    ▼{(finalCost1 - finalCost3).toLocaleString()}万円
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* カード4：Gハウスの家＋太陽光＋蓄電池 */}
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-4 h-4 rounded-full bg-blue-600"></div>
-                <h3 className="text-base font-bold text-gray-800">④Gハウス＋太陽光＋蓄電池</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-600">
-                  <div>断熱性能：{gHouseSpec}仕様</div>
-                  <div>太陽光：{solarCapacity}kW</div>
-                  <div>蓄電池：{hasBattery ? '搭載' : 'なし'}</div>
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="text-xs text-gray-500">30年累計</div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {finalCost4.toLocaleString()}万円
-                  </div>
-                  <div className="text-xs text-blue-600">
-                    ▼{(finalCost1 - finalCost4).toLocaleString()}万円
-                  </div>
-                </div>
+            <div className="total-cost" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', textAlign: 'center' }}>30年累計</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#d32f2f', textAlign: 'center' }}>
+                {finalCost1.toLocaleString()}万円
               </div>
             </div>
           </div>
 
-          {/* 下段：グラフとシミュレーション条件 */}
-          <div className="flex-1 flex gap-4">
-            {/* 左側：グラフ */}
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <h3 className="text-lg font-bold mb-4 text-gray-800">30年間累計コスト推移</h3>
-              <div style={{ height: 'calc(100% - 40px)' }}>
-                <Line data={chartData} options={chartOptions} />
-              </div>
-            </div>
-
-            {/* 右側：シミュレーション条件 */}
+          {/* カード2：Gハウスの家 */}
+          <div
+            className="cost-card"
+            style={{
+              flex: 1,
+              padding: '15px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              borderRight: '1px solid #e0e0e0',
+              height: '280px',
+            }}
+          >
             <div
-              className="w-80 bg-white rounded-lg shadow-md p-4"
-              style={{ position: 'relative', top: '55px' }}
+              className="card-header card-g2"
+              style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                textAlign: 'center',
+                background: '#e8f5e9',
+                color: '#388e3c',
+              }}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-gray-800">シミュレーション条件</h3>
-                <button
-                  onClick={() => setEditMode(!editMode)}
-                  className={`px-3 py-1 rounded text-sm ${
-                    editMode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {editMode ? '完了' : '編集'}
-                </button>
+              ②Gハウスの家
+            </div>
+            <div className="card-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>断熱性能</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>
+                  {editMode ? (
+                    <select
+                      value={gHouseSpec}
+                      onChange={(e) => setGHouseSpec(e.target.value as 'G2' | 'G3')}
+                      style={{
+                        border: '1px solid #ddd',
+                        borderRadius: '3px',
+                        padding: '1px 3px',
+                        fontSize: '13px',
+                      }}
+                    >
+                      <option value="G2">G2仕様</option>
+                      <option value="G3">G3仕様</option>
+                    </select>
+                  ) : (
+                    `${gHouseSpec}仕様`
+                  )}
+                </span>
               </div>
-
-              <div className="space-y-4 text-sm">
-                {/* 家族構成 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">家族構成</label>
-                  {editMode ? (
-                    <select
-                      value={familySize}
-                      onChange={(e) => setFamilySize(Number(e.target.value))}
-                      className="w-full border rounded px-2 py-1"
-                    >
-                      <option value={2}>2人</option>
-                      <option value={3}>3人</option>
-                      <option value={4}>4人</option>
-                      <option value={5}>5人</option>
-                    </select>
-                  ) : (
-                    <div className="text-gray-800">{familySize}人家族</div>
-                  )}
-                </div>
-
-                {/* 月間電気代 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">月間電気代</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={monthlyElectricity}
-                      onChange={(e) => setMonthlyElectricity(Number(e.target.value))}
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">¥{monthlyElectricity.toLocaleString()}</div>
-                  )}
-                </div>
-
-                {/* 月間ガス代 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">月間ガス代</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={monthlyGas}
-                      onChange={(e) => setMonthlyGas(Number(e.target.value))}
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">¥{monthlyGas.toLocaleString()}</div>
-                  )}
-                </div>
-
-                {/* 太陽光発電容量 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">太陽光発電容量</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={solarCapacity}
-                      onChange={(e) => setSolarCapacity(Number(e.target.value))}
-                      step="0.1"
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">{solarCapacity}kW</div>
-                  )}
-                </div>
-
-                {/* 蓄電池 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">蓄電池システム</label>
-                  {editMode ? (
-                    <select
-                      value={hasBattery ? 'yes' : 'no'}
-                      onChange={(e) => setHasBattery(e.target.value === 'yes')}
-                      className="w-full border rounded px-2 py-1"
-                    >
-                      <option value="no">なし</option>
-                      <option value="yes">あり（9.8kWh）</option>
-                    </select>
-                  ) : (
-                    <div className="text-gray-800">{hasBattery ? 'あり（9.8kWh）' : 'なし'}</div>
-                  )}
-                </div>
-
-                {/* インフレ率 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">光熱費上昇率（年）</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={inflationRate}
-                      onChange={(e) => setInflationRate(Number(e.target.value))}
-                      step="0.1"
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">{inflationRate}%</div>
-                  )}
-                </div>
-
-                {/* FIT価格 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">売電価格（FIT期間）</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={fitPrice}
-                      onChange={(e) => setFitPrice(Number(e.target.value))}
-                      step="1"
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">¥{fitPrice}/kWh</div>
-                  )}
-                </div>
-
-                {/* FIT後価格 */}
-                <div>
-                  <label className="block text-gray-600 mb-1">売電価格（FIT終了後）</label>
-                  {editMode ? (
-                    <input
-                      type="number"
-                      value={postFitPrice}
-                      onChange={(e) => setPostFitPrice(Number(e.target.value))}
-                      step="1"
-                      className="w-full border rounded px-2 py-1"
-                    />
-                  ) : (
-                    <div className="text-gray-800">¥{postFitPrice}/kWh</div>
-                  )}
-                </div>
-
-                {/* 備考 */}
-                <div className="mt-4 pt-4 border-t text-xs text-gray-500">
-                  <div>※ FIT期間：10年間</div>
-                  <div>※ メンテナンス費用込み</div>
-                  <div>※ 蓄電池交換：15年目</div>
-                </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>光熱費</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{gHouseSpec === 'G3' ? '50%削減' : '35%削減'}</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>太陽光</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>なし</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>蓄電池</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>なし</span>
               </div>
             </div>
+            <div className="total-cost" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', textAlign: 'center' }}>30年累計</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#d32f2f', textAlign: 'center' }}>
+                {finalCost2.toLocaleString()}万円
+              </div>
+              <div style={{ fontSize: '14px', color: '#2e7d32', textAlign: 'center', marginTop: '6px', fontWeight: 'bold' }}>
+                ▼{(finalCost1 - finalCost2).toLocaleString()}万円
+              </div>
+            </div>
+          </div>
+
+          {/* カード3：Gハウスの家＋太陽光発電 */}
+          <div
+            className="cost-card"
+            style={{
+              flex: 1,
+              padding: '15px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              borderRight: '1px solid #e0e0e0',
+              height: '280px',
+            }}
+          >
+            <div
+              className="card-header card-solar"
+              style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                textAlign: 'center',
+                background: '#fff8e1',
+                color: '#f57c00',
+              }}
+            >
+              ③Gハウス＋太陽光
+            </div>
+            <div className="card-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>断熱性能</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{gHouseSpec}仕様</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>太陽光</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{solarCapacity}kW</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>売電収入</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>あり</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>蓄電池</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>なし</span>
+              </div>
+            </div>
+            <div className="total-cost" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', textAlign: 'center' }}>30年累計</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#d32f2f', textAlign: 'center' }}>
+                {finalCost3.toLocaleString()}万円
+              </div>
+              <div style={{ fontSize: '14px', color: '#2e7d32', textAlign: 'center', marginTop: '6px', fontWeight: 'bold' }}>
+                ▼{(finalCost1 - finalCost3).toLocaleString()}万円
+              </div>
+            </div>
+          </div>
+
+          {/* カード4：Gハウスの家＋太陽光＋蓄電池 */}
+          <div
+            className="cost-card"
+            style={{
+              flex: 1,
+              padding: '15px',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              height: '280px',
+            }}
+          >
+            <div
+              className="card-header card-battery"
+              style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                textAlign: 'center',
+                background: '#e3f2fd',
+                color: '#1976d2',
+              }}
+            >
+              ④Gハウス＋太陽光＋蓄電池
+            </div>
+            <div className="card-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>断熱性能</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{gHouseSpec}仕様</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>太陽光</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{solarCapacity}kW</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>蓄電池</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>{hasBattery ? '9.8kWh' : 'なし'}</span>
+              </div>
+              <div className="cost-item" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: '#666' }}>自家消費</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>最大化</span>
+              </div>
+            </div>
+            <div className="total-cost" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', textAlign: 'center' }}>30年累計</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#d32f2f', textAlign: 'center' }}>
+                {finalCost4.toLocaleString()}万円
+              </div>
+              <div style={{ fontSize: '14px', color: '#2e7d32', textAlign: 'center', marginTop: '6px', fontWeight: 'bold' }}>
+                ▼{(finalCost1 - finalCost4).toLocaleString()}万円
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* グラフセクション */}
+        <div
+          className="chart-section"
+          style={{
+            flex: 1,
+            background: 'white',
+            padding: '15px',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>
+            30年間累計コスト推移
+          </div>
+          <div
+            className="chart-container"
+            style={{
+              flex: 1,
+              width: 'calc(100% - 360px)',
+              position: 'relative',
+              marginRight: '360px',
+            }}
+          >
+            <Line data={chartData} options={chartOptions} />
+          </div>
+
+          {/* シミュレーション条件パネル */}
+          <div
+            className={`conditions-panel ${editMode ? 'edit-mode' : ''}`}
+            style={{
+              position: 'absolute',
+              top: '55px',
+              right: '15px',
+              bottom: '15px',
+              width: '340px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              padding: '10px',
+              fontSize: '10px',
+              maxHeight: 'calc(100% - 70px)',
+              overflowY: 'auto',
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px',
+              paddingBottom: '6px',
+              borderBottom: '1px solid #ddd',
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>シミュレーション条件</div>
+              <button
+                onClick={() => setEditMode(!editMode)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: editMode ? '#333' : '#999',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                {editMode ? '✏️' : '✏️'}
+              </button>
+            </div>
+
+            {/* サマリー */}
+            <div style={{
+              background: '#fff8e1',
+              padding: '6px',
+              borderRadius: '4px',
+              marginBottom: '8px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold', marginBottom: '3px' }}>
+                <span>家族構成</span>
+                <span>{familySize}人</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold', marginBottom: '3px' }}>
+                <span>月間光熱費</span>
+                <span>¥{(monthlyElectricity + monthlyGas).toLocaleString()}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold' }}>
+                <span>インフレ率</span>
+                <span>{inflationRate}%/年</span>
+              </div>
+            </div>
+
+            {/* 基本設定 */}
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: '#333',
+                marginBottom: '4px',
+                background: '#f0f0f0',
+                padding: '3px 5px',
+                borderRadius: '3px',
+              }}>
+                基本設定
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                <span style={{ color: '#555', fontSize: '9px' }}>家族構成</span>
+                {editMode ? (
+                  <select
+                    value={familySize}
+                    onChange={(e) => setFamilySize(Number(e.target.value))}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      height: '16px',
+                    }}
+                  >
+                    <option value={2}>2人</option>
+                    <option value={3}>3人</option>
+                    <option value={4}>4人</option>
+                    <option value={5}>5人</option>
+                  </select>
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>{familySize}人</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                <span style={{ color: '#555', fontSize: '9px' }}>月間電気代</span>
+                {editMode ? (
+                  <input
+                    type="number"
+                    value={monthlyElectricity}
+                    onChange={(e) => setMonthlyElectricity(Number(e.target.value))}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>¥{monthlyElectricity.toLocaleString()}</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                <span style={{ color: '#555', fontSize: '9px' }}>月間ガス代</span>
+                {editMode ? (
+                  <input
+                    type="number"
+                    value={monthlyGas}
+                    onChange={(e) => setMonthlyGas(Number(e.target.value))}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>¥{monthlyGas.toLocaleString()}</span>
+                )}
+              </div>
+            </div>
+
+            {/* 設備仕様 */}
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: '#333',
+                marginBottom: '4px',
+                background: '#f0f0f0',
+                padding: '3px 5px',
+                borderRadius: '3px',
+              }}>
+                設備仕様
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                <span style={{ color: '#555', fontSize: '9px' }}>太陽光発電容量</span>
+                {editMode ? (
+                  <input
+                    type="number"
+                    value={solarCapacity}
+                    onChange={(e) => setSolarCapacity(Number(e.target.value))}
+                    step="0.1"
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>{solarCapacity}kW</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                <span style={{ color: '#555', fontSize: '9px' }}>蓄電池システム</span>
+                {editMode ? (
+                  <select
+                    value={hasBattery ? 'yes' : 'no'}
+                    onChange={(e) => setHasBattery(e.target.value === 'yes')}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      height: '16px',
+                    }}
+                  >
+                    <option value="no">なし</option>
+                    <option value="yes">9.8kWh</option>
+                  </select>
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>{hasBattery ? '9.8kWh' : 'なし'}</span>
+                )}
+              </div>
+            </div>
+
+            {/* 電気料金設定（編集モード時のみ） */}
+            {editMode && (
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#333',
+                  marginBottom: '4px',
+                  background: '#f0f0f0',
+                  padding: '3px 5px',
+                  borderRadius: '3px',
+                }}>
+                  電気料金設定
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                  <span style={{ color: '#555', fontSize: '9px' }}>インフレ率</span>
+                  <input
+                    type="number"
+                    value={inflationRate}
+                    onChange={(e) => setInflationRate(Number(e.target.value))}
+                    step="0.1"
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                  <span style={{ color: '#555', fontSize: '9px' }}>FIT価格</span>
+                  <input
+                    type="number"
+                    value={fitPrice}
+                    onChange={(e) => setFitPrice(Number(e.target.value))}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 3px' }}>
+                  <span style={{ color: '#555', fontSize: '9px' }}>FIT後価格</span>
+                  <input
+                    type="number"
+                    value={postFitPrice}
+                    onChange={(e) => setPostFitPrice(Number(e.target.value))}
+                    style={{
+                      width: '60px',
+                      padding: '1px 3px',
+                      border: '1px solid #ddd',
+                      borderRadius: '3px',
+                      fontSize: '9px',
+                      textAlign: 'right',
+                      height: '16px',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 備考 */}
+            <div style={{
+              marginTop: '8px',
+              paddingTop: '8px',
+              borderTop: '1px solid #ddd',
+              fontSize: '9px',
+              color: '#999',
+            }}>
+              <div>※ FIT期間：10年間</div>
+              <div>※ メンテナンス費用込み</div>
+              <div>※ 蓄電池交換：15年目</div>
+            </div>
+          </div>
+
+          {/* フッター */}
+          <div style={{
+            position: 'absolute',
+            bottom: '5px',
+            left: '15px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '20px',
+            fontSize: '10px',
+            color: '#999',
+          }}>
+            <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>G-HOUSE</span>
+            <span>光熱費シミュレーション v2.0</span>
           </div>
         </div>
       </div>

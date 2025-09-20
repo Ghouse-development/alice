@@ -16,31 +16,33 @@ import {
   EyeOff,
   Maximize2,
   Minimize2,
-  Play
+  Play,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStore } from '@/lib/store';
-import { HearingSheetEditor } from '@/components/HearingSheetEditor';
-import { Presentation1Editor } from '@/components/Presentation1Editor';
-import { Presentation2Editor } from '@/components/Presentation2Editor';
-import { Presentation3Editor } from '@/components/Presentation3Editor';
-import { Presentation4Editor } from '@/components/Presentation4Editor';
-import { Presentation5Editor } from '@/components/Presentation5Editor';
+import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import OptionsSlideFixed from '@/components/OptionsSlideFixed';
 import { Presentation4View } from '@/components/Presentation4View';
 import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
 import { PresentationContainer } from '@/components/PresentationContainer';
 
+// シンプル化したタブ構成
 const tabs = [
   { id: 'basic', label: '基本情報', icon: FileText },
-  { id: 'hearing', label: 'ヒアリング', icon: FileText },
+  { id: 'hearing', label: 'ヒアリング', icon: User },
   { id: 'pres1', label: 'デザイン', icon: Home },
   { id: 'pres2', label: '標準仕様', icon: Building },
   { id: 'pres3', label: 'オプション', icon: Wrench },
@@ -51,7 +53,7 @@ const tabs = [
 const presentationComponents = {
   pres1: Presentation1View,
   pres2: Presentation2CrownUnified,
-  pres3: OptionsSlideFixed,
+  pres3: Presentation3Interactive,
   pres4: Presentation4View,
   pres5: SolarSimulatorConclusionFirst,
 };
@@ -63,28 +65,33 @@ export default function ProjectEditPage() {
   const [activeTab, setActiveTab] = useState('basic');
   const [showPreview, setShowPreview] = useState(true);
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
-  const [formData, setFormData] = useState<{
-    projectName: string;
-    customerName: string;
-    salesPerson: string;
-    status: 'draft' | 'presented' | 'contracted' | 'archived';
-  }>({
+  const [formData, setFormData] = useState({
     projectName: '',
     customerName: '',
     salesPerson: '',
-    status: 'draft',
+    status: 'draft' as 'draft' | 'presented' | 'contracted' | 'archived',
+    // ヒアリング情報
+    phone: '',
+    email: '',
+    address: '',
+    preferredContact: '',
+    budget: '',
+    timeline: '',
+    requirements: '',
+    notes: ''
   });
 
   useEffect(() => {
     const project = projects.find((p) => p.id === params.id);
     if (project) {
       setCurrentProject(project);
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         projectName: project.projectName,
         customerName: project.customerName,
         salesPerson: project.salesPerson,
         status: project.status,
-      });
+      }));
     } else {
       router.push('/dashboard');
     }
@@ -92,13 +99,25 @@ export default function ProjectEditPage() {
 
   const handleSave = () => {
     if (currentProject) {
-      updateProject(currentProject.id, formData);
+      // 案件名と顧客名を同じにする
+      const updatedData = {
+        ...formData,
+        projectName: formData.customerName ? `${formData.customerName}様邸` : formData.projectName
+      };
+      updateProject(currentProject.id, updatedData);
       alert('保存しました');
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      // 顧客名が変更されたら案件名も自動更新
+      if (field === 'customerName' && value) {
+        updated.projectName = `${value}様邸`;
+      }
+      return updated;
+    });
   };
 
   const togglePreview = () => {
@@ -129,62 +148,71 @@ export default function ProjectEditPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className={`${previewFullscreen ? 'hidden' : ''}`}>
-        <div className="container-fluid mx-auto py-4 px-4">
-          <div className="mb-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
+        <div className="container-fluid mx-auto py-2 sm:py-4 px-2 sm:px-4">
+          {/* ヘッダー：レスポンシブ対応 */}
+          <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Link href="/dashboard">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="h-10 px-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  戻る
+                  <span className="hidden sm:inline">戻る</span>
                 </Button>
               </Link>
-              <h1 className="text-xl font-bold">{currentProject.projectName}</h1>
-              <span className="text-sm text-gray-500">顧客: {currentProject.customerName}</span>
+              <div>
+                <h1 className="text-lg sm:text-xl font-bold">{formData.projectName || currentProject.projectName}</h1>
+                <span className="text-xs sm:text-sm text-gray-500">顧客: {formData.customerName || currentProject.customerName}</span>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSave} variant="default" size="sm">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button onClick={handleSave} variant="default" size="sm" className="flex-1 sm:flex-none h-10 px-4">
                 <Save className="mr-2 h-4 w-4" />
                 保存
               </Button>
               {activeTab.startsWith('pres') && (
-                <Button onClick={togglePreview} variant="outline" size="sm">
+                <Button onClick={togglePreview} variant="outline" size="sm" className="h-10 px-4 hidden lg:flex">
                   {showPreview ? (
                     <>
                       <EyeOff className="mr-2 h-4 w-4" />
-                      プレビューを隠す
+                      <span className="hidden xl:inline">プレビューを隠す</span>
                     </>
                   ) : (
                     <>
                       <Eye className="mr-2 h-4 w-4" />
-                      プレビュー表示
+                      <span className="hidden xl:inline">プレビュー表示</span>
                     </>
                   )}
                 </Button>
               )}
               <Link href={`/project/${currentProject.id}/present-flow`}>
-                <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                <Button variant="default" size="sm" className="h-10 px-4 bg-green-600 hover:bg-green-700">
                   <Play className="mr-2 h-4 w-4" />
-                  プレゼンモード
+                  <span className="hidden sm:inline">プレゼン</span>
                 </Button>
               </Link>
             </div>
           </div>
 
-          <div className={showPreview && activeTab.startsWith('pres') ? 'grid grid-cols-2 gap-4' : ''}>
+          <div className={showPreview && activeTab.startsWith('pres') ? 'grid lg:grid-cols-2 gap-4' : ''}>
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-7 w-full mb-4">
+                {/* タブリスト：レスポンシブ対応 */}
+                <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 w-full mb-4 h-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
-                      <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1 text-xs">
-                        <Icon className="h-3 w-3" />
-                        <span>{tab.label}</span>
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="flex flex-col sm:flex-row items-center gap-1 py-2 sm:py-1.5 text-xs sm:text-sm h-auto min-h-[48px] sm:min-h-[40px]"
+                      >
+                        <Icon className="h-4 w-4 sm:h-3 sm:w-3" />
+                        <span className="text-[10px] sm:text-xs">{tab.label}</span>
                       </TabsTrigger>
                     );
                   })}
                 </TabsList>
 
+                {/* 基本情報タブ */}
                 <TabsContent value="basic">
                   <Card>
                     <CardHeader>
@@ -192,32 +220,44 @@ export default function ProjectEditPage() {
                       <CardDescription>案件の基本情報を入力してください</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="projectName">案件名</Label>
-                          <Input
-                            id="projectName"
-                            value={formData.projectName}
-                            onChange={(e) => handleInputChange('projectName', e.target.value)}
-                            placeholder="例: 〇〇様邸新築工事"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="customerName">顧客名</Label>
+                          <Label htmlFor="customerName">
+                            <User className="inline h-3 w-3 mr-1" />
+                            顧客名
+                          </Label>
                           <Input
                             id="customerName"
                             value={formData.customerName}
                             onChange={(e) => handleInputChange('customerName', e.target.value)}
                             placeholder="例: 山田太郎"
+                            className="h-12"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="salesPerson">営業担当者</Label>
+                          <Label htmlFor="projectName">
+                            <Briefcase className="inline h-3 w-3 mr-1" />
+                            案件名（自動設定）
+                          </Label>
+                          <Input
+                            id="projectName"
+                            value={formData.projectName}
+                            onChange={(e) => handleInputChange('projectName', e.target.value)}
+                            placeholder="顧客名を入力すると自動設定"
+                            className="h-12 bg-gray-50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="salesPerson">
+                            <User className="inline h-3 w-3 mr-1" />
+                            営業担当者
+                          </Label>
                           <Input
                             id="salesPerson"
                             value={formData.salesPerson}
                             onChange={(e) => handleInputChange('salesPerson', e.target.value)}
                             placeholder="例: 佐藤花子"
+                            className="h-12"
                           />
                         </div>
                         <div className="space-y-2">
@@ -226,7 +266,7 @@ export default function ProjectEditPage() {
                             value={formData.status}
                             onValueChange={(value) => handleInputChange('status', value)}
                           >
-                            <SelectTrigger id="status">
+                            <SelectTrigger id="status" className="h-12">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -242,34 +282,132 @@ export default function ProjectEditPage() {
                   </Card>
                 </TabsContent>
 
+                {/* ヒアリングタブ */}
                 <TabsContent value="hearing">
-                  <HearingSheetEditor projectId={currentProject.id} />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>ヒアリング情報</CardTitle>
+                      <CardDescription>お客様の詳細情報とご要望を記録</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">
+                            <Phone className="inline h-3 w-3 mr-1" />
+                            電話番号
+                          </Label>
+                          <Input
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            placeholder="090-0000-0000"
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">
+                            <Mail className="inline h-3 w-3 mr-1" />
+                            メールアドレス
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            placeholder="example@email.com"
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                          <Label htmlFor="address">
+                            <MapPin className="inline h-3 w-3 mr-1" />
+                            建築予定地
+                          </Label>
+                          <Input
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange('address', e.target.value)}
+                            placeholder="東京都〇〇区〇〇町1-2-3"
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="budget">
+                            <DollarSign className="inline h-3 w-3 mr-1" />
+                            予算
+                          </Label>
+                          <Input
+                            id="budget"
+                            value={formData.budget}
+                            onChange={(e) => handleInputChange('budget', e.target.value)}
+                            placeholder="3000万円"
+                            className="h-12"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="timeline">
+                            <Calendar className="inline h-3 w-3 mr-1" />
+                            希望時期
+                          </Label>
+                          <Input
+                            id="timeline"
+                            value={formData.timeline}
+                            onChange={(e) => handleInputChange('timeline', e.target.value)}
+                            placeholder="2024年4月着工希望"
+                            className="h-12"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="requirements">ご要望</Label>
+                        <Textarea
+                          id="requirements"
+                          value={formData.requirements}
+                          onChange={(e) => handleInputChange('requirements', e.target.value)}
+                          placeholder="お客様のご要望を記入してください"
+                          className="min-h-[120px]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="notes">備考</Label>
+                        <Textarea
+                          id="notes"
+                          value={formData.notes}
+                          onChange={(e) => handleInputChange('notes', e.target.value)}
+                          placeholder="その他の情報を記入してください"
+                          className="min-h-[80px]"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
-                <TabsContent value="pres1">
-                  <Presentation1Editor projectId={currentProject.id} />
-                </TabsContent>
-
-                <TabsContent value="pres2">
-                  <Presentation2Editor projectId={currentProject.id} />
-                </TabsContent>
-
-                <TabsContent value="pres3">
-                  <Presentation3Editor projectId={currentProject.id} />
-                </TabsContent>
-
-                <TabsContent value="pres4">
-                  <Presentation4Editor projectId={currentProject.id} />
-                </TabsContent>
-
-                <TabsContent value="pres5">
-                  <Presentation5Editor projectId={currentProject.id} />
-                </TabsContent>
+                {/* プレゼンテーションタブ（デザイン、標準仕様、オプション、資金計画、光熱費） */}
+                {tabs.filter(tab => tab.id.startsWith('pres')).map(tab => (
+                  <TabsContent key={tab.id} value={tab.id}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{tab.label}プレゼンテーション</CardTitle>
+                        <CardDescription>
+                          {tab.id === 'pres3' ? 'お客様に最適なオプションをご提案' : `${tab.label}の内容を確認・編集`}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
+                          <tab.icon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                          <p className="text-lg font-medium mb-2">{tab.label}プレゼンテーション</p>
+                          <p className="text-sm">右側のプレビューで実際の表示を確認できます</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                ))}
               </Tabs>
             </div>
 
+            {/* プレビューエリア */}
             {showPreview && activeTab.startsWith('pres') && CurrentPreviewComponent && (
-              <div className="sticky top-4">
+              <div className="hidden lg:block sticky top-4">
                 <Card className="overflow-hidden shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-3">
                     <div className="flex items-center justify-between">
@@ -281,28 +419,18 @@ export default function ProjectEditPage() {
                         variant="secondary"
                         size="sm"
                         onClick={toggleFullscreenPreview}
+                        className="h-9 px-3"
                       >
                         <Maximize2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0 bg-black">
-                    {activeTab === 'pres5' ? (
-                      // Solar simulator conclusion-first layout
-                      <div className="bg-white" style={{ aspectRatio: '1.414 / 1', overflow: 'auto' }}>
-                        <SolarSimulatorConclusionFirst projectId={currentProject.id} />
-                      </div>
-                    ) : (
-                      <div style={{ aspectRatio: '1.414 / 1' }}>
-                        <PresentationContainer>
-                          {activeTab === 'pres2' ? (
-                            <Presentation2CrownUnified projectId={currentProject.id} />
-                          ) : (
-                            <CurrentPreviewComponent projectId={currentProject.id} />
-                          )}
-                        </PresentationContainer>
-                      </div>
-                    )}
+                    <div style={{ aspectRatio: '1.414 / 1' }}>
+                      <PresentationContainer>
+                        <CurrentPreviewComponent projectId={currentProject.id} />
+                      </PresentationContainer>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -315,29 +443,25 @@ export default function ProjectEditPage() {
       {previewFullscreen && CurrentPreviewComponent && (
         <div className="fixed inset-0 bg-black z-50">
           <div className="h-full flex flex-col">
-            <div className="bg-gray-900 border-b border-gray-700 px-6 py-3 flex justify-between items-center">
+            <div className="bg-gray-900 border-b border-gray-700 px-4 sm:px-6 py-3 flex justify-between items-center">
               <div className="text-white">
-                <h2 className="text-lg font-semibold">プレビューモード</h2>
-                <p className="text-sm text-gray-400">プレゼンテーション表示を確認</p>
+                <h2 className="text-base sm:text-lg font-semibold">プレビューモード</h2>
+                <p className="text-xs sm:text-sm text-gray-400">プレゼンテーション表示を確認</p>
               </div>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={toggleFullscreenPreview}
+                className="h-9 px-4"
               >
                 <Minimize2 className="mr-2 h-4 w-4" />
                 閉じる
               </Button>
             </div>
-            <div className="flex-1 flex items-center justify-center">
-              {activeTab === 'pres5' ? (
-                // Solar simulator conclusion-first layout
-                <SolarSimulatorConclusionFirst projectId={currentProject.id} />
-              ) : (
-                <PresentationContainer fullscreen>
-                  <CurrentPreviewComponent projectId={currentProject.id} />
-                </PresentationContainer>
-              )}
+            <div className="flex-1 flex items-center justify-center p-4">
+              <PresentationContainer fullscreen>
+                <CurrentPreviewComponent projectId={currentProject.id} />
+              </PresentationContainer>
             </div>
           </div>
         </div>

@@ -19,9 +19,9 @@ import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import OptionsSlideFixed from '@/components/OptionsSlideFixed';
+import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation4View } from '@/components/Presentation4View';
-import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
+import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
 import { PresentationContainer } from '@/components/PresentationContainer';
 
 interface SlideInfo {
@@ -63,7 +63,7 @@ export default function PresentationFlowPage() {
 
   // プレゼン1のスライド数を動的に決定（ファイルがある場合はその数、ない場合は1枚）
   const presentation1Files = currentProject?.presentation1?.uploadedFiles || [];
-  const presentation1SlideCount = presentation1Files.length > 0 ? presentation1Files.length : 1;
+  const presentation1SlideCount = presentation1Files && presentation1Files.length > 0 ? presentation1Files.length : 1;
 
   // 全スライドの構成を定義
   const slides: SlideInfo[] = [
@@ -502,7 +502,7 @@ export default function PresentationFlowPage() {
       case 3:
         return (
           <PresentationContainer fullscreen>
-            <OptionsSlideFixed projectId={projectId} />
+            <Presentation3Interactive />
           </PresentationContainer>
         );
       case 4:
@@ -514,7 +514,7 @@ export default function PresentationFlowPage() {
       case 5:
         return (
           <PresentationContainer fullscreen>
-            <SolarSimulatorConclusionFirst projectId={projectId} />
+            <Presentation5UtilityCostSimulation />
           </PresentationContainer>
         );
       default:

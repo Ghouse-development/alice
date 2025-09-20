@@ -5,7 +5,7 @@ import { Presentation1View } from './Presentation1View';
 import Presentation2CrownUnified from './Presentation2CrownUnified';
 import Presentation3Interactive from './Presentation3Interactive';
 import { Presentation4View } from './Presentation4View';
-import Presentation5RunningCost from './Presentation5RunningCost';
+import Presentation5UtilityCostSimulation from './Presentation5UtilityCostSimulation';
 
 interface PrintAllSlidesProps {
   projectId: string;
@@ -97,7 +97,7 @@ export default function PrintAllSlides({ projectId }: PrintAllSlidesProps) {
       {/* スライド5: ランニングコスト */}
       <div className="print-page">
         <div className="slide-content">
-          <Presentation5RunningCost />
+          <Presentation5UtilityCostSimulation />
         </div>
       </div>
     </div>
