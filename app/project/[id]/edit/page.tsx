@@ -36,7 +36,9 @@ import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
 import { Presentation4View } from '@/components/Presentation4View';
+import { Presentation4Editor } from '@/components/Presentation4Editor';
 import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
+import { Presentation6MaintenanceView } from '@/components/Presentation6MaintenanceView';
 import { PresentationContainer } from '@/components/PresentationContainer';
 import { HearingSheetEditor } from '@/components/HearingSheetEditor';
 
@@ -47,8 +49,9 @@ const tabs = [
   { id: 'pres1', label: 'デザイン', icon: Home },
   { id: 'pres2', label: '標準仕様', icon: Building },
   { id: 'pres3', label: 'オプション', icon: Wrench },
-  { id: 'pres4', label: '資金計画', icon: DollarSign },
   { id: 'pres5', label: '光熱費', icon: TrendingUp },
+  { id: 'pres6', label: 'メンテナンス', icon: Wrench },
+  { id: 'pres4', label: '資金計画', icon: DollarSign },
 ];
 
 const presentationComponents = {
@@ -57,6 +60,7 @@ const presentationComponents = {
   pres3: Presentation3Interactive,
   pres4: Presentation4View,
   pres5: Presentation5UtilityCostSimulation,
+  pres6: Presentation6MaintenanceView,
 };
 
 export default function ProjectEditPage() {
@@ -210,7 +214,7 @@ export default function ProjectEditPage() {
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 {/* タブリスト：レスポンシブ対応 */}
-                <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 w-full mb-4 h-auto">
+                <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 w-full mb-4 h-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
@@ -304,21 +308,25 @@ export default function ProjectEditPage() {
                 {/* プレゼンテーションタブ（デザイン、標準仕様、オプション、資金計画、光熱費） */}
                 {tabs.filter(tab => tab.id.startsWith('pres')).map(tab => (
                   <TabsContent key={tab.id} value={tab.id}>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>{tab.label}プレゼンテーション</CardTitle>
-                        <CardDescription>
-                          {tab.id === 'pres3' ? 'お客様に最適なオプションをご提案' : `${tab.label}の内容を確認・編集`}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
-                          <tab.icon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                          <p className="text-lg font-medium mb-2">{tab.label}プレゼンテーション</p>
-                          <p className="text-sm">右側のプレビューで実際の表示を確認できます</p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {tab.id === 'pres4' ? (
+                      <Presentation4Editor projectId={currentProject.id} />
+                    ) : (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>{tab.label}プレゼンテーション</CardTitle>
+                          <CardDescription>
+                            {tab.id === 'pres3' ? 'お客様に最適なオプションをご提案' : `${tab.label}の内容を確認・編集`}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                          <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
+                            <tab.icon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                            <p className="text-lg font-medium mb-2">{tab.label}プレゼンテーション</p>
+                            <p className="text-sm">右側のプレビューで実際の表示を確認できます</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </TabsContent>
                 ))}
               </Tabs>

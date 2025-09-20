@@ -37,7 +37,7 @@ export default function EnergyCostSimulationEnglish() {
       const selfConsumption = generation * 0.35;
       const exportAmount = generation - selfConsumption;
 
-      let sellPrice = year <= 4 ? 24 : year <= 10 ? 8.3 : 7;
+      const sellPrice = year <= 4 ? 24 : year <= 10 ? 8.3 : 7;
       const sellIncome = exportAmount * sellPrice;
       const savings = selfConsumption * 27;
       const totalSavings = sellIncome + savings;

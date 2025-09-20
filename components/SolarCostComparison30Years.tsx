@@ -65,7 +65,7 @@ export default function SolarCostComparison30Years({ projectId }: SolarCostCompa
       const annualGeneration = capacityKw * yieldPerKw * Math.pow(1 - degradeRate / 100, year - 1);
 
       // 売電単価
-      let sellPrice = year <= 4 ? sellPrice1_4 : year <= 10 ? sellPrice5_10 : sellPriceAfter11;
+      const sellPrice = year <= 4 ? sellPrice1_4 : year <= 10 ? sellPrice5_10 : sellPriceAfter11;
 
       // 自家消費と売電の計算
       const selfConsumePV = annualGeneration * (consumptionRatePV / 100);

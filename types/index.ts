@@ -13,6 +13,7 @@ export interface Project {
   presentation3?: Presentation3;
   presentation4?: Presentation4;
   presentation5?: Presentation5;
+  presentation6?: Presentation6;
 }
 
 export interface Customer {
@@ -131,6 +132,35 @@ export interface Presentation4 {
   savingsAmount?: number;
   subsidyAmount?: number;
   giftAmount?: number;
+  // 現在のお住まい情報
+  currentResidence?: {
+    area?: number;  // ㎡数
+    rent?: number;  // 家賃
+    electricity?: number;  // 電気代
+    gas?: number;  // ガス代
+    parking?: number;  // 駐車場代
+  };
+  // Excel import data
+  excelData?: {
+    本体: number;
+    付帯A: number;
+    付帯B: number;
+    オプション費用: number;
+    付帯C: number;
+    消費税: number;
+    合計: number;
+    外構工事: number;
+    土地費用: number;
+    諸費用: number;
+    総額: number;
+    自己資金: number;
+    借入金額: number;
+    金利: number;
+    借入年数: number;
+    商品名?: string;
+    坪数?: number;
+    階数?: string;
+  };
 }
 
 export interface CostItem {
@@ -171,7 +201,37 @@ export interface AfterServiceItem {
   images?: string[];
 }
 
-export type PresentationStep = 1 | 2 | 3 | 4 | 5;
+export interface Presentation6 {
+  id: string;
+  projectId: string;
+  maintenanceItems?: MaintenanceItem[];
+  simulationYears?: number;
+  generalHouseTotal?: number;
+  gHouseTotal?: number;
+}
+
+export interface MaintenanceItem {
+  id: string;
+  name: string;
+  generalHouse: {
+    year5?: number;
+    year10?: number;
+    year15?: number;
+    year20?: number;
+    year25?: number;
+    year30?: number;
+  };
+  gHouse: {
+    year5?: number;
+    year10?: number;
+    year15?: number;
+    year20?: number;
+    year25?: number;
+    year30?: number;
+  };
+}
+
+export type PresentationStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface FileUpload {
   id: string;

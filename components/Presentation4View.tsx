@@ -1,98 +1,48 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calculator, Home, Hammer, FileText, Landmark } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Presentation4 } from '@/types';
-import A3Page from './A3Page';
+import { Edit2 } from 'lucide-react';
 
 interface Presentation4ViewProps {
   projectId: string;
 }
 
-// デザインシステム定数 - A3横(420mm x 297mm)対応
-const CROWN_DESIGN = {
-  // A3横サイズ設定 - 96dpi基準
-  dimensions: {
-    width: '1587px', // 420mm at 96dpi
-    height: '1123px', // 297mm at 96dpi
-    aspectRatio: '1.414',
-  },
-  // CROWN カラーパレット
-  colors: {
-    primary: '#1a1a1a',
-    secondary: '#2d2d2d',
-    accent: '#c41e3a', // CROWN レッド
-    gold: '#b8860b', // CROWN ゴールド
-    platinum: '#e5e4e2', // プラチナシルバー
-    text: {
-      primary: '#ffffff',
-      secondary: '#a0a0a0',
-      accent: '#c41e3a',
-    },
-    gradients: {
-      black: 'bg-gradient-to-b from-gray-900 via-black to-gray-900',
-      premium: 'bg-gradient-to-r from-black via-gray-900 to-black',
-      accent: 'bg-gradient-to-br from-red-900/10 to-red-800/5',
-    },
-  },
-  // CROWN タイポグラフィ
-  typography: {
-    heading: 'font-bold tracking-[0.15em] uppercase',
-    subheading: 'font-light tracking-[0.1em]',
-    body: 'font-light tracking-wide',
-    accent: 'font-medium tracking-[0.2em] uppercase',
-    japanese: 'font-medium',
-  },
-  // レイアウト設定
-  layout: {
-    padding: 'px-12 py-8',
-    grid: 'grid-cols-12',
-    spacing: 'gap-6',
-  },
-};
-
-const categoryIcons = {
-  建物本体工事費: Home,
-  付帯工事費: Hammer,
-  諸費用: FileText,
-  土地費用: Landmark,
-};
-
 export function Presentation4View({ projectId }: Presentation4ViewProps) {
   const { currentProject, theme } = useStore();
   const [presentation, setPresentation] = useState<Presentation4 | null>(null);
+  const [currentArea, setCurrentArea] = useState<number>(100); // 現在のお住まい
   const isDark = theme === 'dark';
+  const hasExcelData = presentation?.excelData != null;
+
+  // 編集可能な値の状態
+  const [currentRent, setCurrentRent] = useState<number>(100000);
+  const [currentElectricity, setCurrentElectricity] = useState<number>(18000);
+  const [currentGas, setCurrentGas] = useState<number>(18000);
+  const [currentParking, setCurrentParking] = useState<number>(15000);
+  const [editingField, setEditingField] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentProject?.presentation4) {
       setPresentation(currentProject.presentation4);
-    } else {
-      // デフォルトデータを設定
-      const defaultPresentation: Presentation4 = {
-        id: `pres4-${Date.now()}`,
-        projectId,
-        buildingCost: 25000000,
-        constructionCost: 5000000,
-        otherCosts: 2000000,
-        landCost: 15000000,
-        totalCost: 47000000,
-        costBreakdown: [
-          { id: '1', item: '建物本体工事', amount: 25000000, category: '建物本体工事費' },
-          { id: '2', item: '外構工事', amount: 3000000, category: '付帯工事費' },
-          { id: '3', item: '設備工事', amount: 2000000, category: '付帯工事費' },
-          { id: '4', item: '登記費用', amount: 500000, category: '諸費用' },
-          { id: '5', item: '税金・保険', amount: 1500000, category: '諸費用' },
-        ],
-        loanAmount: 40000000,
-        downPayment: 7000000,
-        interestRate: 0.5,
-        loanPeriod: 35,
-        monthlyPayment: 103834,
-      };
-      setPresentation(defaultPresentation);
+      if (currentProject.presentation4.currentResidence?.area) {
+        setCurrentArea(currentProject.presentation4.currentResidence.area);
+      }
+      if (currentProject.presentation4.currentResidence?.rent) {
+        setCurrentRent(currentProject.presentation4.currentResidence.rent);
+      }
+      if (currentProject.presentation4.currentResidence?.electricity) {
+        setCurrentElectricity(currentProject.presentation4.currentResidence.electricity);
+      }
+      if (currentProject.presentation4.currentResidence?.gas) {
+        setCurrentGas(currentProject.presentation4.currentResidence.gas);
+      }
+      if (currentProject.presentation4.currentResidence?.parking) {
+        setCurrentParking(currentProject.presentation4.currentResidence.parking);
+      }
     }
-  }, [currentProject, projectId]);
+  }, [currentProject]);
 
   if (!presentation) {
     return (
@@ -102,262 +52,453 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
     );
   }
 
-  const categories = [
-    { key: 'buildingCost', label: '建物本体工事費', value: presentation.buildingCost },
-    { key: 'constructionCost', label: '付帯工事費', value: presentation.constructionCost },
-    { key: 'otherCosts', label: '諸費用', value: presentation.otherCosts },
-    { key: 'landCost', label: '土地費用', value: presentation.landCost },
+  // Use Excel data if available
+  const displayData = hasExcelData && presentation.excelData ? {
+    buildingCost: presentation.excelData.本体,
+    constructionCost: presentation.excelData.付帯A + presentation.excelData.付帯B + presentation.excelData.付帯C,
+    otherCosts: presentation.excelData.諸費用,
+    landCost: presentation.excelData.土地費用,
+    totalCost: presentation.excelData.総額,
+    loanAmount: presentation.excelData.借入金額,
+    downPayment: presentation.excelData.自己資金,
+    interestRate: presentation.excelData.金利,
+    loanPeriod: presentation.excelData.借入年数,
+    monthlyPayment: calculateMonthlyPayment(
+      presentation.excelData.借入金額,
+      presentation.excelData.金利,
+      presentation.excelData.借入年数
+    ),
+    productName: presentation.excelData.商品名,
+    area: presentation.excelData.坪数 || 0,
+    floors: presentation.excelData.階数,
+  } : {
+    buildingCost: presentation.buildingCost,
+    constructionCost: presentation.constructionCost,
+    otherCosts: presentation.otherCosts,
+    landCost: presentation.landCost,
+    totalCost: presentation.totalCost,
+    loanAmount: presentation.loanAmount,
+    downPayment: presentation.downPayment,
+    interestRate: presentation.interestRate,
+    loanPeriod: presentation.loanPeriod,
+    monthlyPayment: presentation.monthlyPayment,
+    productName: '',
+    area: 32, // デフォルト32坪
+    floors: '',
+  };
+
+  // displayData.areaは坪数なので、㎡数を計算（坪数 ÷ 0.3025 = ㎡）
+  const generalArea = displayData.area > 0 ? displayData.area / 0.3025 : 100;
+  const gHouseArea = displayData.area > 0 ? displayData.area / 0.3025 : 100;
+
+  // 坪数計算（㎡ × 0.3025 = 坪）
+  const currentTsubo = (currentArea * 0.3025).toFixed(1);
+  const generalTsubo = displayData.area > 0 ? displayData.area.toFixed(1) : '32.0';
+  const gHouseTsubo = displayData.area > 0 ? displayData.area.toFixed(1) : '32.0';
+
+  // 月額比較データ
+  const currentTotal = currentRent + currentElectricity + currentGas + currentParking;
+  const generalHousePayment = displayData.monthlyPayment + 13000; // 一般的な家は光熱費が高い
+  const gHousePayment = displayData.monthlyPayment + 5000; // Gハウスは光熱費が安い
+  const gHouseSolarBenefit = 15000; // 太陽光による削減額
+  const netGHousePayment = gHousePayment - gHouseSolarBenefit;
+
+  function calculateMonthlyPayment(principal: number, annualRate: number, years: number): number {
+    const monthlyRate = annualRate / 100 / 12;
+    const months = years * 12;
+    if (monthlyRate === 0) {
+      return Math.round(principal / months);
+    }
+    const monthly = principal * monthlyRate * Math.pow(1 + monthlyRate, months) /
+                  (Math.pow(1 + monthlyRate, months) - 1);
+    return Math.round(monthly);
+  }
+
+  // 建物費用の詳細
+  const buildingDetails = hasExcelData && presentation.excelData ? {
+    本体工事費用: presentation.excelData.本体,
+    付帯工事費用A: presentation.excelData.付帯A,
+    付帯工事費用B: presentation.excelData.付帯B + (presentation.excelData.オプション費用 || 0),
+    付帯工事費用C: presentation.excelData.付帯C,
+    消費税: presentation.excelData.消費税,
+    建物費用合計: presentation.excelData.合計,
+  } : {
+    本体工事費用: presentation.buildingCost,
+    付帯工事費用A: Math.round(presentation.constructionCost * 0.3),
+    付帯工事費用B: Math.round(presentation.constructionCost * 0.4),
+    付帯工事費用C: Math.round(presentation.constructionCost * 0.3),
+    消費税: Math.round((presentation.buildingCost + presentation.constructionCost) * 0.1),
+    建物費用合計: Math.round((presentation.buildingCost + presentation.constructionCost) * 1.1),
+  };
+
+  // カテゴリ設定
+  const mainCategories = [
+    { key: 'building', label: '建物費用', value: buildingDetails.建物費用合計 },
+    { key: 'exterior', label: '外構工事', value: hasExcelData && presentation.excelData ? presentation.excelData.外構工事 : 2000000 },
+    { key: 'land', label: '土地費用', value: displayData.landCost },
+    { key: 'other', label: '諸費用', value: displayData.otherCosts },
   ];
 
   return (
-    <A3Page title="資金計画" subtitle="住宅建築における総費用とローン計画">
-      {/* メインコンテンツ - A3横レイアウト最適化 */}
-      <div className="h-full flex flex-col" style={{ padding: '20px 40px' }}>
-        {/* 表：費用構成（2列レイアウト） */}
-        <div className="grid grid-cols-2 gap-8 mb-6">
-          {/* 左列：費用構成 */}
-          <div
-            className={`rounded-lg border ${
-              isDark
-                ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
-                : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
-            }`}
-          >
-            <div
-              className={`px-4 py-3 border-b ${
-                isDark
-                  ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
-                  : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
-              }`}
-            >
-              <h2
-                className={`text-xl font-bold flex items-center gap-3 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}
-              >
-                <Home
-                  className="h-6 w-6"
-                  style={{
-                    color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626',
-                  }}
-                />
-                建築費用構成
-              </h2>
+    <div className="w-full h-full flex flex-col bg-white">
+      {/* ヘッダー */}
+      <div style={{
+        padding: '40px 60px 20px',
+        borderBottom: '2px solid #e0e0e0',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div>
+            <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>
+              G-HOUSE
             </div>
-            <div className="p-4">
-              <table className="table block">
-                <tbody>
-                  {categories.map((category, index) => {
-                    const Icon =
-                      categoryIcons[category.label as keyof typeof categoryIcons] || FileText;
-                    return (
-                      <tr
-                        key={category.key}
-                        className={`border-b last:border-0 ${
-                          isDark ? 'border-gray-700' : 'border-gray-200'
-                        }`}
-                      >
-                        <td className="py-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center"
-                              style={{
-                                backgroundColor: isDark
-                                  ? `${CROWN_DESIGN.colors.accent}20`
-                                  : 'rgba(220,38,38,0.1)',
-                                color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626',
-                              }}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <span
-                              className={`text-base font-medium ${
-                                isDark ? 'text-white' : 'text-gray-900'
-                              }`}
-                            >
-                              {category.label}
-                            </span>
-                          </div>
-                        </td>
-                        <td
-                          className={`py-3 text-right text-xl font-bold ${
-                            isDark ? 'text-white' : 'text-gray-900'
-                          }`}
-                        >
-                          ¥{category.value.toLocaleString()}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr className={`border-t-2 ${isDark ? 'border-red-600' : 'border-red-700'}`}>
-                    <td
-                      className={`py-4 text-xl font-bold ${
-                        isDark ? 'text-white' : 'text-gray-900'
-                      }`}
-                    >
-                      総建築費用
-                    </td>
-                    <td
-                      className={`py-4 text-right text-3xl font-bold ${
-                        isDark ? 'text-white' : 'text-gray-900'
-                      }`}
-                      style={{ color: isDark ? CROWN_DESIGN.colors.accent : '#dc2626' }}
-                    >
-                      ¥{presentation.totalCost.toLocaleString()}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
           </div>
-
-          {/* 右列：ローンシミュレーション */}
           <div
-            className={`rounded-lg border ${
-              isDark
-                ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
-                : 'bg-gradient-to-br from-gray-50 to-white border-gray-300'
-            }`}
-          >
-            <div
-              className={`px-4 py-3 border-b ${
-                isDark
-                  ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700'
-                  : 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-300'
-              }`}
-            >
-              <h2
-                className={`text-xl font-bold flex items-center gap-3 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}
-              >
-                <Calculator
-                  className="h-6 w-6"
-                  style={{
-                    color: isDark ? CROWN_DESIGN.colors.gold : '#eab308',
-                  }}
-                />
-                ローンシミュレーション
-              </h2>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div
-                  className={`p-3 rounded border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-                  }`}
-                >
-                  <p className={`text-sm mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    借入金額
-                  </p>
-                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    ¥{presentation.loanAmount.toLocaleString()}
-                  </p>
-                </div>
-                <div
-                  className={`p-3 rounded border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-                  }`}
-                >
-                  <p className={`text-sm mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    頭金
-                  </p>
-                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    ¥{presentation.downPayment.toLocaleString()}
-                  </p>
-                </div>
-                <div
-                  className={`p-3 rounded border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-                  }`}
-                >
-                  <p className={`text-sm mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    金利
-                  </p>
-                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {presentation.interestRate.toFixed(1)}%
-                  </p>
-                </div>
-                <div
-                  className={`p-3 rounded border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-100 border-gray-300'
-                  }`}
-                >
-                  <p className={`text-sm mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    返済期間
-                  </p>
-                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {presentation.loanPeriod}年
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className={`p-6 rounded-lg text-center border-2 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}
-                style={{
-                  background: isDark
-                    ? `linear-gradient(135deg, ${CROWN_DESIGN.colors.gold}30 0%, rgba(184,134,11,0.1) 100%)`
-                    : `linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.1) 100%)`,
-                  borderColor: isDark ? CROWN_DESIGN.colors.gold : '#eab308',
-                }}
-              >
-                <p className="text-lg font-bold mb-2">月々のお支払い</p>
-                <p
-                  className={`text-4xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}
-                  style={{ color: isDark ? CROWN_DESIGN.colors.gold : '#eab308' }}
-                >
-                  ¥{presentation.monthlyPayment.toLocaleString()}
-                </p>
-                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  ※ボーナス払いなし、元利均等返済の場合
-                </p>
-              </div>
-            </div>
+            style={{
+              width: '2px',
+              height: '40px',
+              background: 'linear-gradient(to bottom, transparent, #c41e3a, transparent)',
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#333',
+            }}>
+              資金計画書
+            </h1>
+            <p style={{
+              margin: '5px 0 0',
+              fontSize: '16px',
+              color: '#666',
+            }}>
+              毎月のお支払額のシミュレーションをします
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* 補足説明：資金計画のポイント */}
-        <div
-          className={`rounded-lg p-6 border ${
-            isDark
-              ? 'bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-gray-700/50'
-              : 'bg-gradient-to-br from-blue-50 to-white border-blue-300'
-          }`}
-        >
-          <h3
-            className={`text-xl font-bold mb-4 flex items-center gap-3 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            <FileText className="h-6 w-6 text-blue-600" />
-            資金計画のポイント
-          </h3>
-          <div className="grid grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {((presentation.downPayment / presentation.totalCost) * 100).toFixed(1)}%
+      {/* メインコンテンツ */}
+      <div className="flex-1" style={{ padding: '16px' }}>
+        {/* 商品情報 */}
+        {(displayData.productName || displayData.area > 0 || displayData.floors) && (
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            padding: '8px 16px',
+            marginBottom: '12px',
+            borderRadius: '6px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '24px',
+          }}>
+            {displayData.productName && (
+              <span style={{ fontSize: '14px', color: '#333' }}>
+                商品名: <span style={{ fontWeight: '600' }}>{displayData.productName}</span>
+              </span>
+            )}
+            {displayData.area > 0 && (
+              <span style={{ fontSize: '14px', color: '#333' }}>
+                延床面積: <span style={{ fontWeight: '600' }}>{displayData.area}坪</span>
+              </span>
+            )}
+            {displayData.floors && (
+              <span style={{ fontSize: '14px', color: '#333' }}>
+                階数: <span style={{ fontWeight: '600' }}>{displayData.floors}</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 h-[calc(100%-48px)]">
+          {/* 左側：費用内訳とローン */}
+          <div className="grid grid-rows-2 gap-3">
+            {/* 費用内訳 */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* 建物費用 */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+                <div className="text-sm font-semibold text-slate-700 mb-2">建物費用内訳</div>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">本体工事費用</span>
+                    <span className="font-medium text-gray-900">¥{buildingDetails.本体工事費用.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">付帯工事費用A（電気・給排水・ガス工事）</span>
+                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用A.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">付帯工事費用B（間取変更・オプション工事）</span>
+                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用B.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">付帯工事費用C（地盤改良・解体工事）</span>
+                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用C.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">消費税（10%）</span>
+                    <span className="font-medium text-gray-900">¥{buildingDetails.消費税.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-bold pt-1.5 mt-1.5 border-t border-gray-200">
+                    <span className="text-gray-900">建物費用総額</span>
+                    <span className="text-gray-900">¥{buildingDetails.建物費用合計.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
-              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                自己資金比率
-              </p>
+
+              {/* その他費用 */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+                <div className="text-sm font-semibold text-slate-700 mb-2">その他費用</div>
+                <div className="space-y-1.5">
+                  {mainCategories.slice(1).map((category) => (
+                    <div key={category.key} className="flex justify-between text-xs">
+                      <span className="text-gray-600">{category.label}</span>
+                      <span className="font-medium text-gray-900">¥{category.value.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between text-base font-bold pt-1.5 mt-1.5 border-t-2 border-slate-300">
+                    <span className="text-gray-900">総額</span>
+                    <span className="text-lg text-gray-900">¥{displayData.totalCost.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {presentation.loanPeriod}年
+
+            {/* ローンシミュレーション */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+              <div className="text-sm font-semibold text-slate-700 mb-2">ローンシミュレーション</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="bg-gray-50 rounded-lg p-2.5 mb-2">
+                    <div className="text-xs text-gray-600 mb-1">借入金額</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      ¥{displayData.loanAmount.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-2.5">
+                    <div className="text-xs text-gray-600 mb-1">自己資金（頭金）</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      ¥{displayData.downPayment.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <div className="text-xs text-gray-600 mb-1">借入金利</div>
+                      <div className="text-base font-bold text-gray-900">
+                        {displayData.interestRate.toFixed(2)}%
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2.5">
+                      <div className="text-xs text-gray-600 mb-1">返済期間</div>
+                      <div className="text-base font-bold text-gray-900">
+                        {displayData.loanPeriod}年
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-2.5 text-white">
+                    <div className="text-xs opacity-90 mb-1">月々のローン返済額</div>
+                    <div className="text-xl font-bold">
+                      ¥{displayData.monthlyPayment.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>返済期間</p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">
-                {((presentation.monthlyPayment * 12) / 10000).toFixed(0)}万円
+          </div>
+
+          {/* 右側：月々のお支払い比較 */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+            <div className="text-sm font-semibold text-slate-700 mb-3">月々のお支払い比較</div>
+
+            <div className="grid grid-cols-3 gap-2 h-[calc(100%-32px)]">
+              {/* 現在のお住まい */}
+              <div className="border border-gray-200 rounded-lg p-2 flex flex-col">
+                <div className="text-xs font-bold text-gray-700 mb-2 text-center">現在のお住まい</div>
+                <div className="mb-2 pb-2 border-b border-gray-200">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-600">床面積:</span>
+                    <input
+                      type="number"
+                      value={currentArea}
+                      onChange={(e) => setCurrentArea(Number(e.target.value) || 0)}
+                      className="w-12 px-1 py-0.5 text-xs border border-gray-300 rounded"
+                    />
+                    <span className="text-xs text-gray-600">㎡</span>
+                    <span className="text-xs text-gray-500">({currentTsubo}坪)</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">家賃</span>
+                    <div className="flex items-center gap-1">
+                      {editingField === 'rent' ? (
+                        <input
+                          type="number"
+                          value={currentRent}
+                          onChange={(e) => setCurrentRent(Number(e.target.value) || 0)}
+                          onBlur={() => setEditingField(null)}
+                          className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="font-medium text-gray-900">¥{currentRent.toLocaleString()}</span>
+                      )}
+                      <Edit2
+                        className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
+                        onClick={() => setEditingField('rent')}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">電気代</span>
+                    <div className="flex items-center gap-1">
+                      {editingField === 'electricity' ? (
+                        <input
+                          type="number"
+                          value={currentElectricity}
+                          onChange={(e) => setCurrentElectricity(Number(e.target.value) || 0)}
+                          onBlur={() => setEditingField(null)}
+                          className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="font-medium text-gray-900">¥{currentElectricity.toLocaleString()}</span>
+                      )}
+                      <Edit2
+                        className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
+                        onClick={() => setEditingField('electricity')}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">ガス代</span>
+                    <div className="flex items-center gap-1">
+                      {editingField === 'gas' ? (
+                        <input
+                          type="number"
+                          value={currentGas}
+                          onChange={(e) => setCurrentGas(Number(e.target.value) || 0)}
+                          onBlur={() => setEditingField(null)}
+                          className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="font-medium text-gray-900">¥{currentGas.toLocaleString()}</span>
+                      )}
+                      <Edit2
+                        className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
+                        onClick={() => setEditingField('gas')}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">駐車場代</span>
+                    <div className="flex items-center gap-1">
+                      {editingField === 'parking' ? (
+                        <input
+                          type="number"
+                          value={currentParking}
+                          onChange={(e) => setCurrentParking(Number(e.target.value) || 0)}
+                          onBlur={() => setEditingField(null)}
+                          className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded text-right"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="font-medium text-gray-900">¥{currentParking.toLocaleString()}</span>
+                      )}
+                      <Edit2
+                        className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
+                        onClick={() => setEditingField('parking')}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-100 rounded-lg p-2 mt-auto">
+                  <div className="text-xs text-gray-600 mb-0.5">月々の支払い合計</div>
+                  <div className="text-lg font-bold text-gray-900">
+                    ¥{currentTotal.toLocaleString()}
+                  </div>
+                </div>
               </div>
-              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>年間返済額</p>
+
+              {/* 一般的な家 */}
+              <div className="border border-gray-200 rounded-lg p-2 flex flex-col">
+                <div className="text-xs font-bold text-gray-700 mb-2 text-center">一般的な家</div>
+                <div className="mb-2 pb-2 border-b border-gray-200">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-600">延床面積:</span>
+                    <span className="text-xs font-medium text-gray-900">{generalTsubo}坪</span>
+                    <span className="text-xs text-gray-500">({generalArea.toFixed(0)}㎡)</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">住宅ローン返済</span>
+                    <span className="font-medium text-gray-900">¥{displayData.monthlyPayment.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">電気代</span>
+                    <span className="font-medium text-gray-900">¥8,000</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ガス代</span>
+                    <span className="font-medium text-gray-900">¥5,000</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">駐車場代</span>
+                    <span className="font-medium text-gray-900">¥0</span>
+                  </div>
+                </div>
+                <div className="bg-gray-100 rounded-lg p-2 mt-auto">
+                  <div className="text-xs text-gray-600 mb-0.5">月々の支払い合計</div>
+                  <div className="text-lg font-bold text-gray-900">
+                    ¥{generalHousePayment.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Gハウスの家 */}
+              <div className="border-2 border-emerald-500 rounded-lg p-2 flex flex-col bg-emerald-50">
+                <div className="text-xs font-bold text-emerald-700 mb-2 text-center">Gハウスの家</div>
+                <div className="mb-2 pb-2 border-b border-emerald-300">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-600">延床面積:</span>
+                    <span className="text-xs font-medium text-gray-900">{gHouseTsubo}坪</span>
+                    <span className="text-xs text-gray-500">({gHouseArea.toFixed(0)}㎡)</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">住宅ローン返済</span>
+                    <span className="font-medium text-gray-900">¥{displayData.monthlyPayment.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">電気代（高断熱・省エネ）</span>
+                    <span className="font-medium text-gray-900">¥3,000</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ガス代（高効率給湯器）</span>
+                    <span className="font-medium text-gray-900">¥2,000</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-600">
+                    <span>太陽光発電売電収入</span>
+                    <span className="font-medium">-¥15,000</span>
+                  </div>
+                </div>
+                <div className="bg-emerald-100 rounded-lg p-2 mt-auto">
+                  <div className="text-xs text-emerald-600 mb-0.5">実質月々のお支払い</div>
+                  <div className="text-lg font-bold text-emerald-700">
+                    ¥{netGHousePayment.toLocaleString()}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </A3Page>
+    </div>
   );
 }

@@ -6,8 +6,6 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
-  Play,
-  Pause,
   Maximize,
   Minimize,
 } from 'lucide-react';
@@ -24,8 +22,21 @@ import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
 import { Presentation4View } from '@/components/Presentation4View';
 // Dynamic imports for components that might not exist
-const Presentation3Interactive = dynamic(() => import('@/components/Presentation3Interactive').catch(() => () => <div>Options Presentation</div>), { ssr: false });
-const Presentation5UtilityCostSimulation = dynamic(() => import('@/components/Presentation5UtilityCostSimulation').catch(() => () => <div>Utility Cost Simulation</div>), { ssr: false });
+const Presentation3Interactive = dynamic(() => import('@/components/Presentation3Interactive').catch(() => {
+  const FallbackComponent = () => <div>Options Presentation</div>;
+  FallbackComponent.displayName = 'Presentation3InteractiveFallback';
+  return FallbackComponent;
+}), { ssr: false });
+const Presentation5UtilityCostSimulation = dynamic(() => import('@/components/Presentation5UtilityCostSimulation').catch(() => {
+  const FallbackComponent = () => <div>Utility Cost Simulation</div>;
+  FallbackComponent.displayName = 'Presentation5UtilityCostSimulationFallback';
+  return FallbackComponent;
+}), { ssr: false });
+const Presentation6MaintenanceView = dynamic(() => import('@/components/Presentation6MaintenanceView').then(mod => mod.Presentation6MaintenanceView).catch(() => {
+  const FallbackComponent = () => <div>Maintenance Simulation</div>;
+  FallbackComponent.displayName = 'Presentation6MaintenanceViewFallback';
+  return FallbackComponent;
+}), { ssr: false });
 import { PresentationContainer } from '@/components/PresentationContainer';
 
 interface SlideInfo {
@@ -44,10 +55,10 @@ export default function PresentationFlowPage() {
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [presentation2Items, setPresentation2Items] = useState<PerformanceItem[]>([]);
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isPresentationMode, setIsPresentationMode] = useState(true); // プレゼンモード状態を追加
+  const [isPresentationMode] = useState(true); // プレゼンモード状態を追加
 
   // URLパラメータから全画面表示を自動開始
   useEffect(() => {
@@ -102,10 +113,12 @@ export default function PresentationFlowPage() {
     })),
     // プレゼン3（オプション）: 1枚
     { presentation: 3, title: 'オプション', totalSlides: 1 },
-    // プレゼン4（資金計画）: 1枚
-    { presentation: 4, title: '資金計画', totalSlides: 1 },
     // プレゼン5（光熱費）: 1枚
     { presentation: 5, title: '光熱費', totalSlides: 1 },
+    // プレゼン6（メンテナンス）: 1枚
+    { presentation: 6, title: 'メンテナンス', totalSlides: 1 },
+    // プレゼン4（資金計画）: 1枚
+    { presentation: 4, title: '資金計画', totalSlides: 1 },
   ];
 
   const totalSlides = slides.length;
@@ -443,6 +456,12 @@ export default function PresentationFlowPage() {
             <Presentation5UtilityCostSimulation />
           </PresentationContainer>
         );
+      case 6:
+        return (
+          <PresentationContainer fullscreen>
+            <Presentation6MaintenanceView projectId={projectId} />
+          </PresentationContainer>
+        );
       default:
         return <div>Invalid presentation</div>;
     }
@@ -455,6 +474,7 @@ export default function PresentationFlowPage() {
       3: 'bg-purple-500',
       4: 'bg-orange-500',
       5: 'bg-red-500',
+      6: 'bg-cyan-500',
     };
     return colors[presentation as keyof typeof colors] || 'bg-gray-500';
   };

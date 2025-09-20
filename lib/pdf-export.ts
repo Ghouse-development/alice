@@ -1,6 +1,6 @@
-// @ts-ignore
+// @ts-expect-error html2canvas types
 import html2canvas from 'html2canvas';
-// @ts-ignore
+// @ts-expect-error jsPDF types
 import jsPDF from 'jspdf';
 
 export interface PDFExportOptions {
