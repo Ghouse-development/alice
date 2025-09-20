@@ -1,24 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Turbopack互換性のための設定
+  reactStrictMode: true,
+  // 必要な時だけ最小限の transpilePackages を残す
   transpilePackages: ['html2canvas', 'jspdf'],
-
-  // Webpack設定（Turbopack無効時）
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // クライアントサイドのバンドル最適化
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
+      // ブラウザバンドルから除外
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        sharp: false,
+        'onnxruntime-node': false,
+        '@xenova/transformers': false,
+        canvas: false,
         fs: false,
         path: false,
-        crypto: false,
       };
+      // 念のため外部扱いにも
+      config.externals = [...(config.externals || []), 'sharp', 'onnxruntime-node', '@xenova/transformers'];
     }
     return config;
   },
-
-  // 実験的機能は使用しない（Turbopack安定性のため）
-  experimental: {},
 };
 
 export default nextConfig;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Home,
   ChevronLeft,
@@ -10,18 +10,22 @@ import {
   Pause,
   Maximize,
   Minimize,
-  Save,
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import dynamic from 'next/dynamic';
+
+// SaveButtonコンポーネントを動的インポート（SSR回避）
+const SaveButton = dynamic(() => import('@/components/SaveButton'), {
+  ssr: false,
+});
 import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
-import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation4View } from '@/components/Presentation4View';
-import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
+// Dynamic imports for components that might not exist
+const Presentation3Interactive = dynamic(() => import('@/components/Presentation3Interactive').catch(() => () => <div>Options Presentation</div>), { ssr: false });
+const Presentation5UtilityCostSimulation = dynamic(() => import('@/components/Presentation5UtilityCostSimulation').catch(() => () => <div>Utility Cost Simulation</div>), { ssr: false });
 import { PresentationContainer } from '@/components/PresentationContainer';
 
 interface SlideInfo {
@@ -34,6 +38,7 @@ interface SlideInfo {
 export default function PresentationFlowPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const projectId = params.id as string;
   const { projects, currentProject, setCurrentProject } = useStore();
 
@@ -43,6 +48,20 @@ export default function PresentationFlowPage() {
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(true); // プレゼンモード状態を追加
+
+  // URLパラメータから全画面表示を自動開始
+  useEffect(() => {
+    if (searchParams.get('fullscreen') === 'true') {
+      // 少し遅延を入れてから全画面表示を開始
+      setTimeout(() => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {
+            // 全画面表示が拒否された場合は何もしない
+          });
+        }
+      }, 100);
+    }
+  }, [searchParams]);
 
   // 全画面時にボディのスタイルを制御
   useEffect(() => {
@@ -98,153 +117,60 @@ export default function PresentationFlowPage() {
     }
   };
 
-  // 全スライドをPDFとして保存
-  const handleSaveAsPDF = async () => {
-    try {
-      // 1) フルスクリーン（ユーザー操作起点なのでawait可能）
-      if (!document.fullscreenElement) {
-        try {
-          await document.documentElement.requestFullscreen();
-        } catch {
-          /* ブラウザが拒否しても続行 */
-        }
-      }
+  // スライドデータを収集する関数
+  const collectSlideData = () => {
+    const slideData = [];
 
-      // 2) 全スライドのDOMを取得
-      const allSlides = await getAllSlides();
-
-      if (!allSlides?.length) return;
-
-      // 3) 印刷ホストを作成し、全ページをクローンして突っ込む
-      const host = document.createElement('div');
-      host.id = 'print-host';
-      document.body.appendChild(host);
-
-      allSlides.forEach((node, i) => {
-        const clone = node.cloneNode(true) as HTMLElement;
-        clone.classList.add('print-slide');
-        // スライド内のツールバーや余計なUIは除去
-        clone
-          .querySelectorAll('.toolbar, .present-controls, .no-print')
-          .forEach((el) => el.remove());
-        host.appendChild(clone);
-      });
-
-      // 4) 画像とフォントのロード待ち
-      await Promise.all([waitForImages(host), (document as any).fonts?.ready?.catch(() => {})]);
-
-      // 5) PDF生成
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-      // PDFドキュメントを作成（A3横）
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a3',
-      });
-
-      // 各スライドをPDFに追加
-      for (let i = 0; i < allSlides.length; i++) {
-        const slide = allSlides[i];
-
-        // html2canvasでスライドをキャンバスに変換
-        const canvas = await html2canvas(slide, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          width: 1587,
-          height: 1123,
+    // プレゼン1のデータ
+    if (currentProject?.presentation1?.uploadedFiles?.length > 0) {
+      currentProject.presentation1.uploadedFiles.forEach((file, index) => {
+        slideData.push({
+          title: `デザイン ${index + 1}`,
+          content: file.name || '',
+          image: file.url || null,
         });
-
-        // キャンバスをPDFに追加
-        const imgData = canvas.toDataURL('image/png');
-
-        if (i > 0) pdf.addPage();
-
-        // A3横のサイズに合わせて画像を配置
-        pdf.addImage(imgData, 'PNG', 0, 0, 420, 297);
-      }
-
-      // PDFをダウンロード
-      const fileName = `presentation_${new Date().toISOString().slice(0, 10)}.pdf`;
-      pdf.save(fileName);
-    } finally {
-      // 6) 後片付け
-      document.getElementById('print-host')?.remove();
-      if (document.fullscreenElement) {
-        try {
-          await document.exitFullscreen();
-        } catch {}
-      }
-    }
-  };
-
-  // 画像のロード待機処理
-  const waitForImages = (root: HTMLElement) => {
-    const imgs = Array.from(root.querySelectorAll('img'));
-    return Promise.all(
-      imgs.map((img) => {
-        if (img.complete) return Promise.resolve(null);
-        return new Promise<void>((res) => {
-          img.addEventListener('load', () => res(), { once: true });
-          img.addEventListener('error', () => res(), { once: true });
-          // 遅延読み込みを無効化
-          img.loading = 'eager';
-          (img as any).decoding = 'sync';
-        });
-      })
-    );
-  };
-
-  // 全スライドのDOMを取得（仮想化対応）
-  const getAllSlides = async (): Promise<HTMLElement[]> => {
-    const slideElements: HTMLElement[] = [];
-
-    // 一時的なレンダリング用コンテナを作成
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.width = '420mm';
-    tempContainer.style.height = '297mm';
-    document.body.appendChild(tempContainer);
-
-    // 各スライドをレンダリングしてDOMを取得
-    for (let i = 0; i < slides.length; i++) {
-      const slideData = slides[i];
-
-      // 現在のスライドに移動
-      setCurrentSlideIndex(i);
-
-      // 少し待って描画を完了させる
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 現在表示されているスライドのDOMをクローン
-      const slideElement =
-        document.querySelector('.presentation-wrapper') ||
-        document.querySelector('[data-presentation]');
-      if (slideElement) {
-        const clonedSlide = slideElement.cloneNode(true) as HTMLElement;
-
-        // A3サイズに設定
-        const slideWrapper = document.createElement('div');
-        slideWrapper.className = 'print-slide';
-        slideWrapper.style.width = '420mm';
-        slideWrapper.style.height = '297mm';
-        slideWrapper.style.background = 'white';
-        slideWrapper.style.pageBreakAfter = 'always';
-        slideWrapper.style.overflow = 'hidden';
-
-        // クローンしたスライドを追加
-        slideWrapper.appendChild(clonedSlide);
-        slideElements.push(slideWrapper);
-      }
+      });
     }
 
-    // 一時コンテナを削除
-    document.body.removeChild(tempContainer);
+    // プレゼン2のデータ（標準仕様）
+    if (presentation2Items.length > 0) {
+      presentation2Items.forEach(item => {
+        slideData.push({
+          title: item.category,
+          subtitle: item.title,
+          content: item.description,
+        });
+      });
+    }
 
-    return slideElements;
+    // プレゼン3のデータ（オプション）
+    slideData.push({
+      title: 'オプション選択',
+      content: 'お客様のご要望に合わせたオプションをご提案いたします。',
+    });
+
+    // プレゼン4のデータ（資金計画）
+    if (currentProject?.presentation4) {
+      slideData.push({
+        title: '資金計画',
+        content: [
+          { title: '建物本体価格', description: currentProject.presentation4.buildingPrice || '-' },
+          { title: '付帯工事費', description: currentProject.presentation4.additionalCost || '-' },
+          { title: '諸経費', description: currentProject.presentation4.otherCost || '-' },
+        ],
+      });
+    }
+
+    // プレゼン5のデータ（光熱費）
+    slideData.push({
+      title: '光熱費シミュレーション',
+      content: '年間の光熱費削減効果をシミュレーションいたします。',
+    });
+
+    return slideData;
   };
+
+
 
   // ナビゲーション関数を定義（useEffectで使用するため先に定義）
   const nextSlide = useCallback(() => {
@@ -642,15 +568,10 @@ export default function PresentationFlowPage() {
       {/* 全画面時のボタン - 右上に配置 */}
       {isFullscreen && (
         <div className="fixed top-4 right-4 z-50 flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveAsPDF}
-            className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            保存
-          </Button>
+          <SaveButton
+            data={collectSlideData()}
+            className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600 rounded-md"
+          />
           <Button
             variant="outline"
             size="sm"

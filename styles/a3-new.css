@@ -1,0 +1,12 @@
+@page { size: A3 landscape; margin: 0; }
+
+/* Screen canvas: EXACT 1123px × 1587px (HxW) for 96dpi A3 landscape */
+.a3 {
+  width: 1587px;
+  height: 1123px;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 80px 1fr;
+}
+.a3 * { box-sizing: border-box; }

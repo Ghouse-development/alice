@@ -36,8 +36,9 @@ import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
 import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
 import { Presentation4View } from '@/components/Presentation4View';
-import SolarSimulatorConclusionFirst from '@/components/SolarSimulatorConclusionFirst';
+import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
 import { PresentationContainer } from '@/components/PresentationContainer';
+import { HearingSheetEditor } from '@/components/HearingSheetEditor';
 
 // シンプル化したタブ構成
 const tabs = [
@@ -55,7 +56,7 @@ const presentationComponents = {
   pres2: Presentation2CrownUnified,
   pres3: Presentation3Interactive,
   pres4: Presentation4View,
-  pres5: SolarSimulatorConclusionFirst,
+  pres5: Presentation5UtilityCostSimulation,
 };
 
 export default function ProjectEditPage() {
@@ -82,6 +83,8 @@ export default function ProjectEditPage() {
   });
 
   useEffect(() => {
+    if (!params.id || !projects.length) return;
+
     const project = projects.find((p) => p.id === params.id);
     if (project) {
       setCurrentProject(project);
@@ -93,19 +96,25 @@ export default function ProjectEditPage() {
         status: project.status,
       }));
     } else {
-      router.push('/dashboard');
+      // 存在しないIDは404でフォールバック
+      router.replace('/dashboard');
     }
   }, [params.id, projects, setCurrentProject, router]);
 
   const handleSave = () => {
     if (currentProject) {
-      // 案件名と顧客名を同じにする
-      const updatedData = {
-        ...formData,
-        projectName: formData.customerName ? `${formData.customerName}様邸` : formData.projectName
-      };
-      updateProject(currentProject.id, updatedData);
-      alert('保存しました');
+      try {
+        // 案件名と顧客名を同じにする
+        const updatedData = {
+          ...formData,
+          projectName: formData.customerName ? `${formData.customerName}様邸` : formData.projectName
+        };
+        updateProject(currentProject.id, updatedData);
+        alert('保存しました');
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('保存中にエラーが発生しました');
+      }
     }
   };
 
@@ -183,12 +192,17 @@ export default function ProjectEditPage() {
                   )}
                 </Button>
               )}
-              <Link href={`/project/${currentProject.id}/present-flow`}>
-                <Button variant="default" size="sm" className="h-10 px-4 bg-green-600 hover:bg-green-700">
-                  <Play className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">プレゼン</span>
-                </Button>
-              </Link>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-10 px-4 bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  router.push(`/project/${currentProject.id}/present-flow?fullscreen=true`);
+                }}
+              >
+                <Play className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">プレゼン</span>
+              </Button>
             </div>
           </div>
 
@@ -284,102 +298,7 @@ export default function ProjectEditPage() {
 
                 {/* ヒアリングタブ */}
                 <TabsContent value="hearing">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>ヒアリング情報</CardTitle>
-                      <CardDescription>お客様の詳細情報とご要望を記録</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">
-                            <Phone className="inline h-3 w-3 mr-1" />
-                            電話番号
-                          </Label>
-                          <Input
-                            id="phone"
-                            value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            placeholder="090-0000-0000"
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">
-                            <Mail className="inline h-3 w-3 mr-1" />
-                            メールアドレス
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
-                            placeholder="example@email.com"
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2 sm:col-span-2">
-                          <Label htmlFor="address">
-                            <MapPin className="inline h-3 w-3 mr-1" />
-                            建築予定地
-                          </Label>
-                          <Input
-                            id="address"
-                            value={formData.address}
-                            onChange={(e) => handleInputChange('address', e.target.value)}
-                            placeholder="東京都〇〇区〇〇町1-2-3"
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="budget">
-                            <DollarSign className="inline h-3 w-3 mr-1" />
-                            予算
-                          </Label>
-                          <Input
-                            id="budget"
-                            value={formData.budget}
-                            onChange={(e) => handleInputChange('budget', e.target.value)}
-                            placeholder="3000万円"
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="timeline">
-                            <Calendar className="inline h-3 w-3 mr-1" />
-                            希望時期
-                          </Label>
-                          <Input
-                            id="timeline"
-                            value={formData.timeline}
-                            onChange={(e) => handleInputChange('timeline', e.target.value)}
-                            placeholder="2024年4月着工希望"
-                            className="h-12"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="requirements">ご要望</Label>
-                        <Textarea
-                          id="requirements"
-                          value={formData.requirements}
-                          onChange={(e) => handleInputChange('requirements', e.target.value)}
-                          placeholder="お客様のご要望を記入してください"
-                          className="min-h-[120px]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="notes">備考</Label>
-                        <Textarea
-                          id="notes"
-                          value={formData.notes}
-                          onChange={(e) => handleInputChange('notes', e.target.value)}
-                          placeholder="その他の情報を記入してください"
-                          className="min-h-[80px]"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <HearingSheetEditor projectId={currentProject.id} />
                 </TabsContent>
 
                 {/* プレゼンテーションタブ（デザイン、標準仕様、オプション、資金計画、光熱費） */}
@@ -406,7 +325,7 @@ export default function ProjectEditPage() {
             </div>
 
             {/* プレビューエリア */}
-            {showPreview && activeTab.startsWith('pres') && CurrentPreviewComponent && (
+            {showPreview && activeTab.startsWith('pres') && CurrentPreviewComponent && currentProject && (
               <div className="hidden lg:block sticky top-4">
                 <Card className="overflow-hidden shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-3">

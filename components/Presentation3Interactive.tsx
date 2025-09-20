@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import A3Page from './A3Page';
 
@@ -12,7 +12,7 @@ interface OptionItem {
 }
 
 const Presentation3Interactive: React.FC = () => {
-  const { theme } = useStore();
+  const { theme, currentProject } = useStore();
   const isDark = theme === 'dark';
 
   // 状態管理
@@ -22,20 +22,25 @@ const Presentation3Interactive: React.FC = () => {
   const [rateF, setRateF] = useState(0.8);
   const [yearsF, setYearsF] = useState(35);
 
+
+  // ヒアリングシートからの推奨画像を使用
+  const savedImages = currentProject?.hearingSheet?.idealLiving?.recommendedImages || [];
+  const hasHearingImages = savedImages.length > 0;
+
   // 外観パターン①
   const [exteriorOption1, setExteriorOption1] = useState<OptionItem[]>([
-    { id: 'e1-1', name: '屋根材グレードアップ', price: 50000, checked: false },
-    { id: 'e1-2', name: '外壁タイル仕上げ', price: 80000, checked: false },
-    { id: 'e1-3', name: '玄関ドアグレードアップ', price: 30000, checked: false },
-    { id: 'e1-4', name: '窓サッシカラー変更', price: 40000, checked: false },
+    { id: 'e1-1', name: '一部塗り壁に変更', price: 1000000, checked: false },
+    { id: 'e1-2', name: '軒天を木目仕上げに変更', price: 100000, checked: false },
+    { id: 'e1-3', name: 'トリプルガラスに変更', price: 600000, checked: false },
+    { id: 'e1-4', name: 'ガレージシャッターを追加', price: 1500000, checked: false },
   ]);
 
   // 外観パターン②
   const [exteriorOption2, setExteriorOption2] = useState<OptionItem[]>([
-    { id: 'e2-1', name: '屋根材プレミアム', price: 60000, checked: false },
-    { id: 'e2-2', name: '外壁石材仕上げ', price: 100000, checked: false },
-    { id: 'e2-3', name: '玄関ドアスマートキー', price: 45000, checked: false },
-    { id: 'e2-4', name: 'バルコニー拡張', price: 35000, checked: false },
+    { id: 'e2-1', name: '一部塗り壁に変更', price: 1000000, checked: false },
+    { id: 'e2-2', name: '軒天を木目仕上げに変更', price: 100000, checked: false },
+    { id: 'e2-3', name: 'トリプルガラスに変更', price: 600000, checked: false },
+    { id: 'e2-4', name: 'ガレージシャッターを追加', price: 1500000, checked: false },
   ]);
 
   // 内装オプション
@@ -95,6 +100,11 @@ const Presentation3Interactive: React.FC = () => {
               <div className="w-[375px] bg-white rounded-lg p-3 shadow flex flex-col">
                 <div className="bg-red-50 text-red-600 text-base font-bold px-3 py-2 rounded mb-2.5 flex justify-between items-center">
                   <span>A: 外観パターン①</span>
+                  {editMode && (
+                    <button className="text-sm text-red-600 hover:text-red-800">
+                      ✏️
+                    </button>
+                  )}
                 </div>
                 <div className="w-[351px] h-[200px] bg-gray-100 rounded mx-auto mb-2.5 flex items-center justify-center text-black text-xs relative">
                   {editMode ? (
@@ -147,8 +157,13 @@ const Presentation3Interactive: React.FC = () => {
 
               {/* B: 外観パターン② */}
               <div className="w-[375px] bg-white rounded-lg p-3 shadow flex flex-col">
-                <div className="bg-blue-50 text-blue-700 text-base font-bold px-3 py-2 rounded mb-2.5">
+                <div className="bg-blue-50 text-blue-700 text-base font-bold px-3 py-2 rounded mb-2.5 flex justify-between items-center">
                   <span>B: 外観パターン②</span>
+                  {editMode && (
+                    <button className="text-sm text-blue-700 hover:text-blue-900">
+                      ✏️
+                    </button>
+                  )}
                 </div>
                 <div className="w-[351px] h-[200px] bg-gray-100 rounded mx-auto mb-2.5 flex items-center justify-center text-black text-xs">
                   外観イメージ②
@@ -181,17 +196,53 @@ const Presentation3Interactive: React.FC = () => {
                 </div>
               </div>
 
-              {/* C: 内観イメージ */}
-              <div className="w-[705px] bg-white rounded-lg p-3 shadow flex flex-col">
-                <div className="bg-green-50 text-green-700 text-base font-bold px-3 py-2 rounded mb-2.5">
-                  <span>C: 内観イメージ</span>
+              {/* C: 理想の暮らしシート */}
+              <div className="w-[705px] bg-white rounded-lg p-3 shadow flex flex-col" style={{ height: '460px' }}>
+                <div className="bg-green-50 text-black text-base font-bold px-3 py-2 rounded mb-2.5 flex justify-between items-center">
+                  <span>C: 内装イメージ</span>
+                  {editMode && (
+                    <button className="text-sm text-gray-700 hover:text-gray-900">
+                      ✏️
+                    </button>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 grid-rows-2 gap-3 w-[681px] h-[413px] mx-auto">
-                  {['内観①', '内観②', '内観③', '内観④'].map((label, index) => (
-                    <div key={index} className="w-[333px] h-[200px] bg-gray-100 rounded flex items-center justify-center text-black text-xs">
-                      {label}
+
+                {/* 診断結果表示 */}
+                <div className="flex-1 text-black overflow-hidden" style={{ height: 'calc(100% - 60px)' }}>
+                  {hasHearingImages ? (
+                    /* ヒアリングシートの結果表示 */
+                    <div className="h-full">
+                      <div className="grid grid-cols-2 gap-3 h-full">
+                        {savedImages.slice(0, 4).map((image, index) => (
+                          <div key={index} className="border rounded-lg overflow-hidden bg-gray-50 flex flex-col">
+                            <div className="flex-1 bg-gray-100 flex items-center justify-center p-2" style={{ minHeight: '120px' }}>
+                              <img
+                                src={image.url}
+                                alt={`推奨画像 ${index + 1}`}
+                                className="max-w-full max-h-full object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMwMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iOTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuOCpOODoeODvOOCuOOBjOiqreOBv+i+vOOBvuOBvuOBm+OCkyA8L3RleHQ+Cjwvc3ZnPgo=';
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  ) : (
+                    /* 開始画面（ヒアリングシートがない場合） */
+                    <div className="h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-gray-500 mb-4">
+                          <svg className="w-24 h-24 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-base font-medium text-gray-700">理想の暮らしシートの結果</p>
+                          <p className="text-sm text-gray-500 mt-2">編集画面のヒアリングタブで<br />診断を実行してください</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -200,8 +251,13 @@ const Presentation3Interactive: React.FC = () => {
             <div className="flex-1 flex gap-3">
               {/* D: 内装オプション */}
               <div className="w-[909px] bg-white rounded-lg p-3 shadow flex flex-col">
-                <div className="bg-purple-50 text-purple-700 text-base font-bold px-3 py-2 rounded mb-2">
-                  <span>D: 内装オプション</span>
+                <div className="bg-purple-50 text-purple-700 text-base font-bold px-3 py-2 rounded mb-2 flex justify-between items-center">
+                  <span>D: 内装・設備オプション</span>
+                  {editMode && (
+                    <button className="text-sm text-purple-700 hover:text-purple-900">
+                      ✏️
+                    </button>
+                  )}
                 </div>
                 <div className="grid grid-cols-3 gap-x-3 gap-y-1 flex-1 mt-2">
                   {interiorOptions.map((option) => (
@@ -329,6 +385,7 @@ const Presentation3Interactive: React.FC = () => {
         <button
           onClick={() => setEditMode(!editMode)}
           className={`fixed bottom-5 right-5 w-[50px] h-[50px] rounded-full bg-white shadow-lg border-none cursor-pointer text-xl hover:shadow-xl hover:scale-110 transition-all ${editMode ? '' : 'grayscale'}`}
+          style={{ zIndex: 9999 }}
         >
           ✏️
         </button>

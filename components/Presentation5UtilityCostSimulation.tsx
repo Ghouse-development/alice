@@ -41,8 +41,8 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
   const [panels, setPanels] = useState(15);
   const [panelOutput, setPanelOutput] = useState(0.46);
   const [batteryCapacity, setBatteryCapacity] = useState(9.8);
-  const [solarMaintCycle, setSolarMaintCycle] = useState(10);
-  const [batteryMaintCycle, setBatteryMaintCycle] = useState(10);
+  const [solarMaintCycle, setSolarMaintCycle] = useState(15);
+  const [batteryMaintCycle, setBatteryMaintCycle] = useState(15);
   const [fit1Price, setFit1Price] = useState(24);
   const [fit2Price, setFit2Price] = useState(8.3);
   const [fit3Price, setFit3Price] = useState(7);
@@ -53,6 +53,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
   const [taxRate, setTaxRate] = useState(10);
   const [annualGeneral, setAnnualGeneral] = useState(240000);
   const [annualG2, setAnnualG2] = useState(200000);
+  const [annualG3, setAnnualG3] = useState(140000); // G3 specification: ¥60,000 less than G2
   const [baseCharge, setBaseCharge] = useState(2200);
   const [maintSolar, setMaintSolar] = useState(50000);
   const [maintBattery, setMaintBattery] = useState(100000);
@@ -85,8 +86,10 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
     const solarSaving = Math.round(selfConsumedPowerSolar * electricityPrice);
     const batterySaving = Math.round(selfConsumedPowerBattery * electricityPrice);
 
-    const annualSolar = Math.max(0, annualG2 - solarSaving);
-    const annualBattery = Math.max(0, annualG2 - batterySaving);
+    // Use G3 cost if G3 is selected, otherwise use G2
+    const baseAnnualCost = gHouseSpec === 'G3' ? annualG3 : annualG2;
+    const annualSolar = Math.max(0, baseAnnualCost - solarSaving);
+    const annualBattery = Math.max(0, baseAnnualCost - batterySaving);
 
     // Calculate cumulative costs for each pattern
     const pattern1: number[] = [];
@@ -108,7 +111,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
       } else {
         const inflationMultiplier = Math.pow(1 + inflationRate / 100, year - 1);
         const yearCostGeneral = annualGeneral * inflationMultiplier;
-        const yearCostG2 = annualG2 * inflationMultiplier;
+        const yearCostG2 = baseAnnualCost * inflationMultiplier;
         const yearCostSolar = annualSolar * inflationMultiplier;
         const yearCostBattery = annualBattery * inflationMultiplier;
 
@@ -128,7 +131,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
         cumulative4 += yearCostBattery - sellIncomeBattery;
 
         // Maintenance costs
-        if (year === 10 || year === 20) {
+        if (year === 15) {
           cumulative3 += maintSolar;
           cumulative4 += maintSolar + maintBattery;
         }
@@ -151,8 +154,8 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
       initialBattery,
       annualSolar,
       annualBattery,
-      totalMaintSolar: maintSolar * 2,
-      totalMaintBattery: (maintSolar + maintBattery) * 2,
+      totalMaintSolar: maintSolar * 1, // Once at 15 years
+      totalMaintBattery: (maintSolar + maintBattery) * 1, // Once at 15 years
     };
   }, [
     gHouseSpec,
@@ -163,6 +166,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
     taxRate,
     annualGeneral,
     annualG2,
+    annualG3,
     inflationRate,
     fit1Price,
     fit2Price,
@@ -277,6 +281,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           fontFamily: "'Noto Sans JP', sans-serif",
+          overflow: 'hidden',
         }}
       >
         {/* カードセクション */}
@@ -285,6 +290,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
             display: 'flex',
             height: '350px',
             background: 'white',
+            flexShrink: 0,
           }}
         >
           {/* ①一般的な家 */}
@@ -407,7 +413,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
                 <span style={{ color: '#666' }}>年間光熱費：</span>
-                <span style={{ fontWeight: 500, color: '#333' }}>¥{annualG2.toLocaleString()}</span>
+                <span style={{ fontWeight: 500, color: '#333' }}>¥{(gHouseSpec === 'G3' ? annualG3 : annualG2).toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
                 <span style={{ color: '#666' }}>初期費用：</span>
@@ -634,6 +640,8 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
             padding: '15px',
             display: 'flex',
             gap: '20px',
+            minHeight: 0,
+            overflow: 'hidden',
           }}
         >
           <div
@@ -641,12 +649,13 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
               width: 'calc(100% - 400px)',
               display: 'flex',
               flexDirection: 'column',
+              minWidth: 0,
             }}
           >
-            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px', flexShrink: 0 }}>
               30年累計コスト推移
             </div>
-            <div style={{ flex: 1, position: 'relative', minHeight: '300px' }}>
+            <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
               <Line data={chartData} options={chartOptions} />
             </div>
           </div>
@@ -662,9 +671,10 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
               fontSize: '16px',
               display: 'flex',
               flexDirection: 'column',
-              height: '100%',
+              maxHeight: '100%',
               flexShrink: 0,
               gap: '15px',
+              overflow: 'auto',
             }}
           >
             <div
@@ -696,49 +706,8 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
               </button>
             </div>
 
-            {/* 家族構成サマリー */}
-            <div
-              style={{
-                background: '#fff8e1',
-                padding: '10px',
-                borderRadius: '4px',
-                marginBottom: '15px',
-              }}
-            >
-              <div
-                style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', marginBottom: '4px' }}
-              >
-                家族構成
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '13px',
-                  color: '#333',
-                  marginBottom: '2px',
-                }}
-              >
-                <span>太陽光パネル</span>
-                <span>
-                  {solarCapacity.toFixed(1)}kW（{panels}枚）
-                </span>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '13px',
-                  color: '#333',
-                }}
-              >
-                <span>蓄電池</span>
-                <span>{batteryCapacity}kWh</span>
-              </div>
-            </div>
-
-            {/* お客様情報 */}
-            <div style={{ marginBottom: '18px' }}>
+            {/* 再エネ設備サマリー */}
+            <div style={{ marginBottom: '15px' }}>
               <div
                 style={{
                   fontSize: '13px',
@@ -750,7 +719,51 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
                   borderRadius: '2px',
                 }}
               >
-                お客様情報
+                再エネ設備
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '12px',
+                  color: '#333',
+                  padding: '1px 2px',
+                  marginBottom: '2px',
+                }}
+              >
+                <span style={{ color: '#555' }}>太陽光パネル：</span>
+                <span style={{ color: '#333', fontWeight: 600 }}>
+                  {solarCapacity.toFixed(1)}kW（{panels}枚）
+                </span>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '12px',
+                  color: '#333',
+                  padding: '1px 2px',
+                }}
+              >
+                <span style={{ color: '#555' }}>蓄電池：</span>
+                <span style={{ color: '#333', fontWeight: 600 }}>{batteryCapacity}kWh</span>
+              </div>
+            </div>
+
+            {/* 家族構成 */}
+            <div style={{ marginBottom: '15px' }}>
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  color: '#333',
+                  marginBottom: '3px',
+                  background: '#f0f0f0',
+                  padding: '2px 4px',
+                  borderRadius: '2px',
+                }}
+              >
+                家族構成
               </div>
               <div
                 style={{
@@ -860,8 +873,8 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
               </div>
             </div>
 
-            {/* 売電料金 */}
-            <div style={{ marginBottom: '18px' }}>
+            {/* 売電価格 */}
+            <div style={{ marginBottom: '10px' }}>
               <div
                 style={{
                   fontSize: '13px',
@@ -873,7 +886,7 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
                   borderRadius: '2px',
                 }}
               >
-                売電料金
+                売電価格
               </div>
               <div
                 style={{
@@ -919,11 +932,11 @@ const Presentation5UtilityCostSimulation: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   padding: '1px 2px',
-                  lineHeight: 1.2,
+                  lineHeight: 1,
                 }}
               >
-                <span style={{ color: '#555', fontSize: '12px' }}>光熱費上昇率：</span>
-                <span style={{ color: '#333', fontWeight: 600, fontSize: '12px' }}>
+                <span style={{ color: '#555', fontSize: '11px' }}>光熱費上昇率：</span>
+                <span style={{ color: '#333', fontWeight: 600, fontSize: '11px' }}>
                   {inflationRate}%/年
                 </span>
               </div>

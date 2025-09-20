@@ -37,6 +37,14 @@ export interface HearingSheet {
     energySaving: number;  // 1-10
     technology: number;    // 1-10
   };
+  idealLiving?: {
+    answers: number[];  // 10個の質問に対する回答（各0-3の選択肢）
+    recommendedImages?: {
+      filename: string;
+      similarity: number;
+      url: string;
+    }[];
+  };
 }
 
 export interface OptionMaster {
