@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import '@/styles/print-presentation.css';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Home,
@@ -10,11 +11,6 @@ import {
   Minimize,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-
-// SaveButtonコンポーネントを動的インポート（SSR回避）
-const SaveButton = dynamic(() => import('@/components/SaveButton'), {
-  ssr: false,
-});
 import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
@@ -59,6 +55,31 @@ export default function PresentationFlowPage() {
   const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPresentationMode] = useState(true); // プレゼンモード状態を追加
+  const [showSaveButton, setShowSaveButton] = useState(true); // 保存ボタン表示状態
+
+  // 保存ボタンのDOM存在チェック
+  useEffect(() => {
+    const checkSaveButton = () => {
+      const el = document.querySelector('#save-btn');
+      if (!el) {
+        console.warn('保存ボタンがDOMに存在しません');
+      } else {
+        console.log('保存ボタンを検出しました');
+      }
+    };
+
+    // 初回チェック
+    checkSaveButton();
+
+    // MutationObserverで変更を監視
+    const observer = new MutationObserver(() => {
+      const el = document.querySelector('#save-btn');
+      console.log('保存ボタン存在:', Boolean(el));
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
 
   // URLパラメータから全画面表示を自動開始
   useEffect(() => {
@@ -74,7 +95,7 @@ export default function PresentationFlowPage() {
     }
   }, [searchParams]);
 
-  // 全画面時にボディのスタイルを制御
+  // 全画面時にボディのスタイルを制御と保存ボタンチェック
   useEffect(() => {
     if (isFullscreen) {
       document.body.style.margin = '0';
@@ -82,6 +103,12 @@ export default function PresentationFlowPage() {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.margin = '0';
       document.documentElement.style.padding = '0';
+
+      // 全画面時の保存ボタンチェック
+      setTimeout(() => {
+        const el = document.querySelector('#save-btn');
+        console.log('[全画面モード] 保存ボタン存在:', Boolean(el));
+      }, 100);
     } else {
       document.body.style.margin = '';
       document.body.style.padding = '';
@@ -90,6 +117,26 @@ export default function PresentationFlowPage() {
       document.documentElement.style.padding = '';
     }
   }, [isFullscreen]);
+
+  // fullscreenchange イベントの監視
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isInFullscreen = Boolean(document.fullscreenElement);
+      console.log('Fullscreen状態変更:', isInFullscreen);
+
+      // 保存ボタンの再確認
+      setTimeout(() => {
+        const el = document.querySelector('#save-btn');
+        console.log('[fullscreenchange] 保存ボタン存在:', Boolean(el));
+        if (!el && isInFullscreen) {
+          console.error('全画面モードで保存ボタンが見つかりません！');
+        }
+      }, 100);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // プレゼン1のスライド数を動的に決定（ファイルがある場合はその数、ない場合は1枚）
   const presentation1Files = currentProject?.presentation1?.uploadedFiles || [];
@@ -585,13 +632,24 @@ export default function PresentationFlowPage() {
         </div>
       )}
 
+      {/* 保存ボタン表示状態のデバッグ表示 */}
+      {!showSaveButton && (
+        <div className="fixed top-20 right-4 z-50 text-red-500 text-sm bg-white p-2 rounded shadow">
+          ※ 保存ボタンが非表示になっています
+        </div>
+      )}
+
       {/* 全画面時のボタン - 右上に配置 */}
       {isFullscreen && (
         <div className="fixed top-4 right-4 z-50 flex gap-2">
-          <SaveButton
-            data={collectSlideData()}
+          <button
+            id="save-btn"
+            onClick={() => window.print()}
             className="bg-gray-800/80 hover:bg-gray-700/90 text-white px-4 py-2 font-bold text-sm shadow-lg transition-all backdrop-blur border border-gray-600 rounded-md"
-          />
+            title="PDFとして保存（印刷画面から）"
+          >
+            保存
+          </button>
           <Button
             variant="outline"
             size="sm"

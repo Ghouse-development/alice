@@ -1,0 +1,85 @@
+/* プレゼンテーション印刷用スタイル */
+
+@media print {
+  /* 全体のリセット */
+  * {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* 不要な要素を非表示 */
+  .fixed:not(#current-slide-content),
+  button,
+  nav,
+  header,
+  footer,
+  [class*="hover:"],
+  [class*="transition"],
+  .hidden {
+    display: none !important;
+  }
+
+  /* スライドコンテンツを全画面表示 */
+  #current-slide-content {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    page-break-after: always;
+  }
+
+  /* A3横向きに設定 */
+  @page {
+    size: A3 landscape;
+    margin: 0;
+  }
+
+  /* スライドコンテンツの中身を中央配置 */
+  #current-slide-content > * {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+
+  /* テキストを印刷用に最適化 */
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    color: black !important;
+    background: transparent !important;
+  }
+
+  /* 背景色を白に統一 */
+  .bg-gray-100,
+  .bg-gray-50,
+  .bg-white {
+    background: white !important;
+  }
+
+  /* ボーダーを印刷用に調整 */
+  [class*="border"] {
+    border-color: #ccc !important;
+  }
+
+  /* グリッドレイアウトを維持 */
+  .grid {
+    display: grid !important;
+  }
+
+  .flex {
+    display: flex !important;
+  }
+}
