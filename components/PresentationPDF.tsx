@@ -1,30 +1,29 @@
 // components/PresentationPDF.tsx
-import React, { useMemo } from "react";
-import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
-import { ensurePdfFont } from "@/lib/pdf-font";
+import React from 'react';
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     color: '#1f2937',
   },
   subtitle: {
     fontSize: 18,
     marginBottom: 12,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     color: '#374151',
   },
   text: {
     fontSize: 12,
     lineHeight: 1.6,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     color: '#4b5563',
     marginBottom: 8,
   },
@@ -35,13 +34,13 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 14,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     marginBottom: 5,
     color: '#1f2937',
   },
   itemText: {
     fontSize: 11,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     color: '#6b7280',
   },
   image: {
@@ -54,7 +53,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 40,
     fontSize: 10,
-    fontFamily: "NotoSansJP",
+    fontFamily: 'NotoSansJP',
     color: '#9ca3af',
   },
 });
@@ -65,13 +64,7 @@ interface PresentationPDFProps {
 }
 
 export default function PresentationPDF({ data, images = {} }: PresentationPDFProps) {
-  // フォントを一度だけ登録（エラーでも継続）
-  useMemo(() => {
-    ensurePdfFont().catch((e) => {
-      console.error("[PDF FONT REGISTER ERROR]", e);
-      // フォント登録に失敗しても英字だけで生成できるようにする
-    });
-  }, []);
+  // フォント登録は SaveButton で事前に実行済み
 
   // データなしは空のDocumentを返す
   if (!data || (Array.isArray(data) && data.length === 0)) {
@@ -86,12 +79,7 @@ export default function PresentationPDF({ data, images = {} }: PresentationPDFPr
       <Page size="A3" orientation="landscape" style={styles.page}>
         <View>
           <Text style={styles.title}>G-House プレゼンテーション</Text>
-          <Text style={styles.text}>
-            作成日: {new Date().toLocaleDateString('ja-JP')}
-          </Text>
-          <Text style={styles.text}>
-            日本語レンダリング用に静的TTF/OTFフォントを使用しています。
-          </Text>
+          <Text style={styles.text}>作成日: {new Date().toLocaleDateString('ja-JP')}</Text>
         </View>
       </Page>
 
@@ -100,14 +88,10 @@ export default function PresentationPDF({ data, images = {} }: PresentationPDFPr
         <Page key={pageIndex} size="A3" orientation="landscape" style={styles.page}>
           <View>
             {/* タイトル */}
-            {slide.title && (
-              <Text style={styles.title}>{String(slide.title)}</Text>
-            )}
+            {slide.title && <Text style={styles.title}>{String(slide.title)}</Text>}
 
             {/* サブタイトル */}
-            {slide.subtitle && (
-              <Text style={styles.subtitle}>{String(slide.subtitle)}</Text>
-            )}
+            {slide.subtitle && <Text style={styles.subtitle}>{String(slide.subtitle)}</Text>}
 
             {/* コンテンツ */}
             {slide.content && (
@@ -117,9 +101,7 @@ export default function PresentationPDF({ data, images = {} }: PresentationPDFPr
                 ) : Array.isArray(slide.content) ? (
                   slide.content.map((item, index) => (
                     <View key={index} style={styles.itemContainer}>
-                      {item.title && (
-                        <Text style={styles.itemTitle}>{String(item.title)}</Text>
-                      )}
+                      {item.title && <Text style={styles.itemTitle}>{String(item.title)}</Text>}
                       {item.description && (
                         <Text style={styles.itemText}>{String(item.description)}</Text>
                       )}

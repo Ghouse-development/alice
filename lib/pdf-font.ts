@@ -1,59 +1,85 @@
 // lib/pdf-font.ts
-import { Font } from "@react-pdf/renderer";
+import { Font } from '@react-pdf/renderer';
 
 let registered = false;
 
-function detectFontFormat(ab: ArrayBuffer): "ttf" | "otf" | "woff" | "woff2" | "ttc" | "unknown" {
+/**
+ * フォント形式を判定する（TTF/OTFのみ許可）
+ */
+function detectFontFormat(ab: ArrayBuffer): 'ttf' | 'otf' | 'unknown' {
   const bytes = new Uint8Array(ab).subarray(0, 4);
   const sig = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]);
-  if (bytes[0] === 0x00 && bytes[1] === 0x01 && bytes[2] === 0x00 && bytes[3] === 0x00) return "ttf"; // TrueType
-  if (sig === "OTTO") return "otf";   // CFF/Type1 (静的OTF)
-  if (sig === "wOFF") return "woff";
-  if (sig === "wOF2") return "woff2";
-  if (sig === "ttcf") return "ttc";   // TrueType Collection
-  return "unknown";
+
+  // TrueType
+  if (bytes[0] === 0x00 && bytes[1] === 0x01 && bytes[2] === 0x00 && bytes[3] === 0x00)
+    return 'ttf';
+  // OpenType (CFF/Type1)
+  if (sig === 'OTTO') return 'otf';
+
+  // WOFF/WOFF2/TTCは使用不可
+  return 'unknown';
 }
 
 /**
- * public/fonts/NotoSansJP-Regular.ttf を ArrayBuffer で取得して
- * @react-pdf/renderer に1回だけ登録する。
+ * 日本語フォントを登録する（一度だけ実行）
+ * 必須：public/fonts/NotoSansJP-Regular.ttf, NotoSansJP-Bold.ttf
  */
-export async function ensurePdfFont(opts?: {
-  url?: string;           // 既定: "/fonts/NotoSansJP-Regular.ttf"
-  family?: string;        // 既定: "NotoSansJP"
-}) {
+export async function ensurePdfFont() {
   if (registered) return;
-  const url = opts?.url ?? "/fonts/NotoSansJP-Regular.ttf";
-  const family = opts?.family ?? "NotoSansJP";
 
   try {
-    // HEAD で存在チェック
-    const head = await fetch(url, { method: "HEAD", cache: "no-store" });
-    if (!head.ok) throw new Error(`Font not found: ${url} -> ${head.status}`);
+    // Regular フォントを登録
+    const regularRes = await fetch('/fonts/NotoSansJP-Regular.ttf');
+    if (!regularRes.ok) {
+      throw new Error(
+        `Font not found: /fonts/NotoSansJP-Regular.ttf (status: ${regularRes.status})`
+      );
+    }
+    const regularBytes = await regularRes.arrayBuffer();
 
-    // 本体取得
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Font fetch failed: ${url} -> ${res.status}`);
-    const ab = await res.arrayBuffer();
-
-    // フォーマット判定（TTF/OTF 以外は拒否）
-    const fmt = detectFontFormat(ab);
-    if (fmt !== "ttf" && fmt !== "otf") {
-      throw new Error(`Unsupported font format "${fmt}". Use static TTF/OTF. (${url})`);
+    // フォーマット確認
+    const regularFormat = detectFontFormat(regularBytes);
+    if (regularFormat === 'unknown') {
+      throw new Error(
+        'Unsupported font format "unknown". Use static TTF/OTF. (/fonts/NotoSansJP-Regular.ttf)'
+      );
     }
 
-    console.log(`Font format detected: ${fmt} for ${url}`);
-
-    // バッファ登録（Uint8Array を渡す）
     Font.register({
-      family,
-      src: new Uint8Array(ab),
+      family: 'NotoSansJP',
+      src: new Uint8Array(regularBytes),
+      fontWeight: 'normal',
     });
 
+    // Bold フォントを登録
+    const boldRes = await fetch('/fonts/NotoSansJP-Bold.ttf');
+    if (boldRes.ok) {
+      const boldBytes = await boldRes.arrayBuffer();
+      const boldFormat = detectFontFormat(boldBytes);
+
+      if (boldFormat !== 'unknown') {
+        Font.register({
+          family: 'NotoSansJP',
+          src: new Uint8Array(boldBytes),
+          fontWeight: 'bold',
+        });
+        console.log('Japanese fonts registered successfully (Regular + Bold)');
+      } else {
+        console.warn('Bold font format not supported, using Regular only');
+      }
+    } else {
+      console.log('Japanese font registered successfully (Regular only)');
+    }
+
     registered = true;
-    console.log(`Font "${family}" successfully registered from ${url}`);
   } catch (error) {
-    console.error(`Failed to register font: ${error}`);
+    console.error('Failed to register Japanese font:', error);
+    // エラーメッセージをユーザーに表示
+    if (typeof window !== 'undefined') {
+      alert(
+        `PDF生成用フォントの読み込みに失敗しました。\n\n${error}\n\n/fonts/NotoSansJP-Regular.ttf が見つかりません。`
+      );
+    }
     throw error;
   }
 }
