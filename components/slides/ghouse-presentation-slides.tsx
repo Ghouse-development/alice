@@ -1,7 +1,35 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Shield, Wind, Home, Thermometer, Clock, Palette, CheckCircle, Award, Zap, Cpu, Maximize2, Minimize2, Building2, Heart, Calculator, Droplets, Sun, Wrench, DollarSign, PhoneCall, Wifi, Image, Star, Users, Target } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+  Wind,
+  Home,
+  Thermometer,
+  Clock,
+  Palette,
+  CheckCircle,
+  Award,
+  Zap,
+  Cpu,
+  Maximize2,
+  Minimize2,
+  Building2,
+  Heart,
+  Calculator,
+  Droplets,
+  Sun,
+  Wrench,
+  DollarSign,
+  PhoneCall,
+  Wifi,
+  Image,
+  Star,
+  Users,
+  Target,
+} from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 interface SlideData {
@@ -17,7 +45,10 @@ interface GHousePresentationSlidesProps {
   projectId?: string;
 }
 
-export default function GHousePresentationSlides({ initialSlide = 0, projectId }: GHousePresentationSlidesProps) {
+export default function GHousePresentationSlides({
+  initialSlide = 0,
+  projectId,
+}: GHousePresentationSlidesProps) {
   const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { getSlideOrder } = useStore();
@@ -46,8 +77,8 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
     // ①商品ラインナップ
     {
       id: 'product',
-      title: "商品ラインナップ",
-      subtitle: "あなたのライフスタイルに最適な住まいを",
+      title: '商品ラインナップ',
+      subtitle: 'あなたのライフスタイルに最適な住まいを',
       icon: <Star className="w-10 h-10" />,
       content: (
         <div className="space-y-6">
@@ -59,7 +90,11 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
               </div>
               <h4 className="font-bold text-xl text-gray-800 mb-2">LIFE</h4>
               <p className="text-lg font-bold text-red-600 mb-2">1,650万円〜</p>
-              <p className="text-sm text-gray-600">豊かな暮らしを<br/>リーズナブルな価格で</p>
+              <p className="text-sm text-gray-600">
+                豊かな暮らしを
+                <br />
+                リーズナブルな価格で
+              </p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
               <div className="h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
@@ -68,7 +103,11 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
               </div>
               <h4 className="font-bold text-xl text-gray-800 mb-2">LIFE+</h4>
               <p className="text-lg font-bold text-red-600 mb-2">1,890万円〜</p>
-              <p className="text-sm text-gray-600">洗練された暮らしを<br/>デザイン</p>
+              <p className="text-sm text-gray-600">
+                洗練された暮らしを
+                <br />
+                デザイン
+              </p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
               <div className="h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
@@ -77,7 +116,11 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
               </div>
               <h4 className="font-bold text-xl text-gray-800 mb-2">HOURS</h4>
               <p className="text-lg font-bold text-red-600 mb-2">お問い合わせ</p>
-              <p className="text-sm text-gray-600">家族の豊かな時間と<br/>心を育てる家</p>
+              <p className="text-sm text-gray-600">
+                家族の豊かな時間と
+                <br />
+                心を育てる家
+              </p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
               <div className="h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
@@ -86,7 +129,11 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
               </div>
               <h4 className="font-bold text-xl text-gray-800 mb-2">LACIE</h4>
               <p className="text-lg font-bold text-red-600 mb-2">お問い合わせ</p>
-              <p className="text-sm text-gray-600">空間美と機能美で<br/>&quot;上質&quot;を彩る家</p>
+              <p className="text-sm text-gray-600">
+                空間美と機能美で
+                <br />
+                &quot;上質&quot;を彩る家
+              </p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
               <div className="h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
@@ -95,11 +142,17 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
               </div>
               <h4 className="font-bold text-xl text-gray-800 mb-2">LIFE X</h4>
               <p className="text-lg font-bold text-red-600 mb-2">お問い合わせ</p>
-              <p className="text-sm text-gray-600">規格住宅の常識を変える<br/>究極のデザイン</p>
+              <p className="text-sm text-gray-600">
+                規格住宅の常識を変える
+                <br />
+                究極のデザイン
+              </p>
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-6">
-            <h4 className="font-bold text-xl text-gray-800 mb-4 text-center">全商品共通の高性能仕様</h4>
+            <h4 className="font-bold text-xl text-gray-800 mb-4 text-center">
+              全商品共通の高性能仕様
+            </h4>
             <div className="grid grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-3xl font-bold text-gray-800">耐震等級3</div>
@@ -120,13 +173,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ②耐震性能
     {
       id: 'earthquake',
-      title: "耐震性能",
-      subtitle: "最先端技術で実現する究極の安全性",
+      title: '耐震性能',
+      subtitle: '最先端技術で実現する究極の安全性',
       icon: <Shield className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -151,7 +204,9 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
                 <Shield className="w-5 h-5 inline mr-2 text-orange-600" />
                 evoltz制振システム
               </h4>
-              <p className="text-base text-gray-700">ドイツBILSTEIN社製・地震エネルギーを40-50%吸収</p>
+              <p className="text-base text-gray-700">
+                ドイツBILSTEIN社製・地震エネルギーを40-50%吸収
+              </p>
             </div>
           </div>
 
@@ -166,7 +221,9 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
                 <span className="text-sm text-gray-500">シミュレーション画像</span>
               </div>
               <div>
-                <p className="text-base text-gray-700 mb-3">京大生研開発の最先端解析システムで個別にシミュレーション検証</p>
+                <p className="text-base text-gray-700 mb-3">
+                  京大生研開発の最先端解析システムで個別にシミュレーション検証
+                </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
@@ -200,13 +257,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ③断熱・気密性能
     {
       id: 'insulation',
-      title: "断熱・気密性能",
-      subtitle: "世界トップクラスの性能で実現する快適空間",
+      title: '断熱・気密性能',
+      subtitle: '世界トップクラスの性能で実現する快適空間',
       icon: <Home className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -266,13 +323,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ④空気質管理
     {
       id: 'air',
-      title: "空気質管理",
-      subtitle: "最新テクノロジーで実現するクリーンエア",
+      title: '空気質管理',
+      subtitle: '最新テクノロジーで実現するクリーンエア',
       icon: <Wind className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -343,13 +400,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ⑤空調計画
     {
       id: 'hvac',
-      title: "空調計画",
-      subtitle: "科学的設計で実現する理想の温熱環境",
+      title: '空調計画',
+      subtitle: '科学的設計で実現する理想の温熱環境',
       icon: <Thermometer className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -399,17 +456,21 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
           </div>
 
           <div className="bg-white rounded-lg p-5 shadow">
-            <p className="text-lg font-bold text-gray-800 mb-2">エアコン1台で家中快適は本当に実現可能！</p>
-            <p className="text-base text-gray-600">高気密高断熱＋適切な換気計画＋科学的な気流設計により、最小限の設備で最大の快適性を実現</p>
+            <p className="text-lg font-bold text-gray-800 mb-2">
+              エアコン1台で家中快適は本当に実現可能！
+            </p>
+            <p className="text-base text-gray-600">
+              高気密高断熱＋適切な換気計画＋科学的な気流設計により、最小限の設備で最大の快適性を実現
+            </p>
           </div>
         </div>
-      )
+      ),
     },
     // ⑥耐久性
     {
       id: 'durability',
-      title: "耐久性",
-      subtitle: "100年住み継げる家づくり",
+      title: '耐久性',
+      subtitle: '100年住み継げる家づくり',
       icon: <Clock className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -484,19 +545,21 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ⑦デザイン性
     {
       id: 'design',
-      title: "デザイン性",
-      subtitle: "性能美と機能美の完璧な融合",
+      title: 'デザイン性',
+      subtitle: '性能美と機能美の完璧な融合',
       icon: <Palette className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
           <div className="bg-gray-50 rounded-lg p-6">
             <h4 className="font-bold text-2xl text-gray-800 mb-4">完全自由設計×高性能の両立</h4>
-            <p className="text-lg text-gray-700">性能を一切妥協せず、お客様の理想を100%実現。建築家とエンジニアの共同設計により、デザインと性能の完璧な調和を実現。</p>
+            <p className="text-lg text-gray-700">
+              性能を一切妥協せず、お客様の理想を100%実現。建築家とエンジニアの共同設計により、デザインと性能の完璧な調和を実現。
+            </p>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
@@ -539,17 +602,21 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
           </div>
 
           <div className="bg-white rounded-lg p-5 shadow">
-            <p className="text-lg font-bold text-gray-800 mb-2">建築家×エンジニアのダブルチェック体制</p>
-            <p className="text-base text-gray-600">デザイン性を追求しながら、耐震性・断熱性・気密性すべての性能を維持</p>
+            <p className="text-lg font-bold text-gray-800 mb-2">
+              建築家×エンジニアのダブルチェック体制
+            </p>
+            <p className="text-base text-gray-600">
+              デザイン性を追求しながら、耐震性・断熱性・気密性すべての性能を維持
+            </p>
           </div>
         </div>
-      )
+      ),
     },
     // ⑧施工品質
     {
       id: 'quality',
-      title: "施工品質",
-      subtitle: "職人の技術力と最新技術の融合",
+      title: '施工品質',
+      subtitle: '職人の技術力と最新技術の融合',
       icon: <CheckCircle className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -606,16 +673,18 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
 
           <div className="bg-white rounded-lg p-5 shadow">
             <p className="text-xl font-bold text-gray-800 mb-2">施工不良率0.1%以下の実績</p>
-            <p className="text-lg text-gray-600">業界平均の1/10以下。徹底した品質管理と職人教育により、極めて高い施工精度を実現</p>
+            <p className="text-lg text-gray-600">
+              業界平均の1/10以下。徹底した品質管理と職人教育により、極めて高い施工精度を実現
+            </p>
           </div>
         </div>
-      )
+      ),
     },
     // ⑨保証・アフターサービス
     {
       id: 'warranty',
-      title: "保証・アフターサービス",
-      subtitle: "業界最長60年保証で生涯安心",
+      title: '保証・アフターサービス',
+      subtitle: '業界最長60年保証で生涯安心',
       icon: <Award className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -688,13 +757,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ⑩省エネ性
     {
       id: 'energy',
-      title: "省エネ性",
-      subtitle: "エネルギー自給自足の実現",
+      title: '省エネ性',
+      subtitle: 'エネルギー自給自足の実現',
       icon: <Zap className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -752,7 +821,9 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
           </div>
 
           <div className="bg-white rounded-lg p-5 shadow">
-            <h4 className="font-bold text-xl text-gray-800 mb-4">光熱費シミュレーション（4人家族）</h4>
+            <h4 className="font-bold text-xl text-gray-800 mb-4">
+              光熱費シミュレーション（4人家族）
+            </h4>
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-gray-100 rounded p-4 text-center">
                 <p className="text-base">一般住宅</p>
@@ -769,13 +840,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
             </div>
           </div>
         </div>
-      )
+      ),
     },
     // ⑪最新テクノロジー（IoT）
     {
       id: 'tech',
-      title: "最新テクノロジー",
-      subtitle: "IoT×AIで実現する未来の暮らし",
+      title: '最新テクノロジー',
+      subtitle: 'IoT×AIで実現する未来の暮らし',
       icon: <Cpu className="w-10 h-10" />,
       content: (
         <div className="space-y-4">
@@ -839,11 +910,13 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
 
           <div className="bg-white rounded-lg p-5 shadow">
             <p className="text-xl font-bold text-gray-800 mb-2">未来の暮らしを今すぐ実現</p>
-            <p className="text-lg text-gray-600">電気代実質ゼロ、家事時間50%削減、災害時も安心の自立型住宅</p>
+            <p className="text-lg text-gray-600">
+              電気代実質ゼロ、家事時間50%削減、災害時も安心の自立型住宅
+            </p>
           </div>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   // Filter and sort slides based on saved order
@@ -854,11 +927,11 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
     if (!slideOrder || slideOrder.length === 0) return allSlides;
 
     // Filter enabled slides and sort by saved order
-    const enabledSlides = slideOrder.filter(s => s.enabled);
+    const enabledSlides = slideOrder.filter((s) => s.enabled);
     const orderedSlides: SlideData[] = [];
 
-    enabledSlides.forEach(orderItem => {
-      const slide = allSlides.find(s => s.id === orderItem.id);
+    enabledSlides.forEach((orderItem) => {
+      const slide = allSlides.find((s) => s.id === orderItem.id);
       if (slide) {
         orderedSlides.push(slide);
       }
@@ -878,12 +951,12 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="w-full h-full flex flex-col bg-gray-50">
+    <div className="w-full h-full flex flex-col bg-white">
       <div className="flex-1 flex flex-col p-8 overflow-hidden">
-        <div className="flex-1 bg-white rounded-2xl shadow-xl p-8 flex flex-col border border-gray-200">
+        <div className="flex-1 flex flex-col">
           {/* Slide Header */}
-          <div className="flex items-center gap-6 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center shadow text-gray-700">
+          <div className="flex items-center gap-6 mb-6 pb-4 border-b-2 border-gray-200">
+            <div className="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center text-red-600">
               {currentSlideData.icon}
             </div>
             <div>
@@ -893,9 +966,7 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
           </div>
 
           {/* Slide Content - Flexible */}
-          <div className="flex-1 overflow-auto">
-            {currentSlideData.content}
-          </div>
+          <div className="flex-1 overflow-auto">{currentSlideData.content}</div>
         </div>
 
         {/* Navigation - Fixed at Bottom */}
@@ -915,9 +986,7 @@ export default function GHousePresentationSlides({ initialSlide = 0, projectId }
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide
-                    ? 'w-10 bg-red-600'
-                    : 'bg-gray-300 hover:bg-gray-400'
+                  index === currentSlide ? 'w-10 bg-red-600' : 'bg-gray-300 hover:bg-gray-400'
                 }`}
               />
             ))}
