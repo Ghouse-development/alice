@@ -1,123 +1,265 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 画像データベース（実際の画像に応じて調整）
+// Gハウス施工事例画像データベース
 const imageDatabase = [
-  // モダンスタイル画像
+  // モダンスタイル画像（スッキリ、シンプル、直線的）
   {
-    id: 'modern-1',
-    filename: 'modern-living-1.jpg',
-    tags: ['modern', 'minimalist', 'monochrome', 'geometric'],
+    id: 'g-100',
+    filename: 'gallery-100.jpg',
+    tags: ['modern', 'living', 'white', 'minimal'],
     style: 0,
     similarity: 0,
   },
   {
-    id: 'modern-2',
-    filename: 'modern-living-2.jpg',
-    tags: ['modern', 'sleek', 'glass', 'steel'],
+    id: 'g-101',
+    filename: 'gallery-101.jpg',
+    tags: ['modern', 'kitchen', 'sleek'],
     style: 0,
     similarity: 0,
   },
   {
-    id: 'modern-3',
-    filename: 'modern-kitchen-1.jpg',
-    tags: ['modern', 'kitchen', 'white', 'clean'],
+    id: 'g-110',
+    filename: 'gallery-110.jpg',
+    tags: ['modern', 'exterior', 'cubic'],
     style: 0,
     similarity: 0,
   },
   {
-    id: 'modern-4',
-    filename: 'modern-exterior-1.jpg',
-    tags: ['modern', 'exterior', 'cubic', 'flat'],
+    id: 'g-120',
+    filename: 'gallery-120.jpg',
+    tags: ['modern', 'interior', 'monochrome'],
+    style: 0,
+    similarity: 0,
+  },
+  {
+    id: 'g-130',
+    filename: 'gallery-130.jpg',
+    tags: ['modern', 'living', 'geometric'],
+    style: 0,
+    similarity: 0,
+  },
+  {
+    id: 'g-140',
+    filename: 'gallery-140.jpg',
+    tags: ['modern', 'bedroom', 'simple'],
+    style: 0,
+    similarity: 0,
+  },
+  {
+    id: 'g-150',
+    filename: 'gallery-150.jpg',
+    tags: ['modern', 'bath', 'clean'],
+    style: 0,
+    similarity: 0,
+  },
+  {
+    id: 'g-160',
+    filename: 'gallery-160.jpg',
+    tags: ['modern', 'entrance', 'stylish'],
     style: 0,
     similarity: 0,
   },
 
-  // ナチュラルスタイル画像
+  // ナチュラルスタイル画像（木目、温かみ、自然素材）
   {
-    id: 'natural-1',
-    filename: 'natural-living-1.jpg',
-    tags: ['natural', 'wood', 'warm', 'organic'],
+    id: 'g-105',
+    filename: 'gallery-105.jpg',
+    tags: ['natural', 'living', 'wood', 'warm'],
     style: 1,
     similarity: 0,
   },
   {
-    id: 'natural-2',
-    filename: 'natural-living-2.jpg',
-    tags: ['natural', 'plants', 'green', 'eco'],
+    id: 'g-115',
+    filename: 'gallery-115.jpg',
+    tags: ['natural', 'kitchen', 'wooden'],
     style: 1,
     similarity: 0,
   },
   {
-    id: 'natural-3',
-    filename: 'natural-kitchen-1.jpg',
-    tags: ['natural', 'kitchen', 'wood', 'country'],
+    id: 'g-125',
+    filename: 'gallery-125.jpg',
+    tags: ['natural', 'exterior', 'garden'],
     style: 1,
     similarity: 0,
   },
   {
-    id: 'natural-4',
-    filename: 'natural-exterior-1.jpg',
-    tags: ['natural', 'exterior', 'garden', 'traditional'],
+    id: 'g-135',
+    filename: 'gallery-135.jpg',
+    tags: ['natural', 'interior', 'organic'],
+    style: 1,
+    similarity: 0,
+  },
+  {
+    id: 'g-145',
+    filename: 'gallery-145.jpg',
+    tags: ['natural', 'dining', 'cozy'],
+    style: 1,
+    similarity: 0,
+  },
+  {
+    id: 'g-155',
+    filename: 'gallery-155.jpg',
+    tags: ['natural', 'bedroom', 'wood'],
+    style: 1,
+    similarity: 0,
+  },
+  {
+    id: 'g-165',
+    filename: 'gallery-165.jpg',
+    tags: ['natural', 'living', 'plants'],
+    style: 1,
+    similarity: 0,
+  },
+  {
+    id: 'g-175',
+    filename: 'gallery-175.jpg',
+    tags: ['natural', 'terrace', 'green'],
     style: 1,
     similarity: 0,
   },
 
-  // クラシックスタイル画像
+  // ラグジュアリー/クラシックスタイル画像（高級感、装飾的）
   {
-    id: 'classic-1',
-    filename: 'classic-living-1.jpg',
-    tags: ['classic', 'elegant', 'traditional', 'luxury'],
+    id: 'g-108',
+    filename: 'gallery-108.jpg',
+    tags: ['luxury', 'living', 'elegant'],
     style: 2,
     similarity: 0,
   },
   {
-    id: 'classic-2',
-    filename: 'classic-living-2.jpg',
-    tags: ['classic', 'antique', 'ornate', 'formal'],
+    id: 'g-118',
+    filename: 'gallery-118.jpg',
+    tags: ['luxury', 'kitchen', 'premium'],
     style: 2,
     similarity: 0,
   },
   {
-    id: 'classic-3',
-    filename: 'classic-kitchen-1.jpg',
-    tags: ['classic', 'kitchen', 'traditional', 'detailed'],
+    id: 'g-128',
+    filename: 'gallery-128.jpg',
+    tags: ['luxury', 'exterior', 'grand'],
     style: 2,
     similarity: 0,
   },
   {
-    id: 'classic-4',
-    filename: 'classic-exterior-1.jpg',
-    tags: ['classic', 'exterior', 'european', 'stone'],
+    id: 'g-138',
+    filename: 'gallery-138.jpg',
+    tags: ['luxury', 'interior', 'formal'],
+    style: 2,
+    similarity: 0,
+  },
+  {
+    id: 'g-148',
+    filename: 'gallery-148.jpg',
+    tags: ['luxury', 'dining', 'chandelier'],
+    style: 2,
+    similarity: 0,
+  },
+  {
+    id: 'g-158',
+    filename: 'gallery-158.jpg',
+    tags: ['luxury', 'bedroom', 'hotel-like'],
+    style: 2,
+    similarity: 0,
+  },
+  {
+    id: 'g-168',
+    filename: 'gallery-168.jpg',
+    tags: ['luxury', 'bath', 'spa'],
+    style: 2,
+    similarity: 0,
+  },
+  {
+    id: 'g-178',
+    filename: 'gallery-178.jpg',
+    tags: ['luxury', 'entrance', 'impressive'],
     style: 2,
     similarity: 0,
   },
 
-  // インダストリアルスタイル画像
+  // カジュアル/インダストリアルスタイル画像（リラックス、ラフ）
   {
-    id: 'industrial-1',
-    filename: 'industrial-living-1.jpg',
-    tags: ['industrial', 'raw', 'concrete', 'metal'],
+    id: 'g-103',
+    filename: 'gallery-103.jpg',
+    tags: ['casual', 'living', 'relaxed'],
     style: 3,
     similarity: 0,
   },
   {
-    id: 'industrial-2',
-    filename: 'industrial-living-2.jpg',
-    tags: ['industrial', 'loft', 'exposed', 'urban'],
+    id: 'g-113',
+    filename: 'gallery-113.jpg',
+    tags: ['casual', 'kitchen', 'open'],
     style: 3,
     similarity: 0,
   },
   {
-    id: 'industrial-3',
-    filename: 'industrial-kitchen-1.jpg',
-    tags: ['industrial', 'kitchen', 'steel', 'professional'],
+    id: 'g-123',
+    filename: 'gallery-123.jpg',
+    tags: ['casual', 'exterior', 'friendly'],
     style: 3,
     similarity: 0,
   },
   {
-    id: 'industrial-4',
-    filename: 'industrial-exterior-1.jpg',
-    tags: ['industrial', 'exterior', 'warehouse', 'modern'],
+    id: 'g-133',
+    filename: 'gallery-133.jpg',
+    tags: ['casual', 'interior', 'comfortable'],
+    style: 3,
+    similarity: 0,
+  },
+  {
+    id: 'g-143',
+    filename: 'gallery-143.jpg',
+    tags: ['casual', 'dining', 'family'],
+    style: 3,
+    similarity: 0,
+  },
+  {
+    id: 'g-153',
+    filename: 'gallery-153.jpg',
+    tags: ['casual', 'bedroom', 'cozy'],
+    style: 3,
+    similarity: 0,
+  },
+  {
+    id: 'g-163',
+    filename: 'gallery-163.jpg',
+    tags: ['industrial', 'living', 'loft'],
+    style: 3,
+    similarity: 0,
+  },
+  {
+    id: 'g-173',
+    filename: 'gallery-173.jpg',
+    tags: ['industrial', 'kitchen', 'steel'],
+    style: 3,
+    similarity: 0,
+  },
+
+  // 追加のバリエーション画像
+  {
+    id: 'g-180',
+    filename: 'gallery-180.jpg',
+    tags: ['modern', 'living', 'bright'],
+    style: 0,
+    similarity: 0,
+  },
+  {
+    id: 'g-190',
+    filename: 'gallery-190.jpg',
+    tags: ['natural', 'kitchen', 'country'],
+    style: 1,
+    similarity: 0,
+  },
+  {
+    id: 'g-200',
+    filename: 'gallery-200.jpg',
+    tags: ['luxury', 'living', 'sophisticated'],
+    style: 2,
+    similarity: 0,
+  },
+  {
+    id: 'g-210',
+    filename: 'gallery-210.jpg',
+    tags: ['casual', 'exterior', 'welcoming'],
     style: 3,
     similarity: 0,
   },
@@ -244,12 +386,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 画像URLを追加
+    // Gハウス施工事例画像のURLを追加
     const recommendationsWithUrls = recommendations.slice(0, 4).map((rec) => ({
       ...rec,
-      url: `https://picsum.photos/400/300?random=${Math.random().toString(36).substring(7)}`,
-      // 実際の画像がある場合は以下のようにする:
-      // url: `/images/interiors/${rec.filename}`,
+      url: `/images/${rec.filename}`, // Gハウスの実際の施工事例画像を使用
     }));
 
     return NextResponse.json({
