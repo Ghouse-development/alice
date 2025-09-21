@@ -244,9 +244,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 画像URLを追加
+    const recommendationsWithUrls = recommendations.slice(0, 4).map((rec) => ({
+      ...rec,
+      url: `https://picsum.photos/400/300?random=${Math.random().toString(36).substring(7)}`,
+      // 実際の画像がある場合は以下のようにする:
+      // url: `/images/interiors/${rec.filename}`,
+    }));
+
     return NextResponse.json({
       success: true,
-      recommendations: recommendations.slice(0, 4),
+      recommendations: recommendationsWithUrls,
       styleScores: normalizedScores,
       dominantStyle: styleScores.indexOf(Math.max(...styleScores)),
     });
