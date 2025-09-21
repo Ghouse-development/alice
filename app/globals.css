@@ -4,6 +4,25 @@
 @import "../styles/print.css";
 @import "../styles/presentation-fix.css";
 
+/* 全体のmax-widthを制限してコンパクトに */
+.container {
+  max-width: 1400px !important;
+}
+
+/* ダッシュボードとフォームのmax-width制限 */
+.dashboard-container,
+.form-container,
+.project-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* カード幅の調整 */
+.card-compact {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
 /* A3ページの固定サイズ維持 */
 .presentation-wrapper .a3-page-simple {
   width: 100%;
