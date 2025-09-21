@@ -22,7 +22,9 @@ import {
   Mail,
   MapPin,
   Calendar,
-  Briefcase
+  Briefcase,
+  List,
+  GripVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,13 +36,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStore } from '@/lib/store';
 import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
-import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
+import Presentation2Standard from '@/components/Presentation2Standard';
 import { Presentation4View } from '@/components/Presentation4View';
 import { Presentation4Editor } from '@/components/Presentation4Editor';
 import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
 import { Presentation6MaintenanceView } from '@/components/Presentation6MaintenanceView';
 import { PresentationContainer } from '@/components/PresentationContainer';
 import { HearingSheetEditor } from '@/components/HearingSheetEditor';
+import { SlideOrderEditor } from '@/components/SlideOrderEditor';
 
 // シンプル化したタブ構成
 const tabs = [
@@ -52,11 +55,12 @@ const tabs = [
   { id: 'pres5', label: '光熱費', icon: TrendingUp },
   { id: 'pres6', label: 'メンテナンス', icon: Wrench },
   { id: 'pres4', label: '資金計画', icon: DollarSign },
+  { id: 'order', label: '順番', icon: List },
 ];
 
 const presentationComponents = {
   pres1: Presentation1View,
-  pres2: Presentation2CrownUnified,
+  pres2: Presentation2Standard,
   pres3: Presentation3Interactive,
   pres4: Presentation4View,
   pres5: Presentation5UtilityCostSimulation,
@@ -329,6 +333,11 @@ export default function ProjectEditPage() {
                     )}
                   </TabsContent>
                 ))}
+
+                {/* 順番タブ */}
+                <TabsContent value="order">
+                  <SlideOrderEditor projectId={currentProject.id} />
+                </TabsContent>
               </Tabs>
             </div>
 

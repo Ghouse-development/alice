@@ -122,13 +122,20 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
     付帯工事費用C: presentation.excelData.付帯C,
     消費税: presentation.excelData.消費税,
     建物費用合計: presentation.excelData.合計,
+  } : presentation ? {
+    本体工事費用: presentation.buildingCost || 0,
+    付帯工事費用A: Math.round((presentation.constructionCost || 0) * 0.3),
+    付帯工事費用B: Math.round((presentation.constructionCost || 0) * 0.4),
+    付帯工事費用C: Math.round((presentation.constructionCost || 0) * 0.3),
+    消費税: Math.round(((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 0.1),
+    建物費用合計: Math.round(((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 1.1),
   } : {
-    本体工事費用: presentation.buildingCost,
-    付帯工事費用A: Math.round(presentation.constructionCost * 0.3),
-    付帯工事費用B: Math.round(presentation.constructionCost * 0.4),
-    付帯工事費用C: Math.round(presentation.constructionCost * 0.3),
-    消費税: Math.round((presentation.buildingCost + presentation.constructionCost) * 0.1),
-    建物費用合計: Math.round((presentation.buildingCost + presentation.constructionCost) * 1.1),
+    本体工事費用: 0,
+    付帯工事費用A: 0,
+    付帯工事費用B: 0,
+    付帯工事費用C: 0,
+    消費税: 0,
+    建物費用合計: 0,
   };
 
   // カテゴリ設定

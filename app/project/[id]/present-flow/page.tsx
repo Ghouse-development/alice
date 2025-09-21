@@ -19,7 +19,7 @@ import type { PerformanceItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import { Presentation1View } from '@/components/Presentation1View';
-import Presentation2CrownUnified from '@/components/Presentation2CrownUnified';
+import Presentation2Standard from '@/components/Presentation2Standard';
 import { Presentation4View } from '@/components/Presentation4View';
 // Dynamic imports for components that might not exist
 const Presentation3Interactive = dynamic(() => import('@/components/Presentation3Interactive').catch(() => {
@@ -431,7 +431,7 @@ export default function PresentationFlowPage() {
       case 2:
         return (
           <PresentationContainer fullscreen>
-            <Presentation2CrownUnified
+            <Presentation2Standard
               projectId={projectId}
               fixedSlide={currentSlide.slideIndex}
               performanceItems={presentation2Items}

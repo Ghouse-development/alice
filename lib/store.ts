@@ -13,6 +13,14 @@ import type {
   PresentationStep
 } from '@/types';
 
+interface SlideOrder {
+  id: string;
+  title: string;
+  subtitle: string;
+  enabled: boolean;
+  icon: string;
+}
+
 interface AppState {
   // Projects
   projects: Project[];
@@ -30,6 +38,9 @@ interface AppState {
 
   // Theme Settings
   theme: 'light' | 'dark';
+
+  // Slide Order
+  slideOrders: { [projectId: string]: SlideOrder[] };
 
   // Actions
   addProject: (project: Project) => void;
@@ -58,13 +69,17 @@ interface AppState {
   // Theme Actions
   setTheme: (theme: 'light' | 'dark') => void;
 
+  // Slide Order Actions
+  updateSlideOrder: (projectId: string, slides: SlideOrder[]) => void;
+  getSlideOrder: (projectId: string) => SlideOrder[] | undefined;
+
   // Initialize with sample data
   initializeSampleData: () => void;
 }
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       projects: [],
       currentProject: null,
       customers: [],
@@ -72,6 +87,7 @@ export const useStore = create<AppState>()(
       isPresentationMode: false,
       currentStep: 1,
       theme: 'light' as const,
+      slideOrders: {},
 
       addProject: (project) =>
         set((state) => ({
@@ -254,6 +270,16 @@ export const useStore = create<AppState>()(
 
       setTheme: (theme) =>
         set({ theme }),
+
+      updateSlideOrder: (projectId, slides) =>
+        set((state) => ({
+          slideOrders: {
+            ...state.slideOrders,
+            [projectId]: slides,
+          },
+        })),
+
+      getSlideOrder: (projectId) => get().slideOrders[projectId],
 
       initializeSampleData: () =>
         set({

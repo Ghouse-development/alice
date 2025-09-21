@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
 import type { Presentation1 } from '@/types';
 import A3Page from './A3Page';
+import dynamic from 'next/dynamic';
+
+const GHousePresentationSlides = dynamic(
+  () => import('./slides/ghouse-presentation-slides'),
+  { ssr: false }
+);
 
 // デザインシステム定数 - 指示書v2準拠（px禁止）
 const CROWN_DESIGN = {
