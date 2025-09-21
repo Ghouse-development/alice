@@ -56,38 +56,38 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
   const displayData =
     hasExcelData && presentation.excelData
       ? {
-          buildingCost: presentation.excelData.本体,
+          buildingCost: presentation.excelData.本体 || 0,
           constructionCost:
-            presentation.excelData.付帯A +
-            presentation.excelData.付帯B +
-            presentation.excelData.付帯C,
-          otherCosts: presentation.excelData.諸費用,
-          landCost: presentation.excelData.土地費用,
-          totalCost: presentation.excelData.総額,
-          loanAmount: presentation.excelData.借入金額,
-          downPayment: presentation.excelData.自己資金,
-          interestRate: presentation.excelData.金利,
-          loanPeriod: presentation.excelData.借入年数,
+            (presentation.excelData.付帯A || 0) +
+            (presentation.excelData.付帯B || 0) +
+            (presentation.excelData.付帯C || 0),
+          otherCosts: presentation.excelData.諸費用 || 0,
+          landCost: presentation.excelData.土地費用 || 0,
+          totalCost: presentation.excelData.総額 || 0,
+          loanAmount: presentation.excelData.借入金額 || 0,
+          downPayment: presentation.excelData.自己資金 || 0,
+          interestRate: presentation.excelData.金利 || 0.5,
+          loanPeriod: presentation.excelData.借入年数 || 35,
           monthlyPayment: calculateMonthlyPayment(
-            presentation.excelData.借入金額,
-            presentation.excelData.金利,
-            presentation.excelData.借入年数
+            presentation.excelData.借入金額 || 0,
+            presentation.excelData.金利 || 0.5,
+            presentation.excelData.借入年数 || 35
           ),
-          productName: presentation.excelData.商品名,
-          area: presentation.excelData.坪数 || 0,
-          floors: presentation.excelData.階数,
+          productName: presentation.excelData.商品名 || '',
+          area: presentation.excelData.坪数 || 32,
+          floors: presentation.excelData.階数 || '',
         }
       : {
-          buildingCost: presentation.buildingCost,
-          constructionCost: presentation.constructionCost,
-          otherCosts: presentation.otherCosts,
-          landCost: presentation.landCost,
-          totalCost: presentation.totalCost,
-          loanAmount: presentation.loanAmount,
-          downPayment: presentation.downPayment,
-          interestRate: presentation.interestRate,
-          loanPeriod: presentation.loanPeriod,
-          monthlyPayment: presentation.monthlyPayment,
+          buildingCost: presentation.buildingCost || 0,
+          constructionCost: presentation.constructionCost || 0,
+          otherCosts: presentation.otherCosts || 0,
+          landCost: presentation.landCost || 0,
+          totalCost: presentation.totalCost || 0,
+          loanAmount: presentation.loanAmount || 0,
+          downPayment: presentation.downPayment || 0,
+          interestRate: presentation.interestRate || 0.5,
+          loanPeriod: presentation.loanPeriod || 35,
+          monthlyPayment: presentation.monthlyPayment || 0,
           productName: '',
           area: 32, // デフォルト32坪
           floors: '',
