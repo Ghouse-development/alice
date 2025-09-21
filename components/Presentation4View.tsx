@@ -53,39 +53,45 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
   }
 
   // Use Excel data if available
-  const displayData = hasExcelData && presentation.excelData ? {
-    buildingCost: presentation.excelData.本体,
-    constructionCost: presentation.excelData.付帯A + presentation.excelData.付帯B + presentation.excelData.付帯C,
-    otherCosts: presentation.excelData.諸費用,
-    landCost: presentation.excelData.土地費用,
-    totalCost: presentation.excelData.総額,
-    loanAmount: presentation.excelData.借入金額,
-    downPayment: presentation.excelData.自己資金,
-    interestRate: presentation.excelData.金利,
-    loanPeriod: presentation.excelData.借入年数,
-    monthlyPayment: calculateMonthlyPayment(
-      presentation.excelData.借入金額,
-      presentation.excelData.金利,
-      presentation.excelData.借入年数
-    ),
-    productName: presentation.excelData.商品名,
-    area: presentation.excelData.坪数 || 0,
-    floors: presentation.excelData.階数,
-  } : {
-    buildingCost: presentation.buildingCost,
-    constructionCost: presentation.constructionCost,
-    otherCosts: presentation.otherCosts,
-    landCost: presentation.landCost,
-    totalCost: presentation.totalCost,
-    loanAmount: presentation.loanAmount,
-    downPayment: presentation.downPayment,
-    interestRate: presentation.interestRate,
-    loanPeriod: presentation.loanPeriod,
-    monthlyPayment: presentation.monthlyPayment,
-    productName: '',
-    area: 32, // デフォルト32坪
-    floors: '',
-  };
+  const displayData =
+    hasExcelData && presentation.excelData
+      ? {
+          buildingCost: presentation.excelData.本体,
+          constructionCost:
+            presentation.excelData.付帯A +
+            presentation.excelData.付帯B +
+            presentation.excelData.付帯C,
+          otherCosts: presentation.excelData.諸費用,
+          landCost: presentation.excelData.土地費用,
+          totalCost: presentation.excelData.総額,
+          loanAmount: presentation.excelData.借入金額,
+          downPayment: presentation.excelData.自己資金,
+          interestRate: presentation.excelData.金利,
+          loanPeriod: presentation.excelData.借入年数,
+          monthlyPayment: calculateMonthlyPayment(
+            presentation.excelData.借入金額,
+            presentation.excelData.金利,
+            presentation.excelData.借入年数
+          ),
+          productName: presentation.excelData.商品名,
+          area: presentation.excelData.坪数 || 0,
+          floors: presentation.excelData.階数,
+        }
+      : {
+          buildingCost: presentation.buildingCost,
+          constructionCost: presentation.constructionCost,
+          otherCosts: presentation.otherCosts,
+          landCost: presentation.landCost,
+          totalCost: presentation.totalCost,
+          loanAmount: presentation.loanAmount,
+          downPayment: presentation.downPayment,
+          interestRate: presentation.interestRate,
+          loanPeriod: presentation.loanPeriod,
+          monthlyPayment: presentation.monthlyPayment,
+          productName: '',
+          area: 32, // デフォルト32坪
+          floors: '',
+        };
 
   // displayData.areaは坪数なので、㎡数を計算（坪数 ÷ 0.3025 = ㎡）
   const generalArea = displayData.area > 0 ? displayData.area / 0.3025 : 100;
@@ -109,55 +115,70 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
     if (monthlyRate === 0) {
       return Math.round(principal / months);
     }
-    const monthly = principal * monthlyRate * Math.pow(1 + monthlyRate, months) /
-                  (Math.pow(1 + monthlyRate, months) - 1);
+    const monthly =
+      (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+      (Math.pow(1 + monthlyRate, months) - 1);
     return Math.round(monthly);
   }
 
   // 建物費用の詳細
-  const buildingDetails = hasExcelData && presentation.excelData ? {
-    本体工事費用: presentation.excelData.本体,
-    付帯工事費用A: presentation.excelData.付帯A,
-    付帯工事費用B: presentation.excelData.付帯B + (presentation.excelData.オプション費用 || 0),
-    付帯工事費用C: presentation.excelData.付帯C,
-    消費税: presentation.excelData.消費税,
-    建物費用合計: presentation.excelData.合計,
-  } : presentation ? {
-    本体工事費用: presentation.buildingCost || 0,
-    付帯工事費用A: Math.round((presentation.constructionCost || 0) * 0.3),
-    付帯工事費用B: Math.round((presentation.constructionCost || 0) * 0.4),
-    付帯工事費用C: Math.round((presentation.constructionCost || 0) * 0.3),
-    消費税: Math.round(((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 0.1),
-    建物費用合計: Math.round(((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 1.1),
-  } : {
-    本体工事費用: 0,
-    付帯工事費用A: 0,
-    付帯工事費用B: 0,
-    付帯工事費用C: 0,
-    消費税: 0,
-    建物費用合計: 0,
-  };
+  const buildingDetails =
+    hasExcelData && presentation.excelData
+      ? {
+          本体工事費用: presentation.excelData.本体,
+          付帯工事費用A: presentation.excelData.付帯A,
+          付帯工事費用B:
+            presentation.excelData.付帯B + (presentation.excelData.オプション費用 || 0),
+          付帯工事費用C: presentation.excelData.付帯C,
+          消費税: presentation.excelData.消費税,
+          建物費用合計: presentation.excelData.合計,
+        }
+      : presentation
+        ? {
+            本体工事費用: presentation.buildingCost || 0,
+            付帯工事費用A: Math.round((presentation.constructionCost || 0) * 0.3),
+            付帯工事費用B: Math.round((presentation.constructionCost || 0) * 0.4),
+            付帯工事費用C: Math.round((presentation.constructionCost || 0) * 0.3),
+            消費税: Math.round(
+              ((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 0.1
+            ),
+            建物費用合計: Math.round(
+              ((presentation.buildingCost || 0) + (presentation.constructionCost || 0)) * 1.1
+            ),
+          }
+        : {
+            本体工事費用: 0,
+            付帯工事費用A: 0,
+            付帯工事費用B: 0,
+            付帯工事費用C: 0,
+            消費税: 0,
+            建物費用合計: 0,
+          };
 
   // カテゴリ設定
   const mainCategories = [
     { key: 'building', label: '建物費用', value: buildingDetails.建物費用合計 },
-    { key: 'exterior', label: '外構工事', value: hasExcelData && presentation.excelData ? presentation.excelData.外構工事 : 2000000 },
-    { key: 'land', label: '土地費用', value: displayData.landCost },
-    { key: 'other', label: '諸費用', value: displayData.otherCosts },
+    {
+      key: 'exterior',
+      label: '外構工事',
+      value: hasExcelData && presentation.excelData ? presentation.excelData.外構工事 : 2000000,
+    },
+    { key: 'land', label: '土地費用', value: displayData.landCost || 0 },
+    { key: 'other', label: '諸費用', value: displayData.otherCosts || 0 },
   ];
 
   return (
     <div className="w-full h-full flex flex-col bg-white">
       {/* ヘッダー */}
-      <div style={{
-        padding: '40px 60px 20px',
-        borderBottom: '2px solid #e0e0e0',
-      }}>
+      <div
+        style={{
+          padding: '40px 60px 20px',
+          borderBottom: '2px solid #e0e0e0',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div>
-            <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>
-              G-HOUSE
-            </div>
+            <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>G-HOUSE</div>
             <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
           </div>
           <div
@@ -168,19 +189,23 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
             }}
           />
           <div style={{ flex: 1 }}>
-            <h1 style={{
-              margin: 0,
-              fontSize: '32px',
-              fontWeight: 'bold',
-              color: '#333',
-            }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: '#333',
+              }}
+            >
               資金計画書
             </h1>
-            <p style={{
-              margin: '5px 0 0',
-              fontSize: '16px',
-              color: '#666',
-            }}>
+            <p
+              style={{
+                margin: '5px 0 0',
+                fontSize: '16px',
+                color: '#666',
+              }}
+            >
               毎月のお支払額のシミュレーションをします
             </p>
           </div>
@@ -191,15 +216,17 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
       <div className="flex-1" style={{ padding: '16px' }}>
         {/* 商品情報 */}
         {(displayData.productName || displayData.area > 0 || displayData.floors) && (
-          <div style={{
-            backgroundColor: '#f8f9fa',
-            padding: '8px 16px',
-            marginBottom: '12px',
-            borderRadius: '6px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '24px',
-          }}>
+          <div
+            style={{
+              backgroundColor: '#f8f9fa',
+              padding: '8px 16px',
+              marginBottom: '12px',
+              borderRadius: '6px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '24px',
+            }}
+          >
             {displayData.productName && (
               <span style={{ fontSize: '14px', color: '#333' }}>
                 商品名: <span style={{ fontWeight: '600' }}>{displayData.productName}</span>
@@ -229,27 +256,39 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">本体工事費用</span>
-                    <span className="font-medium text-gray-900">¥{buildingDetails.本体工事費用.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{buildingDetails.本体工事費用.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">付帯工事費用A（電気・給排水・ガス工事）</span>
-                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用A.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{buildingDetails.付帯工事費用A.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">付帯工事費用B（間取変更・オプション工事）</span>
-                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用B.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{buildingDetails.付帯工事費用B.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">付帯工事費用C（地盤改良・解体工事）</span>
-                    <span className="font-medium text-gray-900">¥{buildingDetails.付帯工事費用C.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{buildingDetails.付帯工事費用C.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">消費税（10%）</span>
-                    <span className="font-medium text-gray-900">¥{buildingDetails.消費税.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{buildingDetails.消費税.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm font-bold pt-1.5 mt-1.5 border-t border-gray-200">
                     <span className="text-gray-900">建物費用総額</span>
-                    <span className="text-gray-900">¥{buildingDetails.建物費用合計.toLocaleString()}</span>
+                    <span className="text-gray-900">
+                      ¥{buildingDetails.建物費用合計.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -261,12 +300,16 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                   {mainCategories.slice(1).map((category) => (
                     <div key={category.key} className="flex justify-between text-xs">
                       <span className="text-gray-600">{category.label}</span>
-                      <span className="font-medium text-gray-900">¥{category.value.toLocaleString()}</span>
+                      <span className="font-medium text-gray-900">
+                        ¥{category.value.toLocaleString()}
+                      </span>
                     </div>
                   ))}
                   <div className="flex justify-between text-base font-bold pt-1.5 mt-1.5 border-t-2 border-slate-300">
                     <span className="text-gray-900">総額</span>
-                    <span className="text-lg text-gray-900">¥{displayData.totalCost.toLocaleString()}</span>
+                    <span className="text-lg text-gray-900">
+                      ¥{displayData.totalCost.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -274,7 +317,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
             {/* ローンシミュレーション */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-              <div className="text-sm font-semibold text-slate-700 mb-2">ローンシミュレーション</div>
+              <div className="text-sm font-semibold text-slate-700 mb-2">
+                ローンシミュレーション
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <div className="bg-gray-50 rounded-lg p-2.5 mb-2">
@@ -323,7 +368,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
             <div className="grid grid-cols-3 gap-2 h-[calc(100%-32px)]">
               {/* 現在のお住まい */}
               <div className="border border-gray-200 rounded-lg p-2 flex flex-col">
-                <div className="text-xs font-bold text-gray-700 mb-2 text-center">現在のお住まい</div>
+                <div className="text-xs font-bold text-gray-700 mb-2 text-center">
+                  現在のお住まい
+                </div>
                 <div className="mb-2 pb-2 border-b border-gray-200">
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-gray-600">床面積:</span>
@@ -351,7 +398,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                           autoFocus
                         />
                       ) : (
-                        <span className="font-medium text-gray-900">¥{currentRent.toLocaleString()}</span>
+                        <span className="font-medium text-gray-900">
+                          ¥{currentRent.toLocaleString()}
+                        </span>
                       )}
                       <Edit2
                         className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
@@ -372,7 +421,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                           autoFocus
                         />
                       ) : (
-                        <span className="font-medium text-gray-900">¥{currentElectricity.toLocaleString()}</span>
+                        <span className="font-medium text-gray-900">
+                          ¥{currentElectricity.toLocaleString()}
+                        </span>
                       )}
                       <Edit2
                         className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
@@ -393,7 +444,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                           autoFocus
                         />
                       ) : (
-                        <span className="font-medium text-gray-900">¥{currentGas.toLocaleString()}</span>
+                        <span className="font-medium text-gray-900">
+                          ¥{currentGas.toLocaleString()}
+                        </span>
                       )}
                       <Edit2
                         className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
@@ -414,7 +467,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                           autoFocus
                         />
                       ) : (
-                        <span className="font-medium text-gray-900">¥{currentParking.toLocaleString()}</span>
+                        <span className="font-medium text-gray-900">
+                          ¥{currentParking.toLocaleString()}
+                        </span>
                       )}
                       <Edit2
                         className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600"
@@ -444,7 +499,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                 <div className="flex-1 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">住宅ローン返済</span>
-                    <span className="font-medium text-gray-900">¥{displayData.monthlyPayment.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{displayData.monthlyPayment.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">電気代</span>
@@ -469,7 +526,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
 
               {/* Gハウスの家 */}
               <div className="border-2 border-emerald-500 rounded-lg p-2 flex flex-col bg-emerald-50">
-                <div className="text-xs font-bold text-emerald-700 mb-2 text-center">Gハウスの家</div>
+                <div className="text-xs font-bold text-emerald-700 mb-2 text-center">
+                  Gハウスの家
+                </div>
                 <div className="mb-2 pb-2 border-b border-emerald-300">
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-gray-600">延床面積:</span>
@@ -480,7 +539,9 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
                 <div className="flex-1 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">住宅ローン返済</span>
-                    <span className="font-medium text-gray-900">¥{displayData.monthlyPayment.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      ¥{displayData.monthlyPayment.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">電気代（高断熱・省エネ）</span>
