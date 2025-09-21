@@ -25,11 +25,10 @@ const oklchToRgbPlugin = {
 oklchToRgbPlugin.postcss = true;
 
 const config = {
-  plugins: [
-    "@tailwindcss/postcss",
-    // Only convert oklch colors in production builds
-    ...(process.env.NODE_ENV === 'production' ? [oklchToRgbPlugin] : [])
-  ],
+  plugins: {
+    "@tailwindcss/postcss": {},
+    ...(process.env.NODE_ENV === 'production' ? { 'oklch-to-rgb': oklchToRgbPlugin } : {})
+  },
 };
 
 export default config;
