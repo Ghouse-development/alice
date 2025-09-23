@@ -42,23 +42,23 @@ export default function A3Page({
         {(title || subtitle) && (
           <div
             style={{
-              padding: '40px 60px 20px',
+              padding: '12px 24px',
               borderBottom: '2px solid #e0e0e0',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div>
-                <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   G-HOUSE
-                </div>
-                <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
+                </span>
+                <span style={{ color: '#999', fontSize: '10px' }}>プレゼンテーション</span>
               </div>
               {(title || subtitle) && (
                 <>
                   <div
                     style={{
-                      width: '2px',
-                      height: '40px',
+                      width: '1px',
+                      height: '32px',
                       background: 'linear-gradient(to bottom, transparent, #c41e3a, transparent)',
                     }}
                   />
@@ -67,7 +67,7 @@ export default function A3Page({
                       <h1
                         style={{
                           margin: 0,
-                          fontSize: '28px',
+                          fontSize: '20px',
                           fontWeight: 'bold',
                           color: '#222',
                         }}
@@ -78,8 +78,8 @@ export default function A3Page({
                     {subtitle && (
                       <p
                         style={{
-                          margin: '4px 0 0',
-                          fontSize: '16px',
+                          margin: '2px 0 0',
+                          fontSize: '14px',
                           color: '#666',
                         }}
                       >
@@ -97,9 +97,9 @@ export default function A3Page({
         <div
           style={{
             flex: 1,
-            padding: '40px 60px',
+            padding: '24px 40px',
             overflow: 'auto',
-            height: showFooter ? 'calc(100% - 160px)' : 'calc(100% - 100px)',
+            height: showFooter ? 'calc(100% - 100px)' : 'calc(100% - 60px)',
           }}
         >
           {children}
@@ -156,23 +156,23 @@ export default function A3Page({
         {(title || subtitle) && (
           <div
             style={{
-              padding: '40px 60px 20px',
+              padding: '12px 24px',
               borderBottom: '2px solid #e0e0e0',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div>
-                <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   G-HOUSE
-                </div>
-                <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
+                </span>
+                <span style={{ color: '#999', fontSize: '10px' }}>プレゼンテーション</span>
               </div>
               {(title || subtitle) && (
                 <>
                   <div
                     style={{
-                      width: '2px',
-                      height: '40px',
+                      width: '1px',
+                      height: '32px',
                       background: 'linear-gradient(to bottom, transparent, #c41e3a, transparent)',
                     }}
                   />
@@ -181,7 +181,7 @@ export default function A3Page({
                       <h1
                         style={{
                           margin: 0,
-                          fontSize: '28px',
+                          fontSize: '20px',
                           fontWeight: 'bold',
                           color: '#222',
                         }}
@@ -192,8 +192,8 @@ export default function A3Page({
                     {subtitle && (
                       <p
                         style={{
-                          margin: '4px 0 0',
-                          fontSize: '16px',
+                          margin: '2px 0 0',
+                          fontSize: '14px',
                           color: '#666',
                         }}
                       >
@@ -210,8 +210,8 @@ export default function A3Page({
         {/* メインコンテンツ */}
         <div
           style={{
-            padding: '40px 60px',
-            height: title || subtitle ? 'calc(100% - 180px)' : 'calc(100% - 80px)',
+            padding: '24px 40px',
+            height: title || subtitle ? 'calc(100% - 120px)' : 'calc(100% - 80px)',
             overflowY: 'auto',
             overflowX: 'hidden',
           }}

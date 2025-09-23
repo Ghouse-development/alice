@@ -172,19 +172,19 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
       {/* ヘッダー */}
       <div
         style={{
-          padding: '40px 60px 20px',
+          padding: '12px 24px',
           borderBottom: '2px solid #e0e0e0',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div>
-            <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '18px' }}>G-HOUSE</div>
-            <div style={{ color: '#666', fontSize: '14px' }}>プレゼンテーション</div>
+            <div style={{ color: '#c41e3a', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>G-HOUSE</div>
+            <div style={{ color: '#999', fontSize: '10px' }}>プレゼンテーション</div>
           </div>
           <div
             style={{
-              width: '2px',
-              height: '40px',
+              width: '1px',
+              height: '32px',
               background: 'linear-gradient(to bottom, transparent, #c41e3a, transparent)',
             }}
           />
@@ -192,7 +192,7 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
             <h1
               style={{
                 margin: 0,
-                fontSize: '32px',
+                fontSize: '20px',
                 fontWeight: 'bold',
                 color: '#333',
               }}
@@ -201,8 +201,8 @@ export function Presentation4View({ projectId }: Presentation4ViewProps) {
             </h1>
             <p
               style={{
-                margin: '5px 0 0',
-                fontSize: '16px',
+                margin: '2px 0 0',
+                fontSize: '14px',
                 color: '#666',
               }}
             >
