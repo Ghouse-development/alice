@@ -1,0 +1,310 @@
+/* レスポンシブデザイン用スタイルシート */
+
+/* 基本のレスポンシブ設定 */
+:root {
+  --header-height-desktop: 60px;
+  --header-height-mobile: 48px;
+  --sidebar-width: 280px;
+  --content-max-width: 1587px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* タブレット（iPad Pro等）横向き */
+@media screen and (max-width: 1366px) and (orientation: landscape) {
+  .a3-page-simple {
+    transform: scale(0.85);
+    transform-origin: top left;
+  }
+
+  .presentation-container {
+    max-width: 100vw;
+    padding: var(--spacing-md);
+  }
+
+  /* ヘッダーの調整 */
+  .presentation-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
+  }
+
+  /* スライドコンテンツの調整 */
+  .slide-content {
+    padding: var(--spacing-md);
+  }
+
+  /* グリッドレイアウトの調整 */
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* タブレット（iPad等）縦向き */
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+  .a3-page-simple {
+    transform: rotate(90deg) scale(0.7);
+    transform-origin: center center;
+    width: 100vh;
+    height: 100vw;
+  }
+
+  /* ナビゲーションボタンの配置変更 */
+  .slide-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+
+  .slide-navigation button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+  }
+}
+
+/* スマートフォン横向き */
+@media screen and (max-width: 896px) and (orientation: landscape) {
+  .a3-page-simple {
+    transform: scale(0.5);
+    transform-origin: top left;
+  }
+
+  /* ヘッダーを最小化 */
+  .presentation-header {
+    height: var(--header-height-mobile);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .presentation-header h1 {
+    font-size: 1rem;
+  }
+
+  .presentation-header p {
+    display: none;
+  }
+
+  /* コンテンツの余白を削減 */
+  .slide-content {
+    padding: var(--spacing-sm);
+  }
+
+  /* テーブルをスクロール可能に */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px;
+  }
+}
+
+/* スマートフォン縦向き */
+@media screen and (max-width: 480px) {
+  /* モバイル専用ビューに切り替え */
+  .a3-page-simple {
+    width: 100%;
+    height: auto;
+    transform: none;
+  }
+
+  /* スライドを縦スクロール可能に */
+  .slide-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+  }
+
+  /* 各スライドをカード形式で表示 */
+  .slide-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  /* グリッドを単一カラムに */
+  .grid,
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  /* フォントサイズの調整 */
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  p, span, div {
+    font-size: 0.9rem;
+  }
+
+  /* ナビゲーションをドロワー形式に */
+  .mobile-menu-toggle {
+    display: block;
+    position: fixed;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    background: #c41e3a;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide-navigation {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: 100vh;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 999;
+    overflow-y: auto;
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .slide-navigation.open {
+    left: 0;
+  }
+
+  /* 保存ボタンをフローティングに */
+  .save-button-mobile {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-md);
+    z-index: 100;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  /* チャートとグラフの調整 */
+  .chart-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chart-container canvas {
+    min-width: 300px;
+    height: 200px !important;
+  }
+}
+
+/* アクセシビリティ向上 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .presentation-container {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .slide-card {
+    background-color: #2a2a2a;
+    border-color: #3a3a3a;
+  }
+
+  .table-container table {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .table-container th {
+    background-color: #3a3a3a;
+  }
+
+  .table-container td {
+    border-color: #3a3a3a;
+  }
+}
+
+/* タッチデバイス用の調整 */
+@media (hover: none) and (pointer: coarse) {
+  /* タップターゲットを大きく */
+  button, a, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* スワイプジェスチャー用の領域 */
+  .swipe-area {
+    touch-action: pan-y;
+  }
+
+  /* ホバー効果を無効化 */
+  .hover\:bg-gray-100:hover {
+    background-color: transparent;
+  }
+}
+
+/* 印刷時の最適化 */
+@media print {
+  /* モバイルナビゲーションを非表示 */
+  .mobile-menu-toggle,
+  .slide-navigation,
+  .save-button-mobile {
+    display: none !important;
+  }
+
+  /* A3サイズに最適化 */
+  .a3-page-simple {
+    width: 420mm;
+    height: 297mm;
+    transform: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ページブレークの制御 */
+  .slide-card {
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+}

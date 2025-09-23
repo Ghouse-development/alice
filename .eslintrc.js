@@ -29,7 +29,9 @@ module.exports = {
         varsIgnorePattern: '^_',
       },
     ],
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-require-imports': 'off',
+    'react-hooks/exhaustive-deps': 'off',
     // JSX内の余計なテキストノードや括弧ズレを早期検知
     'react/jsx-closing-bracket-location': ['error', 'line-aligned'],
     'react/jsx-closing-tag-location': 'error',

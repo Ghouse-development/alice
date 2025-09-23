@@ -1,0 +1,762 @@
+/* ===========================================================
+   Enhanced Print Styles for A3 Landscape Layout
+   G-House Presentation System
+   =========================================================== */
+
+/* ===== PRINT MEDIA QUERIES AND BASE SETTINGS ===== */
+@media print {
+  /* Reset and base print styles */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-sizing: border-box;
+  }
+
+  /* Page setup for A3 landscape */
+  @page {
+    size: A3 landscape;
+    margin: 15mm 20mm 15mm 20mm;
+    padding: 0;
+
+    /* Headers and footers */
+    @top-left {
+      content: "G-House プレゼンテーション";
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 10pt;
+      color: #666;
+      margin-top: 5mm;
+    }
+
+    @top-right {
+      content: "ページ " counter(page) " / " counter(pages);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 10pt;
+      color: #666;
+      margin-top: 5mm;
+    }
+
+    @bottom-center {
+      content: attr(data-project-name) " - " attr(data-customer-name);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 9pt;
+      color: #888;
+      margin-bottom: 3mm;
+    }
+
+    /* Prevent page breaks inside important content */
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Named page types for different slides */
+  @page :first {
+    @top-left {
+      content: "";
+    }
+    @top-right {
+      content: "";
+    }
+  }
+
+  @page slide-cover {
+    @top-left {
+      content: "";
+    }
+    @top-right {
+      content: "";
+    }
+    @bottom-center {
+      content: "";
+    }
+  }
+
+  @page slide-content {
+    margin: 10mm 15mm 10mm 15mm;
+  }
+
+  @page slide-chart {
+    margin: 8mm 12mm 8mm 12mm;
+  }
+
+  /* ===== DOCUMENT STRUCTURE ===== */
+
+  /* Hide non-printable elements */
+  .no-print,
+  .print-hidden,
+  button:not(.print-visible),
+  .navigation,
+  .controls,
+  .settings,
+  .auto-play-controls,
+  .progress-indicator,
+  .tooltip,
+  .dropdown-menu,
+  nav,
+  header:not(.print-header),
+  footer:not(.print-footer),
+  .sidebar,
+  .overlay,
+  .modal:not(.print-modal),
+  .loading,
+  .cursor-pointer,
+  [role="button"]:not(.print-button) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Show print-specific elements */
+  .print-only,
+  .print-visible {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Document root */
+  html {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    background: white !important;
+    color: #000 !important;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: auto;
+  }
+
+  /* ===== SLIDE CONTAINER OPTIMIZATION ===== */
+
+  /* Main slide container */
+  .slide-container,
+  .presentation-slide,
+  .a3-container,
+  .slide-wrapper {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 240mm !important; /* A3 landscape height minus margins */
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    transform: none !important;
+    position: relative !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+    page-break-after: always;
+  }
+
+  /* Each slide should start on a new page */
+  .slide-page,
+  .presentation-page,
+  [data-slide] {
+    page-break-before: always;
+    page-break-inside: avoid;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 240mm !important;
+    display: block !important;
+    position: relative !important;
+    background: white !important;
+  }
+
+  /* First slide special handling */
+  .slide-page:first-child,
+  .presentation-page:first-child,
+  [data-slide="1"] {
+    page-break-before: auto;
+    page: slide-cover;
+  }
+
+  /* ===== TYPOGRAPHY OPTIMIZATION ===== */
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    color: #000 !important;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 8pt;
+  }
+
+  h1 {
+    font-size: 24pt;
+    line-height: 1.2;
+    margin-bottom: 12pt;
+  }
+
+  h2 {
+    font-size: 20pt;
+    line-height: 1.3;
+    margin-bottom: 10pt;
+  }
+
+  h3 {
+    font-size: 16pt;
+    line-height: 1.3;
+    margin-bottom: 8pt;
+  }
+
+  h4 {
+    font-size: 14pt;
+    line-height: 1.4;
+  }
+
+  /* Paragraphs and text */
+  p {
+    margin: 0 0 8pt 0;
+    line-height: 1.5;
+    text-align: justify;
+    text-justify: inter-ideograph;
+  }
+
+  /* Lists */
+  ul, ol {
+    margin: 8pt 0;
+    padding-left: 20pt;
+    page-break-inside: avoid;
+  }
+
+  li {
+    margin-bottom: 4pt;
+    line-height: 1.4;
+    page-break-inside: avoid;
+  }
+
+  /* ===== TABLES AND DATA PRESENTATION ===== */
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 8pt 0 !important;
+    page-break-inside: avoid;
+    font-size: 10pt;
+    line-height: 1.3;
+  }
+
+  table.allow-break {
+    page-break-inside: auto;
+  }
+
+  thead {
+    display: table-header-group;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+  }
+
+  tfoot {
+    display: table-footer-group;
+    page-break-inside: avoid;
+    page-break-before: avoid;
+  }
+
+  tbody {
+    display: table-row-group;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  td, th {
+    border: 1pt solid #000 !important;
+    padding: 6pt 8pt !important;
+    text-align: left;
+    vertical-align: top;
+    background: white !important;
+    color: #000 !important;
+  }
+
+  th {
+    font-weight: bold;
+    background: #f0f0f0 !important;
+    color: #000 !important;
+  }
+
+  /* Specific table styles for cost breakdowns */
+  .cost-table,
+  .price-table,
+  .comparison-table {
+    font-size: 11pt;
+    margin: 12pt 0;
+  }
+
+  .cost-table th,
+  .price-table th,
+  .comparison-table th {
+    background: #e8e8e8 !important;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .cost-table .total-row,
+  .price-table .total-row {
+    border-top: 2pt solid #000 !important;
+    font-weight: bold;
+  }
+
+  /* ===== CHARTS AND GRAPHICS OPTIMIZATION ===== */
+
+  /* Chart containers */
+  .chart-container,
+  .graph-container,
+  canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 180mm !important;
+    margin: 8pt 0 !important;
+    page-break-inside: avoid;
+    background: white !important;
+    border: 1pt solid #ccc !important;
+  }
+
+  /* Chart.js specific */
+  canvas {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* SVG charts */
+  svg {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 180mm !important;
+    background: white !important;
+  }
+
+  /* Chart legends and labels */
+  .chart-legend,
+  .chart-labels {
+    font-size: 9pt !important;
+    line-height: 1.2 !important;
+    color: #000 !important;
+    page-break-inside: avoid;
+  }
+
+  /* ===== IMAGE OPTIMIZATION ===== */
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+    margin: 4pt 0;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Large images */
+  .image-large,
+  .hero-image,
+  .cover-image {
+    width: 100% !important;
+    max-height: 200mm !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    page-break-before: auto;
+    page-break-after: auto;
+    page-break-inside: avoid;
+  }
+
+  /* Image galleries */
+  .image-gallery,
+  .photo-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(80mm, 1fr)) !important;
+    gap: 8pt !important;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+
+  .image-gallery img,
+  .photo-grid img {
+    width: 100% !important;
+    height: 60mm !important;
+    object-fit: cover !important;
+    border: 1pt solid #ccc !important;
+  }
+
+  /* ===== LAYOUT COMPONENTS ===== */
+
+  /* Grid layouts */
+  .grid,
+  .layout-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120mm, 1fr)) !important;
+    gap: 12pt !important;
+    margin: 8pt 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr 1fr !important;
+  }
+
+  /* Flex layouts */
+  .flex,
+  .flex-row {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12pt !important;
+    page-break-inside: avoid;
+  }
+
+  .flex-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8pt !important;
+  }
+
+  /* Card components */
+  .card,
+  .panel,
+  .box {
+    border: 1pt solid #ccc !important;
+    padding: 12pt !important;
+    margin: 8pt 0 !important;
+    background: white !important;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .card-header {
+    border-bottom: 1pt solid #ccc !important;
+    padding-bottom: 8pt !important;
+    margin-bottom: 8pt !important;
+    font-weight: bold;
+  }
+
+  /* ===== SPECIFIC SLIDE LAYOUTS ===== */
+
+  /* Cover slide */
+  .slide-cover,
+  .title-slide {
+    text-align: center !important;
+    padding: 40pt 20pt !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 200mm !important;
+  }
+
+  .slide-cover h1 {
+    font-size: 36pt !important;
+    margin-bottom: 20pt !important;
+    color: #000 !important;
+  }
+
+  .slide-cover .subtitle {
+    font-size: 18pt !important;
+    color: #666 !important;
+    margin-bottom: 30pt !important;
+  }
+
+  /* Content slides */
+  .slide-content {
+    padding: 20pt !important;
+    page: slide-content;
+  }
+
+  .slide-content .slide-title {
+    font-size: 24pt !important;
+    margin-bottom: 16pt !important;
+    padding-bottom: 8pt !important;
+    border-bottom: 2pt solid #ccc !important;
+  }
+
+  /* Options slide specific */
+  .options-slide {
+    page: slide-content;
+  }
+
+  .option-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8pt 0 !important;
+    border-bottom: 1pt solid #eee !important;
+    page-break-inside: avoid;
+  }
+
+  .option-price {
+    font-weight: bold !important;
+    color: #000 !important;
+  }
+
+  /* Cost simulation slide */
+  .cost-simulation {
+    page: slide-chart;
+  }
+
+  .cost-breakdown {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20pt !important;
+    margin: 16pt 0 !important;
+  }
+
+  /* Chart slide specific */
+  .chart-slide {
+    page: slide-chart;
+    padding: 12pt !important;
+  }
+
+  .chart-slide .chart-container {
+    max-height: 200mm !important;
+    margin: 0 auto !important;
+  }
+
+  /* ===== UTILITIES AND HELPERS ===== */
+
+  /* Page break controls */
+  .page-break-before {
+    page-break-before: always !important;
+  }
+
+  .page-break-after {
+    page-break-after: always !important;
+  }
+
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+  }
+
+  .page-break-inside-auto {
+    page-break-inside: auto !important;
+  }
+
+  /* Spacing utilities */
+  .print-spacing-tight {
+    margin: 4pt 0 !important;
+  }
+
+  .print-spacing-normal {
+    margin: 8pt 0 !important;
+  }
+
+  .print-spacing-loose {
+    margin: 16pt 0 !important;
+  }
+
+  /* Font size utilities */
+  .print-text-xs {
+    font-size: 8pt !important;
+  }
+
+  .print-text-sm {
+    font-size: 10pt !important;
+  }
+
+  .print-text-base {
+    font-size: 12pt !important;
+  }
+
+  .print-text-lg {
+    font-size: 14pt !important;
+  }
+
+  .print-text-xl {
+    font-size: 16pt !important;
+  }
+
+  /* Background and borders */
+  .print-bg-gray {
+    background: #f5f5f5 !important;
+  }
+
+  .print-border {
+    border: 1pt solid #ccc !important;
+  }
+
+  .print-border-thick {
+    border: 2pt solid #000 !important;
+  }
+
+  /* ===== ACCESSIBILITY IN PRINT ===== */
+
+  /* High contrast mode support */
+  @media print and (prefers-contrast: high) {
+    * {
+      background: white !important;
+      color: black !important;
+    }
+
+    .card,
+    .panel,
+    .box {
+      border: 2pt solid #000 !important;
+    }
+
+    th {
+      background: black !important;
+      color: white !important;
+    }
+  }
+
+  /* Ensure links are visible in print */
+  a {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #666;
+  }
+
+  /* Screen reader text should remain hidden */
+  .sr-only,
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  /* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+  /* Reduce rendering complexity */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Optimize for print rendering */
+  .print-optimize {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ===== SPECIFIC COMPONENT OVERRIDES ===== */
+
+  /* Form elements in print */
+  input, select, textarea {
+    border: 1pt solid #000 !important;
+    background: white !important;
+    color: #000 !important;
+    padding: 2pt 4pt !important;
+    font-size: 10pt !important;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12pt;
+    height: 12pt;
+    border: 1pt solid #000 !important;
+    background: white !important;
+    margin-right: 4pt;
+  }
+
+  input[type="checkbox"]:checked:after {
+    content: "✓";
+    display: block;
+    text-align: center;
+    font-size: 10pt;
+    line-height: 12pt;
+  }
+
+  input[type="radio"]:checked:after {
+    content: "●";
+    display: block;
+    text-align: center;
+    font-size: 8pt;
+    line-height: 12pt;
+  }
+
+  /* Buttons that should appear in print */
+  .print-button {
+    border: 1pt solid #000 !important;
+    background: white !important;
+    color: #000 !important;
+    padding: 4pt 8pt !important;
+    font-size: 10pt !important;
+    display: inline-block !important;
+  }
+
+  /* ===== BROWSER-SPECIFIC FIXES ===== */
+
+  /* Chrome/Webkit specific */
+  @media print and (-webkit-min-device-pixel-ratio: 0) {
+    body {
+      -webkit-print-color-adjust: exact;
+    }
+
+    .chart-container canvas {
+      image-rendering: crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+    }
+  }
+
+  /* Firefox specific */
+  @-moz-document url-prefix() {
+    @media print {
+      * {
+        color-adjust: exact;
+      }
+    }
+  }
+
+  /* Edge/IE specific */
+  @media print and (-ms-high-contrast: none) {
+    .slide-container {
+      zoom: 1;
+    }
+  }
+
+  /* ===== DEBUG AND DEVELOPMENT ===== */
+
+  /* Print debug mode - add .print-debug to body */
+  .print-debug .slide-container {
+    border: 2pt dashed red !important;
+    position: relative;
+  }
+
+  .print-debug .slide-container:before {
+    content: "Page " counter(page);
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: red;
+    color: white;
+    padding: 2pt 4pt;
+    font-size: 8pt;
+    z-index: 9999;
+  }
+
+  /* Page counter */
+  body {
+    counter-reset: page;
+  }
+
+  .slide-page {
+    counter-increment: page;
+  }
+}
+
+/* ===== END PRINT STYLES ===== */
