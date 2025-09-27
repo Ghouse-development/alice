@@ -10,8 +10,6 @@ const nextConfig = {
         'node_modules/@esbuild/linux-x64',
       ],
     },
-    workerThreads: false,
-    cpus: 1,
   },
   // Vercelビルドのタイムアウト対策
   generateBuildId: async () => {
