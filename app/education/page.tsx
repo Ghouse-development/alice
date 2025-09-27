@@ -122,7 +122,9 @@ export default function EducationPage() {
   };
 
   const getScoreStats = () => {
-    const allScores = pastEvaluations.flatMap((eval) => eval.sections.map((s) => s.score));
+    const allScores = pastEvaluations.flatMap((evaluation) =>
+      evaluation.sections.map((s) => s.score)
+    );
     const scorePoints = { '◎': 4, '○': 3, '△': 2, '×': 1 };
     const average =
       allScores.reduce((sum, score) => sum + scorePoints[score], 0) / allScores.length;
@@ -302,20 +304,22 @@ export default function EducationPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {pastEvaluations.map((pastEval, index) => (
+                  {pastEvaluations.map((pastEvaluation, index) => (
                     <div key={index} className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <h4 className="font-medium">{pastEval.case_id}</h4>
-                          <p className="text-sm text-gray-500">{pastEval.date}</p>
+                          <h4 className="font-medium">{pastEvaluation.case_id}</h4>
+                          <p className="text-sm text-gray-500">{pastEvaluation.date}</p>
                         </div>
-                        <Badge className={SCORE_COLORS[calculateOverallScore(pastEval.sections)]}>
-                          {calculateOverallScore(pastEval.sections)}
+                        <Badge
+                          className={SCORE_COLORS[calculateOverallScore(pastEvaluation.sections)]}
+                        >
+                          {calculateOverallScore(pastEvaluation.sections)}
                         </Badge>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 mb-2">
-                        {pastEval.sections.map((section, sectionIndex) => (
+                        {pastEvaluation.sections.map((section, sectionIndex) => (
                           <div key={sectionIndex} className="flex items-center space-x-1">
                             <span className="text-xs text-gray-600">{section.section}:</span>
                             <Badge className={`text-xs ${SCORE_COLORS[section.score]}`}>
@@ -325,9 +329,9 @@ export default function EducationPage() {
                         ))}
                       </div>
 
-                      {pastEval.overall_notes && (
+                      {pastEvaluation.overall_notes && (
                         <p className="text-sm text-gray-600 italic">
-                          &ldquo;{pastEval.overall_notes}&rdquo;
+                          &ldquo;{pastEvaluation.overall_notes}&rdquo;
                         </p>
                       )}
                     </div>
