@@ -1,6 +1,12 @@
 // Supabase連携
 
 import { supabase } from './supabase';
+import {
+  MOCK_CUSTOMERS,
+  MOCK_PV_CONFIGS,
+  MOCK_PERFORMANCE_ACTUALS,
+  MOCK_SALES_SCRIPTS,
+} from './mock-data';
 import type {
   Customer,
   HVACLoad,
@@ -20,10 +26,12 @@ export async function getCustomers(): Promise<Customer[]> {
 
   if (error) {
     console.error('Error fetching customers:', error);
-    return [];
+    // Supabaseが設定されていない場合はモックデータを返す
+    return MOCK_CUSTOMERS;
   }
 
-  return data || [];
+  // データが空の場合もモックデータを返す
+  return data && data.length > 0 ? data : MOCK_CUSTOMERS;
 }
 
 export async function getCustomerById(customerId: string): Promise<Customer | null> {
@@ -35,7 +43,8 @@ export async function getCustomerById(customerId: string): Promise<Customer | nu
 
   if (error) {
     console.error('Error fetching customer:', error);
-    return null;
+    // モックデータから検索
+    return MOCK_CUSTOMERS.find((c) => c.customer_id === customerId) || null;
   }
 
   return data;
@@ -54,10 +63,10 @@ export async function getPVConfigs(): Promise<PVConfig[]> {
 
   if (error) {
     console.error('Error fetching PV configs:', error);
-    return [];
+    return MOCK_PV_CONFIGS;
   }
 
-  return data || [];
+  return data && data.length > 0 ? data : MOCK_PV_CONFIGS;
 }
 
 export async function getPVSimulations(): Promise<PVSimulation[]> {
@@ -73,10 +82,10 @@ export async function getPerformanceActuals(): Promise<PerformanceActual[]> {
 
   if (error) {
     console.error('Error fetching performance actuals:', error);
-    return [];
+    return MOCK_PERFORMANCE_ACTUALS;
   }
 
-  return data || [];
+  return data && data.length > 0 ? data : MOCK_PERFORMANCE_ACTUALS;
 }
 
 export async function getSalesScripts(): Promise<SalesScript[]> {
@@ -87,10 +96,10 @@ export async function getSalesScripts(): Promise<SalesScript[]> {
 
   if (error) {
     console.error('Error fetching sales scripts:', error);
-    return [];
+    return MOCK_SALES_SCRIPTS;
   }
 
-  return data || [];
+  return data && data.length > 0 ? data : MOCK_SALES_SCRIPTS;
 }
 
 export async function getRolePlayEvaluations(): Promise<RolePlayEvaluation[]> {
