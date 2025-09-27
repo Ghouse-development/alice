@@ -45,7 +45,7 @@ export function estimateHVACCapacity(opts: HVACCalculationInput): HVACCalculatio
   const ventilation_W = ventilation_rate_m3h * VENTILATION_HEAT_FACTOR * deltaT_winter;
 
   // 地域係数
-  const regionFactor = REGION_FACTORS[climate_region] ?? 1.15;
+  const regionFactor = REGION_FACTORS[climate_region as keyof typeof REGION_FACTORS] ?? 1.15;
 
   // 冬季ピーク負荷（W）
   const peak_W_winter = (baseHeatLoss_W * infiltrationFactor + ventilation_W) * regionFactor;
@@ -143,7 +143,7 @@ export function estimateAnnualEnergyConsumption(opts: {
   const performanceFactor = (ua / 0.87) * (c_value / 5.0); // 次世代省エネ基準との比較
 
   // 地域補正
-  const regionFactor = REGION_FACTORS[climate_region] ?? 1.15;
+  const regionFactor = REGION_FACTORS[climate_region as keyof typeof REGION_FACTORS] ?? 1.15;
 
   // 人数補正
   const occupantFactor = 0.8 + occupants * 0.1; // 人数による補正
