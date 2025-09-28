@@ -42,7 +42,7 @@ import {
 import { useStore } from '@/lib/store';
 import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
-import StandardSpecPDFManager from '@/components/StandardSpecPDFManager';
+import EnhancedStandardSpecManager from '@/components/EnhancedStandardSpecManager';
 import { Presentation4View } from '@/components/Presentation4View';
 import { Presentation4Editor } from '@/components/Presentation4Editor';
 import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
@@ -66,7 +66,7 @@ const tabs = [
 
 const presentationComponents = {
   pres1: Presentation1View,
-  pres2: StandardSpecPDFManager,
+  pres2: EnhancedStandardSpecManager,
   pres3: Presentation3Interactive,
   pres4: Presentation4View,
   pres5: Presentation5UtilityCostSimulation,
