@@ -24,7 +24,7 @@ import {
   Calendar,
   Briefcase,
   List,
-  GripVertical
+  GripVertical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +32,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useStore } from '@/lib/store';
 import Presentation3Interactive from '@/components/Presentation3Interactive';
 import { Presentation1View } from '@/components/Presentation1View';
-import Presentation2Standard from '@/components/Presentation2Standard';
+import StandardSpecPDFManager from '@/components/StandardSpecPDFManager';
 import { Presentation4View } from '@/components/Presentation4View';
 import { Presentation4Editor } from '@/components/Presentation4Editor';
 import Presentation5UtilityCostSimulation from '@/components/Presentation5UtilityCostSimulation';
@@ -60,7 +66,7 @@ const tabs = [
 
 const presentationComponents = {
   pres1: Presentation1View,
-  pres2: Presentation2Standard,
+  pres2: StandardSpecPDFManager,
   pres3: Presentation3Interactive,
   pres4: Presentation4View,
   pres5: Presentation5UtilityCostSimulation,
@@ -87,7 +93,7 @@ export default function ProjectEditPage() {
     budget: '',
     timeline: '',
     requirements: '',
-    notes: ''
+    notes: '',
   });
 
   useEffect(() => {
@@ -96,7 +102,7 @@ export default function ProjectEditPage() {
     const project = projects.find((p) => p.id === params.id);
     if (project) {
       setCurrentProject(project);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         projectName: project.projectName,
         customerName: project.customerName,
@@ -115,7 +121,9 @@ export default function ProjectEditPage() {
         // 案件名と顧客名を同じにする
         const updatedData = {
           ...formData,
-          projectName: formData.customerName ? `${formData.customerName}様邸` : formData.projectName
+          projectName: formData.customerName
+            ? `${formData.customerName}様邸`
+            : formData.projectName,
         };
         updateProject(currentProject.id, updatedData);
         alert('保存しました');
@@ -127,7 +135,7 @@ export default function ProjectEditPage() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const updated = { ...prev, [field]: value };
       // 顧客名が変更されたら案件名も自動更新
       if (field === 'customerName' && value) {
@@ -176,17 +184,31 @@ export default function ProjectEditPage() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold">{formData.projectName || currentProject.projectName}</h1>
-                <span className="text-xs sm:text-sm text-gray-500">顧客: {formData.customerName || currentProject.customerName}</span>
+                <h1 className="text-lg sm:text-xl font-bold">
+                  {formData.projectName || currentProject.projectName}
+                </h1>
+                <span className="text-xs sm:text-sm text-gray-500">
+                  顧客: {formData.customerName || currentProject.customerName}
+                </span>
               </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button onClick={handleSave} variant="default" size="sm" className="flex-1 sm:flex-none h-10 px-4">
+              <Button
+                onClick={handleSave}
+                variant="default"
+                size="sm"
+                className="flex-1 sm:flex-none h-10 px-4"
+              >
                 <Save className="mr-2 h-4 w-4" />
                 保存
               </Button>
               {activeTab.startsWith('pres') && (
-                <Button onClick={togglePreview} variant="outline" size="sm" className="h-10 px-4 hidden lg:flex">
+                <Button
+                  onClick={togglePreview}
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-4 hidden lg:flex"
+                >
                   {showPreview ? (
                     <>
                       <EyeOff className="mr-2 h-4 w-4" />
@@ -214,7 +236,11 @@ export default function ProjectEditPage() {
             </div>
           </div>
 
-          <div className={showPreview && activeTab.startsWith('pres') ? 'grid lg:grid-cols-2 gap-4' : ''}>
+          <div
+            className={
+              showPreview && activeTab.startsWith('pres') ? 'grid lg:grid-cols-2 gap-4' : ''
+            }
+          >
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 {/* タブリスト：レスポンシブ対応 */}
@@ -310,29 +336,35 @@ export default function ProjectEditPage() {
                 </TabsContent>
 
                 {/* プレゼンテーションタブ（デザイン、標準仕様、オプション、資金計画、光熱費） */}
-                {tabs.filter(tab => tab.id.startsWith('pres')).map(tab => (
-                  <TabsContent key={tab.id} value={tab.id}>
-                    {tab.id === 'pres4' ? (
-                      <Presentation4Editor projectId={currentProject.id} />
-                    ) : (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>{tab.label}プレゼンテーション</CardTitle>
-                          <CardDescription>
-                            {tab.id === 'pres3' ? 'お客様に最適なオプションをご提案' : `${tab.label}の内容を確認・編集`}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4">
-                          <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
-                            <tab.icon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                            <p className="text-lg font-medium mb-2">{tab.label}プレゼンテーション</p>
-                            <p className="text-sm">右側のプレビューで実際の表示を確認できます</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-                ))}
+                {tabs
+                  .filter((tab) => tab.id.startsWith('pres'))
+                  .map((tab) => (
+                    <TabsContent key={tab.id} value={tab.id}>
+                      {tab.id === 'pres4' ? (
+                        <Presentation4Editor projectId={currentProject.id} />
+                      ) : (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>{tab.label}プレゼンテーション</CardTitle>
+                            <CardDescription>
+                              {tab.id === 'pres3'
+                                ? 'お客様に最適なオプションをご提案'
+                                : `${tab.label}の内容を確認・編集`}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="p-4">
+                            <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
+                              <tab.icon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                              <p className="text-lg font-medium mb-2">
+                                {tab.label}プレゼンテーション
+                              </p>
+                              <p className="text-sm">右側のプレビューで実際の表示を確認できます</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </TabsContent>
+                  ))}
 
                 {/* 順番タブ */}
                 <TabsContent value="order">
@@ -342,35 +374,40 @@ export default function ProjectEditPage() {
             </div>
 
             {/* プレビューエリア */}
-            {showPreview && activeTab.startsWith('pres') && CurrentPreviewComponent && currentProject && (
-              <div className="hidden lg:block sticky top-4">
-                <Card className="overflow-hidden shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg">プレゼンテーションプレビュー</CardTitle>
-                        <CardDescription className="text-gray-300">実際の表示を確認</CardDescription>
+            {showPreview &&
+              activeTab.startsWith('pres') &&
+              CurrentPreviewComponent &&
+              currentProject && (
+                <div className="hidden lg:block sticky top-4">
+                  <Card className="overflow-hidden shadow-xl">
+                    <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">プレゼンテーションプレビュー</CardTitle>
+                          <CardDescription className="text-gray-300">
+                            実際の表示を確認
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={toggleFullscreenPreview}
+                          className="h-9 px-3"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={toggleFullscreenPreview}
-                        className="h-9 px-3"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0 bg-black">
-                    <div style={{ aspectRatio: '1.414 / 1' }}>
-                      <PresentationContainer>
-                        <CurrentPreviewComponent projectId={currentProject.id} />
-                      </PresentationContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                    </CardHeader>
+                    <CardContent className="p-0 bg-black">
+                      <div style={{ aspectRatio: '1.414 / 1' }}>
+                        <PresentationContainer>
+                          <CurrentPreviewComponent projectId={currentProject.id} />
+                        </PresentationContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
           </div>
         </div>
       </div>

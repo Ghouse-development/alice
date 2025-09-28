@@ -44,21 +44,22 @@ const Presentation3Interactive: React.FC = () => {
 
   // 内装オプション
   const [interiorOptions, setInteriorOptions] = useState<OptionItem[]>([
-    { id: 'i1', name: 'フローリング変更', price: 25000, checked: false },
-    { id: 'i2', name: '壁紙グレードアップ', price: 15000, checked: false },
-    { id: 'i3', name: 'キッチン収納追加', price: 30000, checked: false },
-    { id: 'i4', name: '照明器具変更', price: 20000, checked: false },
-    { id: 'i5', name: 'カーテンレール', price: 35000, checked: false },
-    { id: 'i6', name: 'エコカラット', price: 40000, checked: false },
-    { id: 'i7', name: '室内物干し', price: 18000, checked: false },
-    { id: 'i8', name: 'トイレ手洗い追加', price: 22000, checked: false },
-    { id: 'i9', name: '洗面台グレードアップ', price: 28000, checked: false },
-    { id: 'i10', name: '浴室暖房乾燥機', price: 45000, checked: false },
-    { id: 'i11', name: 'コンセント追加', price: 12000, checked: false },
-    { id: 'i12', name: '床暖房（リビング）', price: 38000, checked: false },
-    { id: 'i13', name: 'ニッチ棚追加', price: 16000, checked: false },
-    { id: 'i14', name: '玄関収納追加', price: 24000, checked: false },
-    { id: 'i15', name: 'バルコニー屋根', price: 32000, checked: false },
+    { id: 'i1', name: 'キッチンカップボード', price: 500000, checked: false },
+    { id: 'i2', name: 'トイレ収納TS', price: 53000, checked: false },
+    { id: 'i3', name: 'アクセントタイル', price: 200000, checked: false },
+    { id: 'i4', name: 'タイル（キッチン・洗面）', price: 200000, checked: false },
+    { id: 'i5', name: '枕棚＋パイプハンガー', price: 33000, checked: false },
+    { id: 'i6', name: 'アドバンス（スイッチ類）へ変更', price: 72000, checked: false },
+    { id: 'i7', name: 'ニッチ', price: 30000, checked: false },
+    { id: 'i8', name: '2階給排水管工事＋トイレ', price: 175000, checked: false },
+    { id: 'i9', name: '2階給排水管工事＋手洗い', price: 200000, checked: false },
+    { id: 'i10', name: 'コーブ照明（キッチン上）', price: 150000, checked: false },
+    { id: 'i11', name: '寝室アッパー照明', price: 130000, checked: false },
+    { id: 'i12', name: '引き戸建具追加', price: 71000, checked: false },
+    { id: 'i13', name: '下がり天井', price: 50000, checked: false },
+    { id: 'i14', name: 'アイアン手摺', price: 150000, checked: false },
+    { id: 'i15', name: 'ウルトラ高圧エコキュート370L', price: 100000, checked: false },
+    { id: 'i16', name: '挽板フローリングへ変更', price: 500000, checked: false },
   ]);
 
   // 小計計算
@@ -286,11 +287,11 @@ const Presentation3Interactive: React.FC = () => {
                     <button className="text-sm text-purple-700 hover:text-purple-900">✏️</button>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-x-3 gap-y-1 flex-1 mt-2">
+                <div className="grid grid-cols-2 gap-x-3 -gap-y-1 flex-1 mt-1">
                   {interiorOptions.map((option) => (
                     <label
                       key={option.id}
-                      className="flex items-center p-0.5 text-sm hover:bg-gray-50 cursor-pointer"
+                      className="flex items-center py-0 px-1 text-sm hover:bg-gray-50 cursor-pointer leading-tight h-4"
                     >
                       <input
                         type="checkbox"
