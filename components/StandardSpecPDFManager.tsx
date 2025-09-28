@@ -154,6 +154,13 @@ export default function StandardSpecPDFManager({ projectId }: StandardSpecPDFMan
   );
 
   const handleUpload = async (file: File) => {
+    // ファイルサイズ制限（10MB）
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setError('ファイルサイズが10MBを超えています');
+      return;
+    }
+
     setUploading(true);
     setError(null);
 
@@ -511,6 +518,7 @@ export default function StandardSpecPDFManager({ projectId }: StandardSpecPDFMan
               <p className="text-xs text-gray-500 mt-1">
                 複数のファイルを選択できます（PDF、PPT、PPTX対応）
               </p>
+              <p className="text-xs text-gray-400 mt-1">最大ファイルサイズ: 10MB</p>
               <input
                 ref={fileInputRef}
                 type="file"
